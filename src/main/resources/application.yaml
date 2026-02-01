@@ -1,0 +1,16 @@
+ktor:
+  deployment:
+    port: 8080
+    host: 0.0.0.0
+  application:
+    modules:
+      - com.bieniucieniu.ApplicationKt.module
+  development: true
+koog:
+  google:
+    apikey: ${GOOGLE_API_KEY}
+    baseUrl: https://generativelanguage.googleapis.com
+  llm:
+    fallback:
+      provider: google
+      model: google.gemini2_5flash

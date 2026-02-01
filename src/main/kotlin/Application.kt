@@ -1,20 +1,20 @@
 package com.bieniucieniu
 
+import com.bieniucieniu.di.appModule
+import com.bieniucieniu.features.ai.configureAi
+import com.bieniucieniu.features.auth.configureAuth
+import com.bieniucieniu.plugins.configureRouting
 import io.ktor.server.application.*
-import io.ktor.server.cio.*
-import io.ktor.server.engine.*
+import org.koin.ktor.plugin.Koin
 
-fun main() {
-    embeddedServer(CIO, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
-}
+fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
 
 fun Application.module() {
-    configureHTTP()
-    configureSecurity()
-    configureSerialization()
-    configureFrameworks()
-    configureSockets()
-    configureAdministration()
+    install(Koin) {
+        modules(appModule)
+    }
     configureRouting()
+    configureSerialization()
+    configureAuth()
+    configureAi()
 }

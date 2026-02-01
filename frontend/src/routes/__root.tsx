@@ -1,37 +1,16 @@
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { queryClient } from "@/integration/ts-query";
 
-import Header from '../components/Header'
+export const Route = createRootRoute({
+	component: RootComponent,
+});
 
-import StoreDevtools from '../lib/demo-store-devtools'
-
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
-
-import type { QueryClient } from '@tanstack/react-query'
-
-interface MyRouterContext {
-  queryClient: QueryClient
+function RootComponent() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<noscript>You need to enable JavaScript to run this app.</noscript>
+			<Outlet />
+		</QueryClientProvider>
+	);
 }
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
-  component: () => (
-    <>
-      <Header />
-      <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-          StoreDevtools,
-          TanStackQueryDevtools,
-        ]}
-      />
-    </>
-  ),
-})
