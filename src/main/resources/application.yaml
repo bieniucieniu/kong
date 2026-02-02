@@ -7,6 +7,12 @@ ktor:
       - com.bieniucieniu.ApplicationKt.module
   development: true
 koog:
+  ollama:
+    enable: true
+    baseUrl: https://ollama.kurwidolek.com
+    model: llama3.2:3b
+    username: ${OLLAMA_USERNAME}
+    password: ${OLLAMA_PASSWORD}
   google:
     apikey: ${GOOGLE_API_KEY}
     baseUrl: https://generativelanguage.googleapis.com

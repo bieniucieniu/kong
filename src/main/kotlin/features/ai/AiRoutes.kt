@@ -3,6 +3,7 @@ package com.bieniucieniu.features.ai
 import ai.koog.ktor.llm
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.clients.google.GoogleModels
+import ai.koog.prompt.llm.OllamaModels
 import ai.koog.prompt.streaming.StreamFrame
 import io.ktor.http.*
 import io.ktor.openapi.*
@@ -11,7 +12,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.runBlocking
 import kotlin.reflect.full.staticProperties
 
 
@@ -20,11 +20,9 @@ val a = GoogleModels::class.staticProperties
 @OptIn(ExperimentalKtorApi::class)
 fun Route.aiRoutes() {
     route("/ai") {
-        get("models") {
-
-        }
         post("chat") {
             val p = call.receive<Chat>()
+            print(p.messages.last().prompt)
             val f = llm().executeStreaming(
                 prompt = prompt("chat") {
                     for (m in p.messages) {
@@ -35,26 +33,20 @@ fun Route.aiRoutes() {
                         }
                     }
                 },
-                model = GoogleModels.Gemini2_0Flash
+
+                model = OllamaModels.Meta.LLAMA_3_2_3B
             )
 
 
             call.respondOutputStream(contentType = ContentType.Text.EventStream) {
-                runCatching {
-                    f.collect { chunk ->
-                        val str = when (chunk) {
-                            is StreamFrame.Append -> "a: ${chunk.text}"
-                            is StreamFrame.End -> ""
-                            is StreamFrame.ToolCall -> "t: ```\n$chunk\n```"
-                        }
-                        println(str)
-                        runBlocking {
-                            write(str.toByteArray())
-                            flush()
-                        }
+                f.collect { chunk ->
+                    val str = when (chunk) {
+                        is StreamFrame.Append -> chunk.text
+                        else -> ""
                     }
-                }.onFailure { e ->
-                    write("e: ${e.message}".toByteArray())
+                    print("${str.length}:$str")
+                    flush()
+                    write(str.toByteArray())
                 }
             }
         }.describe {

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useIsMutating, useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
@@ -28,9 +28,12 @@ const authorMap: Record<string, "user" | "agent" | "tool" | undefined> = {
 
 function RouteComponent() {
 	const [chat, setResponse] = useState<Chat["messages"]>([]);
-	const [prompt, setPrompt] = useState("");
+	const [prompt, setPrompt] = useState(
+		"how long message can you create before crush",
+	);
 
 	const m = useMutation({
+		mutationKey: ["postAiChat"],
 		mutationFn: async (p: Chat) => {
 			const res = await fetch(getPostAiChatUrl(), {
 				method: "POST",
@@ -39,7 +42,8 @@ function RouteComponent() {
 			});
 			if (res.status !== 200) throw new Error(res.statusText);
 
-			return res.body?.getReader();
+			const reader = res.body?.getReader();
+			await collect(reader, (d) => pushMessage({ prompt: d, author: "agent" }));
 		},
 	});
 
@@ -48,28 +52,21 @@ function RouteComponent() {
 			{ prompt, author }: ChatMessagesItem,
 			on?: (c: ChatMessagesItem[]) => void,
 		) => {
-			setResponse((p) => {
-				const o = ((p) => {
-					const prev = p.length > 0 ? p[p.length - 1] : undefined;
-					if (prev?.author === author) {
-						p[p.length - 1] = {
-							...prev,
-							prompt: prev.prompt + prompt,
-						};
-						return [...p];
-					}
-					return [...p, { prompt: prompt, author }];
-				})(p);
-				on?.(o);
-				return o;
-			});
+			const o = ((p) => {
+				const prev = p.length > 0 ? p[p.length - 1] : undefined;
+				if (prev?.author === author) {
+					p[p.length - 1] = {
+						...prev,
+						prompt: prev.prompt + prompt,
+					};
+					return [...p];
+				}
+				return [...p, { prompt: prompt, author }];
+			})(chat);
+			on?.(o);
+			setResponse(o);
 		},
 	);
-
-	useCollect(m.data, (d) => {
-		const author = authorMap[d.slice(0, 1)];
-		if (author) pushMessage({ prompt: d.slice(2), author });
-	});
 
 	const submit = useUpdateCallback((p: string = prompt) => {
 		p = p.trim();
@@ -114,7 +111,11 @@ function RouteComponent() {
 					/>
 					<InputGroupText>{m.error?.message}</InputGroupText>
 					<InputGroupAddon align="block-end">
-						<InputGroupButton className="ml-auto" onClick={() => submit()}>
+						<InputGroupButton
+							className="ml-auto"
+							disabled={m.isPending}
+							onClick={() => submit()}
+						>
 							{m.status}
 						</InputGroupButton>
 					</InputGroupAddon>
@@ -130,16 +131,20 @@ function useCollect(
 ) {
 	onData = useUpdateCallback(onData);
 
-	useMemo(async () => {
-		if (!reader) return;
-		const decoder = new TextDecoder();
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
+	useMemo(async () => collect(reader, onData), [reader]);
+}
+async function collect(
+	reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined,
+	onData: (data: string) => void,
+) {
+	if (!reader) return;
+	const decoder = new TextDecoder();
+	while (true) {
+		const { done, value } = await reader.read();
+		if (done) break;
 
-			const chunk = decoder.decode(value, { stream: true });
+		const chunk = decoder.decode(value, { stream: true });
 
-			onData(chunk);
-		}
-	}, [reader]);
+		onData(chunk);
+	}
 }
