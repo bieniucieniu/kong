@@ -10,10 +10,6 @@ koog:
   google:
     apikey: ${GOOGLE_API_KEY}
     baseUrl: https://generativelanguage.googleapis.com
-  llm:
-    fallback:
-      provider: google
-      model: google.gemini2_5flash
 oauth2:
   google:
     client_id: ${GOOGLE_CLIENT_ID}

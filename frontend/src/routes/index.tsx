@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Card } from "@/components/ui/card";
 import {
 	InputGroup,
+	InputGroupAddon,
 	InputGroupButton,
-	InputGroupInput,
 	InputGroupText,
+	InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { MarkdownCard } from "@/components/ui/markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/")({
 
 const authorMap: Record<string, "user" | "agent" | "tool" | undefined> = {
 	a: "agent",
+	e: "agent",
 	u: "user",
 	t: "tool",
 };
@@ -43,30 +44,40 @@ function RouteComponent() {
 	});
 
 	const pushMessage = useUpdateCallback(
-		(propt: ChatMessagesItem["prompt"], author: ChatMessagesItem["author"]) => {
+		(
+			{ prompt, author }: ChatMessagesItem,
+			on?: (c: ChatMessagesItem[]) => void,
+		) => {
 			setResponse((p) => {
-				const prev = p.length > 0 ? p[p.length - 1] : undefined;
-				if (prev?.author === author) {
-					p[p.length - 1] = {
-						...prev,
-						prompt: prev.prompt + propt,
-					};
-					return [...p];
-				}
-				return [...p, { prompt: propt, author }];
+				const o = ((p) => {
+					const prev = p.length > 0 ? p[p.length - 1] : undefined;
+					if (prev?.author === author) {
+						p[p.length - 1] = {
+							...prev,
+							prompt: prev.prompt + prompt,
+						};
+						return [...p];
+					}
+					return [...p, { prompt: prompt, author }];
+				})(p);
+				on?.(o);
+				return o;
 			});
 		},
 	);
 
 	useCollect(m.data, (d) => {
 		const author = authorMap[d.slice(0, 1)];
-		if (author) pushMessage(d.slice(2), author);
+		if (author) pushMessage({ prompt: d.slice(2), author });
 	});
 
 	const submit = useUpdateCallback((p: string = prompt) => {
-		pushMessage(p, "user");
-		setPrompt("");
-		m.mutate({ messages: chat });
+		p = p.trim();
+		//	if (p.length === 0) return;
+		pushMessage({ prompt: p, author: "user" }, (messages) => {
+			setPrompt("");
+			m.mutate({ messages });
+		});
 	});
 
 	return (
@@ -92,7 +103,7 @@ function RouteComponent() {
 					</ScrollArea>
 				</div>
 				<InputGroup className="max-w-100">
-					<InputGroupInput
+					<InputGroupTextarea
 						onChange={(e) => setPrompt(e.target.value)}
 						onKeyDown={(e) => {
 							if (e.key === "Enter" && (e.shiftKey || e.ctrlKey) === true) {
@@ -101,10 +112,12 @@ function RouteComponent() {
 						}}
 						value={prompt}
 					/>
-					<InputGroupButton onClick={() => submit()}>
-						{m.status}
-					</InputGroupButton>
 					<InputGroupText>{m.error?.message}</InputGroupText>
+					<InputGroupAddon align="block-end">
+						<InputGroupButton className="ml-auto" onClick={() => submit()}>
+							{m.status}
+						</InputGroupButton>
+					</InputGroupAddon>
 				</InputGroup>
 			</div>
 		</main>

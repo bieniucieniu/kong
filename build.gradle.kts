@@ -29,6 +29,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
     implementation("io.ktor:ktor-server-caching-headers")
     implementation("io.ktor:ktor-server-compression")
     implementation("io.ktor:ktor-server-forwarded-header")
@@ -39,6 +40,7 @@ dependencies {
     implementation("io.ktor:ktor-server-routing-openapi")
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-client-core")
+    implementation("io.ktor:ktor-client-auth")
     implementation("io.ktor:ktor-client-cio")
     implementation("io.ktor:ktor-server-host-common")
     implementation("io.ktor:ktor-server-status-pages")

@@ -11,16 +11,22 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
+import kotlinx.coroutines.runBlocking
+import kotlin.reflect.full.staticProperties
 
+
+val a = GoogleModels::class.staticProperties
 
 @OptIn(ExperimentalKtorApi::class)
 fun Route.aiRoutes() {
     route("/ai") {
+        get("models") {
+
+        }
         post("chat") {
             val p = call.receive<Chat>()
             val f = llm().executeStreaming(
                 prompt = prompt("chat") {
-                    system("You are a helpful assistant that clarifies questions with as long as possible answer")
                     for (m in p.messages) {
                         when (m.author) {
                             ChatMessageAuthor.User -> user(m.prompt)
@@ -29,19 +35,26 @@ fun Route.aiRoutes() {
                         }
                     }
                 },
-                model = GoogleModels.Gemini2_5Flash
+                model = GoogleModels.Gemini2_0Flash
             )
 
+
             call.respondOutputStream(contentType = ContentType.Text.EventStream) {
-                f.collect { chunk ->
-                    val str = when (chunk) {
-                        is StreamFrame.Append -> "a: ${chunk.text}"
-                        is StreamFrame.End -> ""
-                        is StreamFrame.ToolCall -> "t: ```\n$chunk\n```"
+                runCatching {
+                    f.collect { chunk ->
+                        val str = when (chunk) {
+                            is StreamFrame.Append -> "a: ${chunk.text}"
+                            is StreamFrame.End -> ""
+                            is StreamFrame.ToolCall -> "t: ```\n$chunk\n```"
+                        }
+                        println(str)
+                        runBlocking {
+                            write(str.toByteArray())
+                            flush()
+                        }
                     }
-                    println(str)
-                    write(str.toByteArray())
-                    flush()
+                }.onFailure { e ->
+                    write("e: ${e.message}".toByteArray())
                 }
             }
         }.describe {
