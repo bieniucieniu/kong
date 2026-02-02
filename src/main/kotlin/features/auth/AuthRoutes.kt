@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 
 fun Route.authRoutes() {
-    authenticate("auth-oauth-discord") {
+/*    authenticate("auth-oauth-discord") {
         route("/discord") {
             get("login") {
                 call.respondRedirect("callback")
@@ -23,7 +23,7 @@ fun Route.authRoutes() {
                 call.respondRedirect("/")
             }
         }
-    }
+    }*/
     authenticate("auth-oauth-google") {
         route("/google") {
             get("login") {

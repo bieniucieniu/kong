@@ -14,7 +14,9 @@ version = "0.0.1"
 
 ktor {
     openApi {
-
+        enabled = true
+        codeInferenceEnabled = true
+        onlyCommented = false
     }
 }
 
@@ -52,5 +54,6 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:3.4.0")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+
 }
 

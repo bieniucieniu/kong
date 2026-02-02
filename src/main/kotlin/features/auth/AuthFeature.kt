@@ -10,6 +10,8 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureAuth() {
     val httpClient by inject<HttpClient>()
+    val clientId = environment.config.property("oauth2.google.client_id").getString()
+    val clientSecret = environment.config.property("oauth2.google.client_secret").getString()
 
     install(Sessions) {
         cookie<UserSession>("user_session") {
@@ -20,35 +22,37 @@ fun Application.configureAuth() {
 
     install(Authentication) {
         oauth("auth-oauth-google") {
-            urlProvider = { "http://localhost:8080/google/callback" }
+            urlProvider = {
+                "${request.local.scheme}://${request.local.serverHost}:${request.local.serverPort}/google/callback"
+            }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "google",
                     authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
                     accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
                     requestMethod = HttpMethod.Post,
-                    clientId = System.getenv("GOOGLE_CLIENT_ID") ?: "",
-                    clientSecret = System.getenv("GOOGLE_CLIENT_SECRET") ?: "",
-                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile")
+                    clientId = clientId,
+                    clientSecret = clientSecret,
+                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile"),
                 )
             }
             client = httpClient
         }
-        oauth("auth-oauth-discord") {
-            urlProvider = { "http://localhost:8080/discord/callback" }
-            providerLookup = {
-                OAuthServerSettings.OAuth2ServerSettings(
-                    name = "discord",
-                    authorizeUrl = "https://discord.com/api/oauth2/authorize",
-                    accessTokenUrl = "https://discord.com/api/oauth2/token",
-                    requestMethod = HttpMethod.Post,
-                    clientId = System.getenv("DISCORD_CLIENT_ID") ?: "",
-                    clientSecret = System.getenv("DISCORD_CLIENT_SECRET") ?: "",
-                    defaultScopes = listOf("identify")
-                )
-            }
-            client = httpClient
-        }
+        /*        oauth("auth-oauth-discord") {
+                    urlProvider = { "http://localhost:8080/discord/callback" }
+                    providerLookup = {
+                        OAuthServerSettings.OAuth2ServerSettings(
+                            name = "discord",
+                            authorizeUrl = "https://discord.com/api/oauth2/authorize",
+                            accessTokenUrl = "https://discord.com/api/oauth2/token",
+                            requestMethod = HttpMethod.Post,
+                            clientId = System.getenv("DISCORD_CLIENT_ID") ?: "",
+                            clientSecret = System.getenv("DISCORD_CLIENT_SECRET") ?: "",
+                            defaultScopes = listOf("identify")
+                        )
+                    }
+                    client = httpClient
+                }*/
     }
 
     routing {

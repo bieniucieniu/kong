@@ -5,22 +5,29 @@ import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.executor.clients.google.GoogleModels
 import ai.koog.prompt.streaming.StreamFrame
 import io.ktor.http.*
+import io.ktor.openapi.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
+import io.ktor.server.routing.openapi.*
+import io.ktor.utils.io.*
 
-@Serializable
-data class Prompt(val message: String)
 
+@OptIn(ExperimentalKtorApi::class)
 fun Route.aiRoutes() {
     route("/ai") {
         post("chat") {
-            val p = call.receive<Prompt>()
+            val p = call.receive<Chat>()
             val f = llm().executeStreaming(
                 prompt = prompt("chat") {
                     system("You are a helpful assistant that clarifies questions with as long as possible answer")
-                    user(p.message)
+                    for (m in p.messages) {
+                        when (m.author) {
+                            ChatMessageAuthor.User -> user(m.prompt)
+                            ChatMessageAuthor.Agent -> assistant(m.prompt)
+                            else -> {}
+                        }
+                    }
                 },
                 model = GoogleModels.Gemini2_5Flash
             )
@@ -28,20 +35,22 @@ fun Route.aiRoutes() {
             call.respondOutputStream(contentType = ContentType.Text.EventStream) {
                 f.collect { chunk ->
                     val str = when (chunk) {
-                        is StreamFrame.Append ->
-                            ("append: ${chunk.text}\n")
-
-                        is StreamFrame.End ->
-                            ("end: $chunk\n\n")
-
-
-                        is StreamFrame.ToolCall ->
-                            ("tool call: $chunk")
-
+                        is StreamFrame.Append -> "a: ${chunk.text}"
+                        is StreamFrame.End -> ""
+                        is StreamFrame.ToolCall -> "t: ```\n$chunk\n```"
                     }
                     println(str)
                     write(str.toByteArray())
                     flush()
+                }
+            }
+        }.describe {
+            requestBody {
+                schema = jsonSchema<Chat>()
+            }
+            responses {
+                HttpStatusCode.OK {
+                    ContentType.Text.EventStream
                 }
             }
         }
