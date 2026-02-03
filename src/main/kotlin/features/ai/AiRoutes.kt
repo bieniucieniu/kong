@@ -2,9 +2,9 @@ package com.bieniucieniu.features.ai
 
 import ai.koog.ktor.llm
 import ai.koog.prompt.dsl.prompt
-import ai.koog.prompt.executor.clients.google.GoogleModels
-import ai.koog.prompt.llm.OllamaModels
 import ai.koog.prompt.streaming.StreamFrame
+import com.bieniucieniu.features.ollama.getDefaultModel
+import com.bieniucieniu.features.ollama.getOssModels
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.request.*
@@ -12,19 +12,28 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
-import kotlin.reflect.full.staticProperties
 
-
-val a = GoogleModels::class.staticProperties
 
 @OptIn(ExperimentalKtorApi::class)
 fun Route.aiRoutes() {
     route("/ai") {
+        get("/models") {
+            call.respond(
+                AiModels(
+                    models = getOssModels().keys.toList(),
+                    default = getDefaultModel().id
+                )
+            )
+        }
+
         post("chat") {
             val p = call.receive<Chat>()
-            print(p.messages.last().prompt)
+            val ossModels = getOssModels()
+            val minChunkSize = 50
+            val model = p.model?.let { ossModels[it] } ?: getDefaultModel()
             val f = llm().executeStreaming(
                 prompt = prompt("chat") {
+                    system("You are a helpful assistant. Write short, simple and concise answers")
                     for (m in p.messages) {
                         when (m.author) {
                             ChatMessageAuthor.User -> user(m.prompt)
@@ -34,20 +43,29 @@ fun Route.aiRoutes() {
                     }
                 },
 
-                model = OllamaModels.Meta.LLAMA_3_2_3B
+                model = model
             )
 
 
+            ContentType.Application.HalJson
             call.respondOutputStream(contentType = ContentType.Text.EventStream) {
+                write(" ".toByteArray())
+                flush()
+                var acc = ""
+                val writeAcc = {
+                    write(acc.toByteArray())
+                    flush()
+                    acc = ""
+                }
                 f.collect { chunk ->
                     val str = when (chunk) {
                         is StreamFrame.Append -> chunk.text
                         else -> ""
                     }
-                    print("${str.length}:$str")
-                    flush()
-                    write(str.toByteArray())
+                    acc += str
+                    if (acc.length > minChunkSize) writeAcc()
                 }
+                writeAcc()
             }
         }.describe {
             requestBody {

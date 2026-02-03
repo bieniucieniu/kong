@@ -34,6 +34,7 @@ fun Application.configureRouting() {
         }
     }
     install(Compression)
+
     install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
     install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
     install(SimpleCache) {

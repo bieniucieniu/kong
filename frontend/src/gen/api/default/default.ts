@@ -21,7 +21,7 @@ import type {
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import type { Chat } from "../../models";
+import type { AiModels, Chat } from "../../models";
 
 export type getGoogleLoginResponse302 = {
 	data: void;
@@ -330,6 +330,155 @@ export function useGetGoogleCallback<
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
 	const queryOptions = getGetGoogleCallbackQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getAiModelsResponse200 = {
+	data: AiModels;
+	status: 200;
+};
+
+export type getAiModelsResponseSuccess = getAiModelsResponse200 & {
+	headers: Headers;
+};
+
+export type getAiModelsResponse = getAiModelsResponseSuccess;
+
+export const getGetAiModelsUrl = () => {
+	return `/ai/models`;
+};
+
+export const getAiModels = async (
+	options?: RequestInit,
+): Promise<getAiModelsResponse> => {
+	const res = await fetch(getGetAiModelsUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: getAiModelsResponse["data"] = body ? JSON.parse(body) : {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getAiModelsResponse;
+};
+
+export const getGetAiModelsQueryKey = () => {
+	return ["ai", "models"] as const;
+};
+
+export const getGetAiModelsQueryOptions = <
+	TData = Awaited<ReturnType<typeof getAiModels>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getGetAiModelsQueryKey();
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiModels>>> = ({
+		signal,
+	}) => getAiModels({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getAiModels>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetAiModelsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getAiModels>>
+>;
+export type GetAiModelsQueryError = unknown;
+
+export function useGetAiModels<
+	TData = Awaited<ReturnType<typeof getAiModels>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getAiModels>>,
+					TError,
+					Awaited<ReturnType<typeof getAiModels>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiModels<
+	TData = Awaited<ReturnType<typeof getAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getAiModels>>,
+					TError,
+					Awaited<ReturnType<typeof getAiModels>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiModels<
+	TData = Awaited<ReturnType<typeof getAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetAiModels<
+	TData = Awaited<ReturnType<typeof getAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetAiModelsQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,

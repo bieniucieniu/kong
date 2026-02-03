@@ -19,4 +19,8 @@ enum class ChatMessageAuthor {
 data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 
 @Serializable
-data class Chat(val messages: List<ChatMessage>)
+data class Chat(val messages: List<ChatMessage>, val model: String? = null)
+
+
+@Serializable
+data class AiModels(val models: List<String>, val default: String)

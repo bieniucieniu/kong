@@ -3,7 +3,7 @@ import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/them
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<div>
+		<div className="h-svh">
 			<nav className="w-svw fixed flex items-end">
 				<Menubar className="ml-auto">
 					<ThemeModeChangeMenubarMenu />

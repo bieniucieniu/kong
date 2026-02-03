@@ -21,7 +21,13 @@ export default defineConfig({
 
 	server: {
 		proxy: {
-			"/ai": "http://localhost:8080",
+			"/ai": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				secure: false,
+				timeout: 0,
+				proxyTimeout: 0,
+			},
 		},
 	},
 

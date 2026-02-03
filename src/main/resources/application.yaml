@@ -9,7 +9,8 @@ ktor:
 koog:
   ollama:
     enable: true
-    baseUrl: https://ollama.kurwidolek.com
+    baseUrl: ${OLLAMA_BASE_URL}
+    baseUrlRealm: ${?OLLAMA_BASE_URL_REALM}
     model: llama3.2:3b
     username: ${OLLAMA_USERNAME}
     password: ${OLLAMA_PASSWORD}

@@ -1,6 +1,6 @@
-import { useIsMutating, useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { useState, useTransition } from "react";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -10,141 +10,120 @@ import {
 } from "@/components/ui/input-group";
 import { MarkdownCard } from "@/components/ui/markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { getPostAiChatUrl } from "@/gen/api/default/default";
-import type { Chat, ChatMessagesItem } from "@/gen/models";
-import { useUpdateCallback } from "@/lib/hooks/update";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	type ChatState,
+	useChat,
+	useChatModels,
+	useCreateChat,
+} from "@/features/chat/hooks/chat";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
 	component: RouteComponent,
 });
 
-const authorMap: Record<string, "user" | "agent" | "tool" | undefined> = {
-	a: "agent",
-	e: "agent",
-	u: "user",
-	t: "tool",
-};
-
 function RouteComponent() {
-	const [chat, setResponse] = useState<Chat["messages"]>([]);
+	const chatState = useCreateChat();
 	const [prompt, setPrompt] = useState(
-		"how long message can you create before crush",
+		"how long message can you create before crushing",
 	);
 
-	const m = useMutation({
-		mutationKey: ["postAiChat"],
-		mutationFn: async (p: Chat) => {
-			const res = await fetch(getPostAiChatUrl(), {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(p),
-			});
-			if (res.status !== 200) throw new Error(res.statusText);
+	const { status, pushPrompt, chat, error } = useChat(chatState);
 
-			const reader = res.body?.getReader();
-			await collect(reader, (d) => pushMessage({ prompt: d, author: "agent" }));
-		},
-	});
+	let [isPending, startTransition] = useTransition();
+	isPending ||= status === "pending";
 
-	const pushMessage = useUpdateCallback(
-		(
-			{ prompt, author }: ChatMessagesItem,
-			on?: (c: ChatMessagesItem[]) => void,
-		) => {
-			const o = ((p) => {
-				const prev = p.length > 0 ? p[p.length - 1] : undefined;
-				if (prev?.author === author) {
-					p[p.length - 1] = {
-						...prev,
-						prompt: prev.prompt + prompt,
-					};
-					return [...p];
-				}
-				return [...p, { prompt: prompt, author }];
-			})(chat);
-			on?.(o);
-			setResponse(o);
-		},
-	);
-
-	const submit = useUpdateCallback((p: string = prompt) => {
-		p = p.trim();
-		//	if (p.length === 0) return;
-		pushMessage({ prompt: p, author: "user" }, (messages) => {
+	const submit = (p: string = prompt) =>
+		startTransition(() => {
+			p = p.trim();
+			pushPrompt(p);
 			setPrompt("");
-			m.mutate({ messages });
 		});
-	});
 
 	return (
-		<main>
-			<div className="h-svh mx-auto  flex flex-col items-center justify-end gap-4 p-4">
-				<div className="flex-1">
-					<ScrollArea className="max-w-4xl max-h-0 min-h-full overflow-auto">
-						<div className="flex flex-col gap-4 items-start">
-							{chat.map(({ prompt: message, author }, i) => {
-								const key = `${author}-${i}-${message.slice(0, 10)}`;
-								return (
-									<MarkdownCard
-										key={key}
-										className={cn({
-											"self-end bg-accent": author === "user",
-										})}
-									>
-										{message}
-									</MarkdownCard>
-								);
-							})}
-						</div>
-					</ScrollArea>
-				</div>
-				<InputGroup className="max-w-100">
-					<InputGroupTextarea
-						onChange={(e) => setPrompt(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter" && (e.shiftKey || e.ctrlKey) === true) {
-								submit();
-							}
-						}}
-						value={prompt}
-					/>
-					<InputGroupText>{m.error?.message}</InputGroupText>
-					<InputGroupAddon align="block-end">
-						<InputGroupButton
-							className="ml-auto"
-							disabled={m.isPending}
-							onClick={() => submit()}
-						>
-							{m.status}
-						</InputGroupButton>
-					</InputGroupAddon>
-				</InputGroup>
+		<div className="h-full flex flex-col items-center justify-end gap-4 p-4">
+			<div className="flex-1">
+				<ScrollArea className="w-full max-w-4xl max-h-0 min-h-full overflow-auto">
+					<div className="flex flex-col gap-4 items-start">
+						{chat.map(({ prompt: message, author }, i) => {
+							const key = `${author}-${i}-${message.slice(0, 10)}`;
+							return (
+								<MarkdownCard
+									key={key}
+									className={cn({
+										"self-end bg-accent": author === "user",
+									})}
+								>
+									{message}
+								</MarkdownCard>
+							);
+						})}
+					</div>
+				</ScrollArea>
 			</div>
-		</main>
+			<InputGroup className="max-w-100">
+				<InputGroupTextarea
+					onChange={(e) => setPrompt(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" && (e.shiftKey || e.ctrlKey) === true) {
+							submit();
+						}
+					}}
+					value={prompt}
+				/>
+				<InputGroupText>{error?.message}</InputGroupText>
+				<InputGroupAddon align="block-end">
+					<ModelSelect chatState={chatState} />
+					<InputGroupButton
+						className="ml-auto"
+						disabled={isPending}
+						onClick={() => submit()}
+					>
+						{status}
+					</InputGroupButton>
+				</InputGroupAddon>
+			</InputGroup>
+		</div>
 	);
 }
 
-function useCollect(
-	reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined,
-	onData: (data: string) => void,
-) {
-	onData = useUpdateCallback(onData);
-
-	useMemo(async () => collect(reader, onData), [reader]);
-}
-async function collect(
-	reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined,
-	onData: (data: string) => void,
-) {
-	if (!reader) return;
-	const decoder = new TextDecoder();
-	while (true) {
-		const { done, value } = await reader.read();
-		if (done) break;
-
-		const chunk = decoder.decode(value, { stream: true });
-
-		onData(chunk);
-	}
+function ModelSelect({
+	chatState,
+	className,
+}: {
+	chatState: ChatState;
+	className?: string;
+}) {
+	const { model, models, status, error, selectModel } =
+		useChatModels(chatState);
+	const disabled = status !== "success";
+	return (
+		<Select value={model} onValueChange={selectModel}>
+			<SelectTrigger
+				disabled={disabled}
+				size="none"
+				className="border-none"
+				render={
+					<InputGroupButton className={className} variant="ghost">
+						<SelectValue placeholder="default" />
+						<ChevronDown />
+					</InputGroupButton>
+				}
+			/>
+			<SelectContent>
+				{models.map((v) => (
+					<SelectItem key={v} value={v}>
+						{v}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
 }
