@@ -15,14 +15,15 @@ class SignalState<T> {
 		dispatch(this.listeners);
 	}
 
-	update<U extends T>(state: U) {
+	update<U extends T>(state: U): U {
 		if (this.state !== state) {
 			this.state = state;
 			this.dispach();
 		}
+		return this.state as U;
 	}
 }
-export type Setter<T> = <U extends T>(v: U) => void;
+export type Setter<T> = <U extends T>(v: U) => U;
 export type { SignalState };
 
 export function createSignal<T>(state: T): SignalState<T> {
@@ -37,11 +38,19 @@ export function useCreateSignal<T>(state: T): SignalState<T> {
 	return useState(() => createSignal(state))[0];
 }
 
-export function useSignalState<T>(o: SignalState<T>): T {
+export function useSignalState<T, U>(
+	o: SignalState<T>,
+	selector: (v: T) => U,
+): U;
+export function useSignalState<T>(o: SignalState<T>): T;
+export function useSignalState(
+	o: SignalState<any>,
+	selector?: (v: any) => any,
+): any {
 	return useSyncExternalStore(
 		(fn) => o.subscribe(fn),
-		() => o.state,
-		() => o.state,
+		() => (typeof selector === "function" ? selector(o.state) : o.state),
+		() => (typeof selector === "function" ? selector(o.state) : o.state),
 	);
 }
 
@@ -49,5 +58,10 @@ function dispatch<Fn extends (...arg: any[]) => any>(
 	entries: Iterable<Fn>,
 	...args: Parameters<Fn>
 ) {
-	for (const fn of entries) fn?.(...args);
+	for (const fn of entries)
+		try {
+			fn?.(...args);
+		} catch (e) {
+			console.error(e);
+		}
 }

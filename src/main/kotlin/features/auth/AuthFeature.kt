@@ -10,8 +10,8 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureAuth() {
     val httpClient by inject<HttpClient>()
-    val clientId = environment.config.property("oauth2.google.client_id").getString()
-    val clientSecret = environment.config.property("oauth2.google.client_secret").getString()
+    val clientId = environment.config.property("oauth2.google.clientId").getString()
+    val clientSecret = environment.config.property("oauth2.google.clientSecret").getString()
 
     install(Sessions) {
         cookie<UserSession>("user_session") {
@@ -38,21 +38,6 @@ fun Application.configureAuth() {
             }
             client = httpClient
         }
-        /*        oauth("auth-oauth-discord") {
-                    urlProvider = { "http://localhost:8080/discord/callback" }
-                    providerLookup = {
-                        OAuthServerSettings.OAuth2ServerSettings(
-                            name = "discord",
-                            authorizeUrl = "https://discord.com/api/oauth2/authorize",
-                            accessTokenUrl = "https://discord.com/api/oauth2/token",
-                            requestMethod = HttpMethod.Post,
-                            clientId = System.getenv("DISCORD_CLIENT_ID") ?: "",
-                            clientSecret = System.getenv("DISCORD_CLIENT_SECRET") ?: "",
-                            defaultScopes = listOf("identify")
-                        )
-                    }
-                    client = httpClient
-                }*/
     }
 
     routing {

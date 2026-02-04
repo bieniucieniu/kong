@@ -8,7 +8,7 @@ const cnMarkdown = cn(
 	"[&_ol]:list-decimal [&_ul]:list-disc [&_ul]:p-4 [&_ol]:px-6 [&_ol]:py-4",
 	"",
 );
-export function MarkdownCard({
+export function Markdown({
 	className,
 	...props
 }: MarkdownProps & {

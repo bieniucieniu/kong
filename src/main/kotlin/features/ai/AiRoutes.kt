@@ -3,8 +3,8 @@ package com.bieniucieniu.features.ai
 import ai.koog.ktor.llm
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.streaming.StreamFrame
-import com.bieniucieniu.features.ollama.getDefaultModel
-import com.bieniucieniu.features.ollama.getOssModels
+import com.bieniucieniu.features.ai.providers.ollama.getDefaultModel
+import com.bieniucieniu.features.ai.providers.ollama.getOssModels
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.request.*
@@ -42,21 +42,18 @@ fun Route.aiRoutes() {
                         }
                     }
                 },
-
                 model = model
             )
 
 
-            ContentType.Application.HalJson
-            call.respondOutputStream(contentType = ContentType.Text.EventStream) {
-                write(" ".toByteArray())
-                flush()
-                var acc = ""
-                val writeAcc = {
-                    write(acc.toByteArray())
+            call.respondBytesWriter(contentType = ContentType.Text.EventStream) {
+                var acc = " "
+                val writeAcc = suspend {
+                    writeByteArray(acc.toByteArray())
                     flush()
                     acc = ""
                 }
+                writeAcc()
                 f.collect { chunk ->
                     val str = when (chunk) {
                         is StreamFrame.Append -> chunk.text

@@ -1,4 +1,4 @@
-package com.bieniucieniu.features.ollama
+package com.bieniucieniu.features.ai.providers.ollama
 
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider
@@ -10,9 +10,12 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
+import org.koin.core.component.KoinComponent
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import kotlin.reflect.full.memberProperties
 
-class OllamaService(val httpClient: HttpClient) {
+class OllamaService(val httpClient: HttpClient) : KoinComponent {
     private fun Application.getOllamaBaseUrl() = environment.config.property("koog.ollama.baseUrl").getString()
 
     suspend fun Application.getAvailableModels(): ListModelsResponse {
@@ -33,6 +36,12 @@ class OllamaService(val httpClient: HttpClient) {
         return res.body()
     }
 
+}
+
+val ollamaModule = module {
+    single {
+        OllamaService(get(named("ollama-http-client")))
+    }
 }
 
 fun getOssModels(): Map<String, LLModel> = _ossModels

@@ -1,4 +1,4 @@
-package com.bieniucieniu.features.ollama
+package com.bieniucieniu.features.ai.providers.ollama
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

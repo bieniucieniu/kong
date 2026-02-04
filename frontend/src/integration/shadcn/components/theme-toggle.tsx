@@ -1,5 +1,5 @@
 import { Check, Computer, type LucideProps, Moon, Sun } from "lucide-react";
-import { createElement, useState } from "react";
+import { createElement } from "react";
 import {
 	DropdownMenuItem,
 	DropdownMenuSub,
@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
 	MenubarContent,
-	MenubarGroup,
 	MenubarMenu,
 	MenubarRadioGroup,
 	MenubarRadioItem,
