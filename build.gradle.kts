@@ -55,6 +55,10 @@ dependencies {
     implementation("ai.koog:koog-ktor:$koog_version")
     implementation("io.github.flaxoos:ktor-server-rate-limiting:2.2.1")
     implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("org.postgresql:postgresql:42.7.9")
+    implementation("org.jetbrains.exposed:exposed-core:0.61.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.61.0")
+    implementation("com.h2database:h2:2.3.232")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
 

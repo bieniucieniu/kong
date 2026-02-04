@@ -20,3 +20,8 @@ oauth2:
   google:
     clientId: ${GOOGLE_CLIENT_ID}
     clientSecret: ${GOOGLE_CLIENT_SECRET}
+database:
+  database: ${DATABASE_DATABASE}
+  username: ${DATABASE_USERNAME}
+  password: ${DATABASE_PASSWORD}
+  url: ${DATABASE_URL}
