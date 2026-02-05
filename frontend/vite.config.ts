@@ -21,13 +21,14 @@ export default defineConfig({
 
 	server: {
 		proxy: {
-			"/ai": {
+			"/api": {
 				target: "http://localhost:8080",
 				changeOrigin: true,
 				secure: false,
 				timeout: 0,
 				proxyTimeout: 0,
 			},
+			"/swagger": "http://localhost:8080",
 		},
 	},
 

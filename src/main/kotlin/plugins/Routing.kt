@@ -8,22 +8,31 @@ import io.github.flaxoos.ktor.server.plugins.ratelimiter.implementations.TokenBu
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.openapi.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.compression.*
+import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.forwardedheaders.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.json.Json
+import org.koin.ktor.ext.inject
 import kotlin.time.Duration.Companion.seconds
 
 
-fun Application.configureRouting() {
+fun Application.configureRoutingPlugins() {
+    val jsonConfig: Json by inject()
+    install(ContentNegotiation) {
+        json(jsonConfig)
+    }
     install(CachingHeaders) {
         options { call, outgoingContent ->
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
+                ContentType.Text.Html -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
                 else -> null
             }
         }

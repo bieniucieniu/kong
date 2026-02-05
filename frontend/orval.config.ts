@@ -7,6 +7,7 @@ export default defineConfig({
 			target: "src/gen/api",
 			schemas: "src/gen/models",
 			client: "react-query",
+			clean: true,
 			override: {
 				query: {
 					shouldSplitQueryKey: true,

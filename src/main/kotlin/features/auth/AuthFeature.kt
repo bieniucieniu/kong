@@ -41,6 +41,8 @@ fun Application.configureAuth() {
     }
 
     routing {
-        authRoutes()
+        route("api") {
+            authRoutes()
+        }
     }
 }

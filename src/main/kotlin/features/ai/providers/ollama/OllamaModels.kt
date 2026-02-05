@@ -12,7 +12,7 @@ data class OllamaModel(
     val name: String,
     @SerialName("modified_at")
     val modifiedAt: String,
-    val size: Int,
+    val size: ULong,
     val digest: String,
     val details: OllamaModelDetails
 )
@@ -21,15 +21,15 @@ data class OllamaModel(
 data class OllamaRunningModel(
     val name: String,
     @SerialName("modified_at")
-    val size: Int,
+    val size: ULong,
     val digest: String,
     val details: OllamaModelDetails,
     @SerialName("expires_at")
     val expiresAt: String,
     @SerialName("size_vram")
-    val sizeVRam: Long,
+    val sizeVRam: ULong,
     @SerialName("context_length")
-    val contextLength: Int,
+    val contextLength: ULong,
 ) {
     fun toOllamaModel(): OllamaModel = OllamaModel(
         name = name,

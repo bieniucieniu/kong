@@ -1,5 +1,8 @@
 package com.bieniucieniu.features.ai
 
+import ai.koog.prompt.llm.LLMCapability
+import ai.koog.prompt.llm.LLMProvider
+import ai.koog.prompt.llm.LLModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,6 +24,32 @@ data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 @Serializable
 data class Chat(val messages: List<ChatMessage>, val model: String? = null)
 
+@Serializable
+data class SerializableLLMProvider(val id: String, val display: String) {
+    fun toLLMProvider(): LLMProvider? = findProviderById(id)
+}
 
 @Serializable
-data class AiModels(val models: List<String>, val default: String)
+data class SerializableLLModel(
+    val provider: SerializableLLMProvider,
+    val id: String,
+    val capabilities: List<LLMCapability>,
+    val contextLength: Long,
+    val maxOutputTokens: Long? = null,
+) {
+    fun toLLModel(): LLModel? = LLModel(
+        provider = provider.toLLMProvider() ?: return null,
+        id = id,
+        capabilities = capabilities,
+        contextLength = contextLength,
+        maxOutputTokens = maxOutputTokens,
+    )
+}
+
+fun LLMProvider.toSerializableLLMProvider() = SerializableLLMProvider(id, display)
+
+fun findProviderById(id: String): LLMProvider? {
+    return LLMProvider::class.nestedClasses
+        .mapNotNull { it.objectInstance as? LLMProvider } // Get the singleton instance
+        .find { it.id.equals(id, ignoreCase = true) }
+}

@@ -1,5 +1,5 @@
-import { ArrowRight, Loader } from "lucide-react";
-import { useState, useTransition } from "react";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useTransition } from "react";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -8,22 +8,29 @@ import {
 } from "@/components/ui/input-group";
 import { Menubar } from "@/components/ui/menubar";
 import { ModelMenubarMenu } from "@/features/chat/components/model-select";
-import { type ChatState, useChat } from "@/features/chat/lib/chat";
+import { useChatContext, useChatInput } from "@/features/chat/lib/chat";
+import type { ChatState } from "../lib/chat/state";
 
 export function ChatInput({
-	state,
+	initial,
+	state = useChatContext(),
 	className,
 	disabled,
 }: {
-	state: ChatState;
+	initial?: { model?: string; prompt?: string };
+	state?: ChatState;
 	className?: string;
 	disabled?: boolean;
 }) {
-	const [prompt, setPrompt] = useState(
-		"count to 100 as md list, like:\n- 1\n- 2\n- 3",
-	);
-	const { status, pushPrompt } = useChat(state);
+	const [prompt, setPrompt, pushPrompt] = useChatInput(state);
 	const [isPending, startTransition] = useTransition();
+
+	useEffect(() => {
+		if (initial) {
+			initial.model && state.model.update(initial.model);
+			initial.prompt && setPrompt(initial.prompt);
+		}
+	}, []);
 
 	const submit = (p: string = prompt) =>
 		startTransition(() => {
@@ -31,7 +38,7 @@ export function ChatInput({
 			pushPrompt(p);
 			setPrompt("");
 		});
-	disabled ||= isPending || status === "pending";
+	disabled ||= isPending || !prompt.trim();
 	return (
 		<InputGroup className={className}>
 			<InputGroupTextarea
@@ -52,11 +59,7 @@ export function ChatInput({
 					disabled={disabled}
 					onClick={() => submit()}
 				>
-					{status === "pending" ? (
-						<Loader className="animate-spin" />
-					) : (
-						<ArrowRight />
-					)}
+					{disabled ? "" : <ArrowRight />}
 				</InputGroupButton>
 			</InputGroupAddon>
 		</InputGroup>

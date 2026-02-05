@@ -21,199 +21,52 @@ import type {
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import type { AiModels, Chat } from "../../models";
+import type { Chat, ErrorResponse, LLModel } from "../../models";
 
-export type getGoogleLoginResponse302 = {
-	data: void;
-	status: 302;
+export type getApiGoogleLoginResponseDefault = {
+	data: unknown;
+	status: number;
 };
-export type getGoogleLoginResponseError = getGoogleLoginResponse302 & {
-	headers: Headers;
+export type getApiGoogleLoginResponseError =
+	getApiGoogleLoginResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiGoogleLoginResponse = getApiGoogleLoginResponseError;
+
+export const getGetApiGoogleLoginUrl = () => {
+	return `/api/google/login`;
 };
 
-export type getGoogleLoginResponse = getGoogleLoginResponseError;
-
-export const getGetGoogleLoginUrl = () => {
-	return `/google/login`;
-};
-
-export const getGoogleLogin = async (
+export const getApiGoogleLogin = async (
 	options?: RequestInit,
-): Promise<getGoogleLoginResponse> => {
-	const res = await fetch(getGetGoogleLoginUrl(), {
+): Promise<getApiGoogleLoginResponse> => {
+	const res = await fetch(getGetApiGoogleLoginUrl(), {
 		...options,
 		method: "GET",
 	});
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const data: getGoogleLoginResponse["data"] = body ? JSON.parse(body) : {};
+	const data: getApiGoogleLoginResponse["data"] = body ? JSON.parse(body) : {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as getGoogleLoginResponse;
+	} as getApiGoogleLoginResponse;
 };
 
-export const getGetGoogleLoginQueryKey = () => {
-	return ["google", "login"] as const;
+export const getGetApiGoogleLoginQueryKey = () => {
+	return ["api", "google", "login"] as const;
 };
 
-export const getGetGoogleLoginQueryOptions = <
-	TData = Awaited<ReturnType<typeof getGoogleLogin>>,
-	TError = void,
->(options?: {
-	query?: Partial<
-		UseQueryOptions<Awaited<ReturnType<typeof getGoogleLogin>>, TError, TData>
-	>;
-	fetch?: RequestInit;
-}) => {
-	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getGetGoogleLoginQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof getGoogleLogin>>> = ({
-		signal,
-	}) => getGoogleLogin({ signal, ...fetchOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getGoogleLogin>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetGoogleLoginQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getGoogleLogin>>
->;
-export type GetGoogleLoginQueryError = void;
-
-export function useGetGoogleLogin<
-	TData = Awaited<ReturnType<typeof getGoogleLogin>>,
-	TError = void,
->(
-	options: {
-		query: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getGoogleLogin>>, TError, TData>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getGoogleLogin>>,
-					TError,
-					Awaited<ReturnType<typeof getGoogleLogin>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetGoogleLogin<
-	TData = Awaited<ReturnType<typeof getGoogleLogin>>,
-	TError = void,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getGoogleLogin>>, TError, TData>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getGoogleLogin>>,
-					TError,
-					Awaited<ReturnType<typeof getGoogleLogin>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetGoogleLogin<
-	TData = Awaited<ReturnType<typeof getGoogleLogin>>,
-	TError = void,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getGoogleLogin>>, TError, TData>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-
-export function useGetGoogleLogin<
-	TData = Awaited<ReturnType<typeof getGoogleLogin>>,
-	TError = void,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getGoogleLogin>>, TError, TData>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getGetGoogleLoginQueryOptions(options);
-
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-	return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type getGoogleCallbackResponse302 = {
-	data: void;
-	status: 302;
-};
-export type getGoogleCallbackResponseError = getGoogleCallbackResponse302 & {
-	headers: Headers;
-};
-
-export type getGoogleCallbackResponse = getGoogleCallbackResponseError;
-
-export const getGetGoogleCallbackUrl = () => {
-	return `/google/callback`;
-};
-
-export const getGoogleCallback = async (
-	options?: RequestInit,
-): Promise<getGoogleCallbackResponse> => {
-	const res = await fetch(getGetGoogleCallbackUrl(), {
-		...options,
-		method: "GET",
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-	const data: getGoogleCallbackResponse["data"] = body ? JSON.parse(body) : {};
-	return {
-		data,
-		status: res.status,
-		headers: res.headers,
-	} as getGoogleCallbackResponse;
-};
-
-export const getGetGoogleCallbackQueryKey = () => {
-	return ["google", "callback"] as const;
-};
-
-export const getGetGoogleCallbackQueryOptions = <
-	TData = Awaited<ReturnType<typeof getGoogleCallback>>,
-	TError = void,
+export const getGetApiGoogleLoginQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
+	TError = unknown,
 >(options?: {
 	query?: Partial<
 		UseQueryOptions<
-			Awaited<ReturnType<typeof getGoogleCallback>>,
+			Awaited<ReturnType<typeof getApiGoogleLogin>>,
 			TError,
 			TData
 		>
@@ -222,41 +75,41 @@ export const getGetGoogleCallbackQueryOptions = <
 }) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetGoogleCallbackQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleLoginQueryKey();
 
 	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getGoogleCallback>>
-	> = ({ signal }) => getGoogleCallback({ signal, ...fetchOptions });
+		Awaited<ReturnType<typeof getApiGoogleLogin>>
+	> = ({ signal }) => getApiGoogleLogin({ signal, ...fetchOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getGoogleCallback>>,
+		Awaited<ReturnType<typeof getApiGoogleLogin>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetGoogleCallbackQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getGoogleCallback>>
+export type GetApiGoogleLoginQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiGoogleLogin>>
 >;
-export type GetGoogleCallbackQueryError = void;
+export type GetApiGoogleLoginQueryError = unknown;
 
-export function useGetGoogleCallback<
-	TData = Awaited<ReturnType<typeof getGoogleCallback>>,
-	TError = void,
+export function useGetApiGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
+	TError = unknown,
 >(
 	options: {
 		query: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiGoogleLogin>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getGoogleCallback>>,
+					Awaited<ReturnType<typeof getApiGoogleLogin>>,
 					TError,
-					Awaited<ReturnType<typeof getGoogleCallback>>
+					Awaited<ReturnType<typeof getApiGoogleLogin>>
 				>,
 				"initialData"
 			>;
@@ -266,23 +119,23 @@ export function useGetGoogleCallback<
 ): DefinedUseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetGoogleCallback<
-	TData = Awaited<ReturnType<typeof getGoogleCallback>>,
-	TError = void,
+export function useGetApiGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
+	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiGoogleLogin>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getGoogleCallback>>,
+					Awaited<ReturnType<typeof getApiGoogleLogin>>,
 					TError,
-					Awaited<ReturnType<typeof getGoogleCallback>>
+					Awaited<ReturnType<typeof getApiGoogleLogin>>
 				>,
 				"initialData"
 			>;
@@ -292,14 +145,14 @@ export function useGetGoogleCallback<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetGoogleCallback<
-	TData = Awaited<ReturnType<typeof getGoogleCallback>>,
-	TError = void,
+export function useGetApiGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
+	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiGoogleLogin>>,
 				TError,
 				TData
 			>
@@ -311,14 +164,14 @@ export function useGetGoogleCallback<
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useGetGoogleCallback<
-	TData = Awaited<ReturnType<typeof getGoogleCallback>>,
-	TError = void,
+export function useGetApiGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
+	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiGoogleLogin>>,
 				TError,
 				TData
 			>
@@ -329,7 +182,7 @@ export function useGetGoogleCallback<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetGoogleCallbackQueryOptions(options);
+	const queryOptions = getGetApiGoogleLoginQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,
@@ -339,85 +192,95 @@ export function useGetGoogleCallback<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type getAiModelsResponse200 = {
-	data: AiModels;
-	status: 200;
+export type getApiGoogleCallbackResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiGoogleCallbackResponseError =
+	getApiGoogleCallbackResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiGoogleCallbackResponse = getApiGoogleCallbackResponseError;
+
+export const getGetApiGoogleCallbackUrl = () => {
+	return `/api/google/callback`;
 };
 
-export type getAiModelsResponseSuccess = getAiModelsResponse200 & {
-	headers: Headers;
-};
-
-export type getAiModelsResponse = getAiModelsResponseSuccess;
-
-export const getGetAiModelsUrl = () => {
-	return `/ai/models`;
-};
-
-export const getAiModels = async (
+export const getApiGoogleCallback = async (
 	options?: RequestInit,
-): Promise<getAiModelsResponse> => {
-	const res = await fetch(getGetAiModelsUrl(), {
+): Promise<getApiGoogleCallbackResponse> => {
+	const res = await fetch(getGetApiGoogleCallbackUrl(), {
 		...options,
 		method: "GET",
 	});
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const data: getAiModelsResponse["data"] = body ? JSON.parse(body) : {};
+	const data: getApiGoogleCallbackResponse["data"] = body
+		? JSON.parse(body)
+		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as getAiModelsResponse;
+	} as getApiGoogleCallbackResponse;
 };
 
-export const getGetAiModelsQueryKey = () => {
-	return ["ai", "models"] as const;
+export const getGetApiGoogleCallbackQueryKey = () => {
+	return ["api", "google", "callback"] as const;
 };
 
-export const getGetAiModelsQueryOptions = <
-	TData = Awaited<ReturnType<typeof getAiModels>>,
+export const getGetApiGoogleCallbackQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
 	TError = unknown,
 >(options?: {
 	query?: Partial<
-		UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiGoogleCallback>>,
+			TError,
+			TData
+		>
 	>;
 	fetch?: RequestInit;
 }) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetAiModelsQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleCallbackQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiModels>>> = ({
-		signal,
-	}) => getAiModels({ signal, ...fetchOptions });
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiGoogleCallback>>
+	> = ({ signal }) => getApiGoogleCallback({ signal, ...fetchOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getAiModels>>,
+		Awaited<ReturnType<typeof getApiGoogleCallback>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetAiModelsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getAiModels>>
+export type GetApiGoogleCallbackQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiGoogleCallback>>
 >;
-export type GetAiModelsQueryError = unknown;
+export type GetApiGoogleCallbackQueryError = unknown;
 
-export function useGetAiModels<
-	TData = Awaited<ReturnType<typeof getAiModels>>,
+export function useGetApiGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
 	TError = unknown,
 >(
 	options: {
 		query: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				TError,
+				TData
+			>
 		> &
 			Pick<
 				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getAiModels>>,
+					Awaited<ReturnType<typeof getApiGoogleCallback>>,
 					TError,
-					Awaited<ReturnType<typeof getAiModels>>
+					Awaited<ReturnType<typeof getApiGoogleCallback>>
 				>,
 				"initialData"
 			>;
@@ -427,19 +290,23 @@ export function useGetAiModels<
 ): DefinedUseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAiModels<
-	TData = Awaited<ReturnType<typeof getAiModels>>,
+export function useGetApiGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				TError,
+				TData
+			>
 		> &
 			Pick<
 				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getAiModels>>,
+					Awaited<ReturnType<typeof getApiGoogleCallback>>,
 					TError,
-					Awaited<ReturnType<typeof getAiModels>>
+					Awaited<ReturnType<typeof getApiGoogleCallback>>
 				>,
 				"initialData"
 			>;
@@ -449,13 +316,17 @@ export function useGetAiModels<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetAiModels<
-	TData = Awaited<ReturnType<typeof getAiModels>>,
+export function useGetApiGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				TError,
+				TData
+			>
 		>;
 		fetch?: RequestInit;
 	},
@@ -464,13 +335,17 @@ export function useGetAiModels<
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useGetAiModels<
-	TData = Awaited<ReturnType<typeof getAiModels>>,
+export function useGetApiGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getAiModels>>, TError, TData>
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				TError,
+				TData
+			>
 		>;
 		fetch?: RequestInit;
 	},
@@ -478,7 +353,7 @@ export function useGetAiModels<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetAiModelsQueryOptions(options);
+	const queryOptions = getGetApiGoogleCallbackQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,
@@ -488,25 +363,552 @@ export function useGetAiModels<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type postAiChatResponseDefault = {
+export type getApiGoogleRevokeResponseDefault = {
 	data: unknown;
 	status: number;
 };
-export type postAiChatResponseError = postAiChatResponseDefault & {
+export type getApiGoogleRevokeResponseError =
+	getApiGoogleRevokeResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiGoogleRevokeResponse = getApiGoogleRevokeResponseError;
+
+export const getGetApiGoogleRevokeUrl = () => {
+	return `/api/google/revoke`;
+};
+
+export const getApiGoogleRevoke = async (
+	options?: RequestInit,
+): Promise<getApiGoogleRevokeResponse> => {
+	const res = await fetch(getGetApiGoogleRevokeUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: getApiGoogleRevokeResponse["data"] = body ? JSON.parse(body) : {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiGoogleRevokeResponse;
+};
+
+export const getGetApiGoogleRevokeQueryKey = () => {
+	return ["api", "google", "revoke"] as const;
+};
+
+export const getGetApiGoogleRevokeQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleRevokeQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiGoogleRevoke>>
+	> = ({ signal }) => getApiGoogleRevoke({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiGoogleRevokeQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiGoogleRevoke>>
+>;
+export type GetApiGoogleRevokeQueryError = unknown;
+
+export function useGetApiGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiGoogleRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiGoogleRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiGoogleRevokeQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Get list of all models
+ */
+export type getApiAiModelsResponse200 = {
+	data: LLModel[];
+	status: 200;
+};
+
+export type getApiAiModelsResponse204 = {
+	data: LLModel[];
+	status: 204;
+};
+
+export type getApiAiModelsResponseSuccess = (
+	| getApiAiModelsResponse200
+	| getApiAiModelsResponse204
+) & {
 	headers: Headers;
 };
 
-export type postAiChatResponse = postAiChatResponseError;
+export type getApiAiModelsResponse = getApiAiModelsResponseSuccess;
 
-export const getPostAiChatUrl = () => {
-	return `/ai/chat`;
+export const getGetApiAiModelsUrl = () => {
+	return `/api/ai/models`;
 };
 
-export const postAiChat = async (
+export const getApiAiModels = async (
+	options?: RequestInit,
+): Promise<getApiAiModelsResponse> => {
+	const res = await fetch(getGetApiAiModelsUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: getApiAiModelsResponse["data"] = body ? JSON.parse(body) : {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiModelsResponse;
+};
+
+export const getGetApiAiModelsQueryKey = () => {
+	return ["api", "ai", "models"] as const;
+};
+
+export const getGetApiAiModelsQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiModels>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<Awaited<ReturnType<typeof getApiAiModels>>, TError, TData>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getGetApiAiModelsQueryKey();
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAiModels>>> = ({
+		signal,
+	}) => getApiAiModels({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiModels>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiModelsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiModels>>
+>;
+export type GetApiAiModelsQueryError = unknown;
+
+export function useGetApiAiModels<
+	TData = Awaited<ReturnType<typeof getApiAiModels>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getApiAiModels>>, TError, TData>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModels>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModels>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModels<
+	TData = Awaited<ReturnType<typeof getApiAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getApiAiModels>>, TError, TData>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModels>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModels>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModels<
+	TData = Awaited<ReturnType<typeof getApiAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getApiAiModels>>, TError, TData>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiModels<
+	TData = Awaited<ReturnType<typeof getApiAiModels>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getApiAiModels>>, TError, TData>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiModelsQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Get model by name
+ */
+export type getApiAiModelIdResponse200 = {
+	data: LLModel;
+	status: 200;
+};
+
+export type getApiAiModelIdResponse404 = {
+	data: ErrorResponse;
+	status: 404;
+};
+
+export type getApiAiModelIdResponseSuccess = getApiAiModelIdResponse200 & {
+	headers: Headers;
+};
+export type getApiAiModelIdResponseError = getApiAiModelIdResponse404 & {
+	headers: Headers;
+};
+
+export type getApiAiModelIdResponse =
+	| getApiAiModelIdResponseSuccess
+	| getApiAiModelIdResponseError;
+
+export const getGetApiAiModelIdUrl = (id: string) => {
+	return `/api/ai/model/${id}`;
+};
+
+export const getApiAiModelId = async (
+	id: string,
+	options?: RequestInit,
+): Promise<getApiAiModelIdResponse> => {
+	const res = await fetch(getGetApiAiModelIdUrl(id), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: getApiAiModelIdResponse["data"] = body ? JSON.parse(body) : {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiModelIdResponse;
+};
+
+export const getGetApiAiModelIdQueryKey = (id: string) => {
+	return ["api", "ai", "model", id] as const;
+};
+
+export const getGetApiAiModelIdQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiModelId>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getGetApiAiModelIdQueryKey(id);
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAiModelId>>> = ({
+		signal,
+	}) => getApiAiModelId(id, { signal, ...fetchOptions });
+
+	return {
+		queryKey,
+		queryFn,
+		enabled: !!id,
+		...queryOptions,
+	} as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiModelId>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiModelIdQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiModelId>>
+>;
+export type GetApiAiModelIdQueryError = ErrorResponse;
+
+export function useGetApiAiModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelId>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelId>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelId>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelId>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelId>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelId>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelId>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelId>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelId>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelId>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiModelIdQueryOptions(id, options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Chat with AI
+ */
+export type postApiAiChatResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type postApiAiChatResponseError = postApiAiChatResponseDefault & {
+	headers: Headers;
+};
+
+export type postApiAiChatResponse = postApiAiChatResponseError;
+
+export const getPostApiAiChatUrl = () => {
+	return `/api/ai/chat`;
+};
+
+export const postApiAiChat = async (
 	chat: Chat,
 	options?: RequestInit,
-): Promise<postAiChatResponse> => {
-	const res = await fetch(getPostAiChatUrl(), {
+): Promise<postApiAiChatResponse> => {
+	const res = await fetch(getPostApiAiChatUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -515,32 +917,32 @@ export const postAiChat = async (
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const data: postAiChatResponse["data"] = body ? JSON.parse(body) : {};
+	const data: postApiAiChatResponse["data"] = body ? JSON.parse(body) : {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as postAiChatResponse;
+	} as postApiAiChatResponse;
 };
 
-export const getPostAiChatMutationOptions = <
+export const getPostApiAiChatMutationOptions = <
 	TError = unknown,
 	TContext = unknown,
 >(options?: {
 	mutation?: UseMutationOptions<
-		Awaited<ReturnType<typeof postAiChat>>,
+		Awaited<ReturnType<typeof postApiAiChat>>,
 		TError,
 		{ data: Chat },
 		TContext
 	>;
 	fetch?: RequestInit;
 }): UseMutationOptions<
-	Awaited<ReturnType<typeof postAiChat>>,
+	Awaited<ReturnType<typeof postApiAiChat>>,
 	TError,
 	{ data: Chat },
 	TContext
 > => {
-	const mutationKey = ["postAiChat"];
+	const mutationKey = ["postApiAiChat"];
 	const { mutation: mutationOptions, fetch: fetchOptions } = options
 		? options.mutation &&
 			"mutationKey" in options.mutation &&
@@ -550,27 +952,27 @@ export const getPostAiChatMutationOptions = <
 		: { mutation: { mutationKey }, fetch: undefined };
 
 	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof postAiChat>>,
+		Awaited<ReturnType<typeof postApiAiChat>>,
 		{ data: Chat }
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return postAiChat(data, fetchOptions);
+		return postApiAiChat(data, fetchOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
 };
 
-export type PostAiChatMutationResult = NonNullable<
-	Awaited<ReturnType<typeof postAiChat>>
+export type PostApiAiChatMutationResult = NonNullable<
+	Awaited<ReturnType<typeof postApiAiChat>>
 >;
-export type PostAiChatMutationBody = Chat;
-export type PostAiChatMutationError = unknown;
+export type PostApiAiChatMutationBody = Chat;
+export type PostApiAiChatMutationError = unknown;
 
-export const usePostAiChat = <TError = unknown, TContext = unknown>(
+export const usePostApiAiChat = <TError = unknown, TContext = unknown>(
 	options?: {
 		mutation?: UseMutationOptions<
-			Awaited<ReturnType<typeof postAiChat>>,
+			Awaited<ReturnType<typeof postApiAiChat>>,
 			TError,
 			{ data: Chat },
 			TContext
@@ -579,10 +981,10 @@ export const usePostAiChat = <TError = unknown, TContext = unknown>(
 	},
 	queryClient?: QueryClient,
 ): UseMutationResult<
-	Awaited<ReturnType<typeof postAiChat>>,
+	Awaited<ReturnType<typeof postApiAiChat>>,
 	TError,
 	{ data: Chat },
 	TContext
 > => {
-	return useMutation(getPostAiChatMutationOptions(options), queryClient);
+	return useMutation(getPostApiAiChatMutationOptions(options), queryClient);
 };

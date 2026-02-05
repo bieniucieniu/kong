@@ -5,7 +5,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface AiModels {
-	models: string[];
-	default: string;
-}
+export type LLModelCapabilitiesItem = { [key: string]: unknown };

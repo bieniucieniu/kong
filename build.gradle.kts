@@ -1,7 +1,8 @@
-val koin_version: String by project
-val koog_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
+val koin_version = "4.1.2-Beta1"
+val koog_version = "0.5.1"
+val kotlin_version = "2.3.0"
+val ktor_version = "3.4.0"
+val logback_version = "1.5.13"
 
 plugins {
     kotlin("jvm") version "2.3.0"
@@ -16,7 +17,7 @@ ktor {
     openApi {
         enabled = true
         codeInferenceEnabled = true
-        onlyCommented = false
+        onlyCommented = true
     }
 }
 
@@ -30,25 +31,29 @@ kotlin {
 
 dependencies {
     implementation(kotlin("reflect"))
+
+    implementation("com.ucasoft.ktor:ktor-simple-cache:0.57.7")
+    implementation("com.ucasoft.ktor:ktor-simple-memory-cache:0.57.7")
+
     implementation("io.ktor:ktor-server-caching-headers")
     implementation("io.ktor:ktor-server-compression")
     implementation("io.ktor:ktor-server-forwarded-header")
     implementation("io.ktor:ktor-server-core")
-    implementation("com.ucasoft.ktor:ktor-simple-cache:0.57.7")
-    implementation("com.ucasoft.ktor:ktor-simple-memory-cache:0.57.7")
     implementation("io.ktor:ktor-server-swagger")
     implementation("io.ktor:ktor-server-routing-openapi")
     implementation("io.ktor:ktor-server-auth")
     implementation("io.ktor:ktor-server-cors")
     implementation("io.ktor:ktor-server-cio")
+    implementation("io.ktor:ktor-server-host-common")
+    implementation("io.ktor:ktor-server-status-pages")
+    implementation("io.ktor:ktor-server-content-negotiation")
+
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-auth")
     implementation("io.ktor:ktor-client-cio")
     implementation("io.ktor:ktor-client-logging")
     implementation("io.ktor:ktor-client-content-negotiation")
-    implementation("io.ktor:ktor-server-host-common")
-    implementation("io.ktor:ktor-server-status-pages")
-    implementation("io.ktor:ktor-server-content-negotiation")
+
     implementation("io.ktor:ktor-serialization-kotlinx-json")
     implementation("io.insert-koin:koin-ktor:$koin_version")
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")

@@ -1,9 +1,10 @@
 package com.bieniucieniu.features.ai.providers.ollama
 
 import ai.koog.prompt.llm.LLMCapability
-import ai.koog.prompt.llm.LLMProvider
+import ai.koog.prompt.llm.LLMProvider.Ollama
 import ai.koog.prompt.llm.LLModel
-import ai.koog.prompt.llm.OllamaModels
+import com.bieniucieniu.features.ai.SerializableLLModel
+import com.bieniucieniu.features.ai.toSerializableLLMProvider
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -13,31 +14,52 @@ import io.ktor.server.util.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
-import kotlin.reflect.full.memberProperties
 
-class OllamaService(val httpClient: HttpClient) : KoinComponent {
-    private fun Application.getOllamaBaseUrl() = environment.config.property("koog.ollama.baseUrl").getString()
+class OllamaService(val httpClient: HttpClient, val application: Application) : KoinComponent {
+    private val ollamaBaseUrl =
+        application.environment.config
+            .propertyOrNull("koog.ollama.baseUrl")?.getString()
+            ?.takeIf { it.isNotBlank() }
+            ?.let { Url(it) }
 
-    suspend fun Application.getAvailableModels(): ListModelsResponse =
-        httpClient.get(url {
-            takeFrom(Url(getOllamaBaseUrl()))
+    private var modelsCache: ListModelsResponse? = null
+
+    suspend fun getAvailableLLModels(): List<SerializableLLModel> {
+        return getAvailableModels().models.map {
+            SerializableLLModel(
+                id = it.name,
+                provider = Ollama.toSerializableLLMProvider(),
+                capabilities = listOf(
+                    LLMCapability.Temperature,
+                    LLMCapability.Schema.JSON.Basic,
+                    LLMCapability.Tools,
+                ),
+                contextLength = 131_072,
+            )
+        }
+    }
+
+    suspend fun getAvailableModels(): ListModelsResponse = ollamaBaseUrl?.let { baseUrl ->
+        modelsCache ?: httpClient.get(url {
+            takeFrom(baseUrl)
             path("api", "tags")
-        }).body()
+        }).body<ListModelsResponse>().also {
+            modelsCache = it
+        }
+    } ?: ListModelsResponse(emptyList())
 
-    suspend fun Application.pullModel(model: String): OllamaStatusResponse =
+    suspend fun pullModel(model: String): OllamaStatusResponse = ollamaBaseUrl?.let { baseUrl ->
         httpClient.post(url {
-            takeFrom(Url(getOllamaBaseUrl()))
+            takeFrom(baseUrl)
             path("api", "tags")
 
         }) {
             setBody(OllamaModelArgs(model))
         }.body()
+    } ?: OllamaStatusResponse("inactive")
 
 
-    suspend fun Application.ensureInstalledModels(vararg tags: String) = ensureInstalledModels(tags.toList())
-    suspend fun Application.ensureInstalledModels(tags: List<String>) =
+    suspend fun ensureInstalledModels(tags: List<String>) =
         getAvailableModels()
             .models.let { model ->
                 tags.filter { tag -> model.find { it.name == tag } == null }
@@ -49,48 +71,27 @@ class OllamaService(val httpClient: HttpClient) : KoinComponent {
             }
 
 
-    suspend fun Application.getRunningModels(): ListModelsResponse =
+    suspend fun getRunningModels(): ListModelsResponse = ollamaBaseUrl?.let { baseUrl ->
         httpClient.get(url {
-            takeFrom(Url(getOllamaBaseUrl()))
+            takeFrom(baseUrl)
             path("api", "ps")
         }).body()
-}
-
-val ollamaModule = module {
-    single {
-        OllamaService(get(named("ollama-http-client")))
-    }
-}
-
-fun getOssModels(): Map<String, LLModel> = _ossModels
-
-fun getDefaultModel() = GoogleOssModels.GEMMA_3
-
-private val _ossModels by lazy {
-    val ollamaMetaModels = MetaOssModels::class.memberProperties
-        .mapNotNull { it.get(MetaOssModels) as? LLModel }
-
-    val googleOssModels = GoogleOssModels::class.memberProperties
-        .mapNotNull { it.get(GoogleOssModels) as? LLModel }
-
-    (ollamaMetaModels + googleOssModels)
-        .associateBy { it.id }
+    } ?: ListModelsResponse(emptyList())
 }
 
 
-object GoogleOssModels {
-    val GEMMA_3: LLModel = LLModel(
-        provider = LLMProvider.Ollama,
-        id = "gemma3:4b",
-        capabilities = listOf(
-            LLMCapability.Temperature,
-            LLMCapability.Schema.JSON.Basic,
-            LLMCapability.Tools
-        ),
-        contextLength = 131_072,
-    )
-}
+fun getDefaultModel() = GEMMA_3_4B
 
-object MetaOssModels {
-    val LLAMA_3_2 = OllamaModels.Meta.LLAMA_3_2_3B
-}
+
+val GEMMA_3_4B = LLModel(
+    provider = Ollama,
+    id = "gemma3:4b",
+    capabilities = listOf(
+        LLMCapability.Temperature,
+        LLMCapability.Schema.JSON.Basic,
+        LLMCapability.Tools
+    ),
+    contextLength = 131_072,
+)
+
+

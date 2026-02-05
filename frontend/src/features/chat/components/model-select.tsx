@@ -15,8 +15,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { type ChatState, useChatModels } from "@/features/chat/lib/chat";
+import { useChatModels } from "@/features/chat/lib/chat";
 import { cn } from "@/lib/utils";
+import type { ChatState } from "../lib/chat/state";
 
 export function ModelSelect({
 	chatState,
@@ -46,8 +47,8 @@ export function ModelSelect({
 				/>
 				<SelectContent>
 					{models.map((v) => (
-						<SelectItem key={v} value={v}>
-							{v}
+						<SelectItem key={v.id} value={v.id}>
+							{v.id}
 						</SelectItem>
 					))}
 				</SelectContent>
@@ -73,8 +74,9 @@ export function ModelMenubarMenu({
 				disabled={disabled}
 				className={cn("min-w-26 flex justify-between", className)}
 				render={
-					<InputGroupButton>
-						{model} <ChevronDown />
+					<InputGroupButton variant={error && "destructive"}>
+						{error?.message ?? model}
+						<ChevronDown />
 					</InputGroupButton>
 				}
 			/>
@@ -85,8 +87,8 @@ export function ModelMenubarMenu({
 					onValueChange={selectModel}
 				>
 					{models.map((it) => (
-						<MenubarRadioItem key={it} value={it}>
-							{it}
+						<MenubarRadioItem key={it.id} value={it.id}>
+							{it.provider.id?.toString()} {it.id}
 						</MenubarRadioItem>
 					))}
 				</MenubarRadioGroup>

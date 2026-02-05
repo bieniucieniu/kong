@@ -3,14 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSignalState } from "@/lib/hooks/state/signal";
 import { cn } from "@/lib/utils";
-import { type ChatState, useIsChatMutating } from "../lib/chat";
+import { useChatContext, useIsChatMutating } from "../lib/chat";
+import type { ChatState } from "../lib/chat/state";
 import { ChatMessageCard } from "./chat-message-card";
 
 export function ChatList({
-	state,
+	state = useChatContext(),
 	className,
 }: {
-	state: ChatState;
+	state?: ChatState;
 	className?: string;
 }) {
 	const chat = useSignalState(state.messages);

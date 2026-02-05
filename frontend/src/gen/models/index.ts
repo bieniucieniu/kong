@@ -5,7 +5,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from "./aiModels";
 export * from "./chat";
 export * from "./chatMessagesItem";
 export * from "./chatMessagesItemAuthor";
+export * from "./errorResponse";
+export * from "./lLModel";
+export * from "./lLModelCapabilitiesItem";
+export * from "./lLModelProvider";

@@ -1,4 +1,4 @@
-import { useState, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 
 class SignalState<T> {
 	private listeners: Set<() => void>;
@@ -31,7 +31,7 @@ export function createSignal<T>(state: T): SignalState<T> {
 }
 
 export function useSignal<T>(p: SignalState<T>): [state: T, setter: Setter<T>] {
-	return [useSignalState(p), p.update];
+	return [useSignalState(p), useCallback((v) => p.update(v), [p])];
 }
 
 export function useCreateSignal<T>(state: T): SignalState<T> {
