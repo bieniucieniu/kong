@@ -1,6 +1,7 @@
 package com.bieniucieniu.plugins
 
 
+import com.bieniucieniu.features.shared.response.ErrorResponse
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting
@@ -39,7 +40,16 @@ fun Application.configureRoutingPlugins() {
     }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
+            val reason = mutableListOf<String>()
+            var innerCause = cause.cause
+            while (innerCause != null) {
+                reason.add(cause.message ?: "Unknown error")
+                innerCause = innerCause.cause
+            }
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ErrorResponse(cause.message ?: "Unknown error", reason = reason)
+            )
         }
     }
     install(Compression)

@@ -7,18 +7,26 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useGetApiAiModels } from "@/gen/api/default/default";
-import type { Chat, LLModel } from "@/gen/models";
+import {
+	useGetApiAiModelsProvider,
+	useGetApiAiModelsProviderDefault,
+	useGetApiAiProviders,
+	useGetApiAiProvidersDefault,
+} from "@/gen/api/default/default";
+import type { Chat, ErrorResponse, SerializableLLModel } from "@/gen/models";
 import { useSignal, useSignalState } from "@/lib/hooks/state/signal";
 import { fetchAiChat } from "./source";
 import { type ChatState, type CreateChatOptions, createChat } from "./state";
 
 export interface UseChatModelsReturn {
 	model: string | undefined;
-	models: LLModel[];
+	models: SerializableLLModel[];
+	provider: string | undefined;
+	providers: string[];
 	status: "error" | "pending" | "success";
-	error: Error | null;
+	error: ErrorResponse | null;
 	selectModel: (str: string | undefined | null) => void;
+	selectProvider: (str: string | undefined | null) => void;
 }
 
 export function useChatMessages(
@@ -37,13 +45,31 @@ export function useIsChatMutating() {
 export function useChatModels(
 	s: ChatState = useChatContext(),
 ): UseChatModelsReturn {
-	const q = useGetApiAiModels();
+	const providers = useGetApiAiProviders();
+	const defaultProvider = useGetApiAiProvidersDefault();
+	const provider = useSignalState(s.provider) || defaultProvider.data?.data;
+
+	const models = useGetApiAiModelsProvider(provider ?? "", {
+		query: { enabled: !!provider },
+	});
+	const defaultModel = useGetApiAiModelsProviderDefault(provider ?? "", {
+		query: { enabled: !!provider },
+	});
+
+	const model = useSignalState(s.model) || defaultModel.data?.data.id;
 	return {
-		model: useSignalState(s.model) || undefined,
-		models: q.data?.data || [],
-		status: q.status,
-		error: q.error as Error,
+		model,
+		models: models.data?.data || [],
+		provider,
+		providers: providers.data?.data || [],
+		status: providers.status !== "success" ? providers.status : models.status,
+		error:
+			models.error ||
+			defaultModel.error ||
+			providers.error ||
+			defaultProvider.error,
 		selectModel: (m) => s.model.update(m || undefined),
+		selectProvider: (m) => s.provider.update(m || undefined),
 	};
 }
 

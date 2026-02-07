@@ -22,7 +22,7 @@ enum class ChatMessageAuthor {
 data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 
 @Serializable
-data class Chat(val messages: List<ChatMessage>, val model: String? = null)
+data class Chat(val messages: List<ChatMessage>, val model: String, val provider: String)
 
 @Serializable
 data class SerializableLLMProvider(val id: String, val display: String) {
@@ -37,6 +37,7 @@ data class SerializableLLModel(
     val contextLength: Long,
     val maxOutputTokens: Long? = null,
 ) {
+    fun supports(capability: LLMCapability): Boolean = capabilities.contains(capability)
     fun toLLModel(): LLModel? = LLModel(
         provider = provider.toLLMProvider() ?: return null,
         id = id,
@@ -45,6 +46,14 @@ data class SerializableLLModel(
         maxOutputTokens = maxOutputTokens,
     )
 }
+
+fun LLModel.toSerializableLLModel() = SerializableLLModel(
+    provider = provider.toSerializableLLMProvider(),
+    id = id,
+    capabilities = capabilities,
+    contextLength = contextLength,
+    maxOutputTokens = maxOutputTokens,
+)
 
 fun LLMProvider.toSerializableLLMProvider() = SerializableLLMProvider(id, display)
 

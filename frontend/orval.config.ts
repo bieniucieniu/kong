@@ -13,6 +13,9 @@ export default defineConfig({
 					shouldSplitQueryKey: true,
 					version: 5,
 				},
+				fetch: {
+					forceSuccessResponse: true,
+				},
 			},
 		},
 		input: {

@@ -5,4 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type LLModelCapabilitiesItem = { [key: string]: unknown };
+export type SerializableLLModelProvider = {
+	id: string;
+	display: string;
+};

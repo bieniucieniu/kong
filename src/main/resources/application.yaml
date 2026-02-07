@@ -6,7 +6,7 @@ ktor:
     modules:
       - com.bieniucieniu.ApplicationKt.module
   development: true
-koog:
+ai:
   ollama:
     baseUrl: ${?OLLAMA_BASE_URL}
     baseUrlRealm: ${?OLLAMA_BASE_URL_REALM}
@@ -17,7 +17,8 @@ koog:
     username: ${?OLLAMA_USERNAME}
     password: ${?OLLAMA_PASSWORD}
   google:
-    apikey: ${GOOGLE_API_KEY}
+    enable: false
+    apikey: ${?GOOGLE_API_KEY}
     baseUrl: https://generativelanguage.googleapis.com
 oauth2:
   google:

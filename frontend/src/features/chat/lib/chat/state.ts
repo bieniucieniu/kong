@@ -6,19 +6,23 @@ export type CreateChatOptions = {
 	executeOnPrompt?: boolean;
 	onMessagePushed?: (item: ChatMessagesItem) => void;
 	onExecutePrompt?: (item: Chat, onMessage: (item: string) => void) => void;
-	initial?: { model?: string; prompt?: string };
+	initial?: { model?: string; provider?: string; prompt?: string };
 };
 export interface ChatState {
 	messages: SignalState<Chat["messages"]>;
 	model: SignalState<string | undefined>;
+	provider: SignalState<string | undefined>;
 	prompt: SignalState<string>;
 	pushMessage: (args: ChatMessagesItem) => ChatMessagesItem[];
 	pushPrompt: (p: string) => ChatMessagesItem[];
 	executePrompt: () => void;
 }
-export function createChat(opt: RefObject<CreateChatOptions>) {
+export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 	const messages = createSignal<Chat["messages"]>([]);
 	const model = createSignal<string | undefined>(opt.current.initial?.model);
+	const provider = createSignal<string | undefined>(
+		opt.current.initial?.provider,
+	);
 	const prompt = createSignal<string>(opt.current.initial?.prompt || "");
 	const pushMessage = ({ prompt, author }: ChatMessagesItem) => {
 		const p = messages.state;
@@ -35,12 +39,17 @@ export function createChat(opt: RefObject<CreateChatOptions>) {
 		}
 		return messages.update([...p]);
 	};
-	const executePrompt = () => {
+	const executePrompt = () =>
+		model.state &&
+		provider.state &&
 		opt.current.onExecutePrompt?.(
-			{ messages: messages.state, model: model.state },
+			{
+				messages: messages.state,
+				model: model.state,
+				provider: provider.state,
+			},
 			(p) => pushMessage({ prompt: p, author: "agent" }),
 		);
-	};
 	const pushPrompt = (p: string = prompt.state) => {
 		p = p.trim();
 		if (!p.length) return messages.state;
@@ -55,7 +64,7 @@ export function createChat(opt: RefObject<CreateChatOptions>) {
 	};
 
 	return {
-		options: opt.current,
+		provider,
 		messages,
 		model,
 		prompt,

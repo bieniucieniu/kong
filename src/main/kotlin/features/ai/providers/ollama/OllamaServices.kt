@@ -3,8 +3,7 @@ package com.bieniucieniu.features.ai.providers.ollama
 import ai.koog.prompt.llm.LLMCapability
 import ai.koog.prompt.llm.LLMProvider.Ollama
 import ai.koog.prompt.llm.LLModel
-import com.bieniucieniu.features.ai.SerializableLLModel
-import com.bieniucieniu.features.ai.toSerializableLLMProvider
+import com.bieniucieniu.features.ai.providers.shared.AiProviderService
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -13,22 +12,22 @@ import io.ktor.server.application.*
 import io.ktor.server.util.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
 
-class OllamaService(val httpClient: HttpClient, val application: Application) : KoinComponent {
+class OllamaService(val httpClient: HttpClient, val application: Application) : AiProviderService {
     private val ollamaBaseUrl =
         application.environment.config
-            .propertyOrNull("koog.ollama.baseUrl")?.getString()
-            ?.takeIf { it.isNotBlank() }
+            .propertyOrNull("ai.ollama.baseUrl")?.getString()
+            ?.takeIf { it.isNotBlank() && (it.startsWith("http") || it.startsWith("https")) }
             ?.let { Url(it) }
 
     private var modelsCache: ListModelsResponse? = null
 
-    suspend fun getAvailableLLModels(): List<SerializableLLModel> {
+    override fun isActive() = ollamaBaseUrl != null
+    override suspend fun getAvailableLLModels(): List<LLModel> {
         return getAvailableModels().models.map {
-            SerializableLLModel(
+            LLModel(
                 id = it.name,
-                provider = Ollama.toSerializableLLMProvider(),
+                provider = Ollama,
                 capabilities = listOf(
                     LLMCapability.Temperature,
                     LLMCapability.Schema.JSON.Basic,
@@ -51,7 +50,7 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
     suspend fun pullModel(model: String): OllamaStatusResponse = ollamaBaseUrl?.let { baseUrl ->
         httpClient.post(url {
             takeFrom(baseUrl)
-            path("api", "tags")
+            path("api", "pull")
 
         }) {
             setBody(OllamaModelArgs(model))
@@ -77,10 +76,12 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
             path("api", "ps")
         }).body()
     } ?: ListModelsResponse(emptyList())
+
+    override suspend fun getDefaultModel(): LLModel = getAvailableLLModels().let { models ->
+        models.find { it.id == "gemma3:4b" } ?: models.firstOrNull() ?: GEMMA_3_4B
+    }
+
 }
-
-
-fun getDefaultModel() = GEMMA_3_4B
 
 
 val GEMMA_3_4B = LLModel(
@@ -93,5 +94,3 @@ val GEMMA_3_4B = LLModel(
     ),
     contextLength = 131_072,
 )
-
-

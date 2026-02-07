@@ -2,10 +2,7 @@ package com.bieniucieniu.features.ai
 
 import ai.koog.ktor.llm
 import ai.koog.prompt.dsl.prompt
-import ai.koog.prompt.llm.LLModel
 import ai.koog.prompt.streaming.StreamFrame
-import com.bieniucieniu.features.ai.providers.ollama.OllamaService
-import com.bieniucieniu.features.ai.providers.ollama.getDefaultModel
 import com.bieniucieniu.features.shared.response.ErrorResponse
 import com.ucasoft.ktor.simpleCache.cacheOutput
 import io.ktor.http.*
@@ -21,69 +18,19 @@ import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalKtorApi::class)
 fun Route.aiRoutes() {
-    val ollamaService: OllamaService by inject()
+    val s: AiService by inject()
     route("ai") {
-        cacheOutput(30.minutes) {
-            get("/models") {
-                val models = ollamaService.getAvailableLLModels()
-                if (models.isEmpty())
-                    call.respond(
-                        HttpStatusCode.NoContent,
-                        message = emptyList<LLModel>()
-                    )
-                else
-                    call.respond(models)
-            }.describe {
-                description = "Get list of all models"
-                responses {
-                    HttpStatusCode.OK {
-                        description = "List of models"
-                        schema = jsonSchema<List<LLModel>>()
-                    }
-                    HttpStatusCode.NoContent {
-                        description = "No content"
-                        schema = jsonSchema<List<LLModel>>()
-                    }
-                }
-            }
-
-
-            get("/model/{id}") {
-                val name = call.parameters["id"]
-                val model = ollamaService.getAvailableLLModels().find { it.id == name }
-                if (model != null) call.respond(model)
-                else call.respond(
-                    HttpStatusCode.NotFound,
-                    message = ErrorResponse("Model not found")
-                )
-            }.describe {
-                description = "Get model by name"
-                responses {
-                    HttpStatusCode.OK {
-                        description = "Model found"
-                        schema = jsonSchema<LLModel>()
-                    }
-                    HttpStatusCode.NotFound {
-                        description = "Model not found"
-                        schema = jsonSchema<ErrorResponse>()
-                    }
-                }
-            }
-        }
-
-
-        /**
-         * Body: [Chat]
-         * Response:
-         *  - 200 text/event-stream
-         */
         post("chat") {
+            assert(s.isActive()) {
+                "no active/provided services in ${s.services.keys.joinToString()}"
+            }
             val p = call.receive<Chat>()
             val minChunkSize = 50
             val model =
-                p.model?.let { model ->
-                    ollamaService.getAvailableLLModels().find { it.id == model }
-                }?.toLLModel() ?: getDefaultModel()
+                s.getAvailableLLModels(p.provider)
+                    .find { it.id == p.model }
+                    ?: s.getDefaultModel(p.provider)
+            print(model)
             val f = llm().executeStreaming(
                 prompt = prompt("chat") {
                     system("You are a helpful assistant. Write short, simple and concise answers")
@@ -95,7 +42,13 @@ fun Route.aiRoutes() {
                         }
                     }
                 },
-                model = model
+                model = model ?: run {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        message = ErrorResponse("Model not found")
+                    )
+                    return@post
+                }
             )
 
 
@@ -129,5 +82,132 @@ fun Route.aiRoutes() {
                 }
             }
         }
+        cacheOutput(30.minutes) {
+            get("providers") {
+                val providers = s.getProvidersNames()
+                if (providers.isEmpty()) call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse("No providers found")
+                ) else call.respond(providers)
+
+            }.describe {
+                description = "Get list of all providers"
+                responses {
+                    HttpStatusCode.OK {
+                        description = "Default provider"
+                        schema = jsonSchema<List<String>>()
+                    }
+                    HttpStatusCode.NotFound {
+                        description = "No default provider"
+                        schema = jsonSchema<ErrorResponse>()
+                    }
+                }
+            }
+            get("providers/default") {
+                val p = s.getDefaultProvider()
+                if (p == null) call.respond(
+                    HttpStatusCode.NoContent,
+                    ErrorResponse("no default provider")
+                ) else call.respond("\"$p\"")
+            }.describe {
+                description = "Get default provider"
+                responses {
+                    HttpStatusCode.OK {
+                        description = "Default provider"
+                        schema = jsonSchema<String>()
+                    }
+                    HttpStatusCode.NotFound {
+                        description = "No default provider"
+                        schema = jsonSchema<ErrorResponse>()
+                    }
+                }
+            }
+            get("models/{provider}") {
+                val provider =
+                    call.parameters["provider"] ?: return@get call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("Provider not provided")
+                    )
+                val models = s.getAvailableLLModels(provider)
+                if (models.isEmpty())
+                    call.respond(
+                        HttpStatusCode.NoContent,
+                        message = emptyList<SerializableLLModel>()
+                    )
+                else call.respond(models.map { it.toSerializableLLModel() })
+            }.describe {
+                description = "Get list of all models"
+                responses {
+                    HttpStatusCode.OK {
+                        description = "List of models"
+                        schema = jsonSchema<List<SerializableLLModel>>()
+                    }
+                    HttpStatusCode.NoContent {
+                        description = "No content"
+                        schema = jsonSchema<List<SerializableLLModel>>()
+                    }
+                    HttpStatusCode.BadRequest {
+                        description = "Provider not provided"
+                        schema = jsonSchema<ErrorResponse>()
+                    }
+                }
+            }
+            get("models/{provider}/default") {
+                val provider =
+                    call.parameters["provider"] ?: return@get call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("Provider not provided")
+                    )
+                s.getDefaultModel(provider)?.toSerializableLLModel()?.let {
+                    call.respond(it)
+                } ?: call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse("Model not found, probably all services are inactive")
+                )
+            }.describe {
+                responses {
+                    HttpStatusCode.OK {
+                        description = "Model found"
+                        schema = jsonSchema<SerializableLLModel>()
+                    }
+                    HttpStatusCode.NotFound {
+                        description = "Model not found"
+                        schema = jsonSchema<ErrorResponse>()
+                    }
+
+                }
+            }
+
+            get("models/{provider}/{id}") {
+                val provider = call.parameters["id"] ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Provider not provided")
+                )
+                val name = call.parameters["id"] ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ErrorResponse("Model not provided")
+                )
+                val model = s.getAvailableLLModels(provider).find { it.id == name }
+                if (model != null) call.respond(model.toSerializableLLModel())
+                else call.respond(
+                    HttpStatusCode.NotFound,
+                    message = ErrorResponse("Model not found")
+                )
+            }.describe {
+                description = "Get model by name"
+                responses {
+                    HttpStatusCode.OK {
+                        description = "Model found"
+                        schema = jsonSchema<SerializableLLModel>()
+                    }
+                    HttpStatusCode.NotFound {
+                        description = "Model not found"
+                        schema = jsonSchema<ErrorResponse>()
+                    }
+                }
+            }
+        }
+
+
     }
 }

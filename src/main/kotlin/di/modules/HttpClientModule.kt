@@ -31,10 +31,9 @@ fun Application.getHttpClientModules() = module {
         }
     }
     single(named("ollama-http-client")) {
-        val username = environment.config.propertyOrNull("koog.ollama.username")?.getString()
-        val password = environment.config.propertyOrNull("koog.ollama.password")?.getString()
-        val baseUrlRealm = environment.config.propertyOrNull("koog.ollama.baseUrlRealm")?.getString()
-        print("credentials $username $password $baseUrlRealm")
+        val username = environment.config.propertyOrNull("ai.ollama.username")?.getString()
+        val password = environment.config.propertyOrNull("ai.ollama.password")?.getString()
+        val baseUrlRealm = environment.config.propertyOrNull("ai.ollama.baseUrlRealm")?.getString()
         if (username != null && password != null)
             client.config {
                 install(Auth) {

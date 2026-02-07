@@ -5,11 +5,12 @@
   env = {
     DATABASE_URL = "postgresql://kong:kong@localhost:5432/kong";
   };
+  dotenv.enable = true;
 
   languages = {
     javascript = {
       enable = true;
-      directory = "./services/frontend/";
+      directory = "./frontend/";
       bun = {
         enable = true;
         install.enable = true;

@@ -1,13 +1,7 @@
 import { ChevronDown } from "lucide-react";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { FieldError } from "@/components/ui/field";
 import { InputGroupButton } from "@/components/ui/input-group";
-import {
-	MenubarContent,
-	MenubarMenu,
-	MenubarRadioGroup,
-	MenubarRadioItem,
-	MenubarTrigger,
-} from "@/components/ui/menubar";
 import {
 	Select,
 	SelectContent,
@@ -16,7 +10,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useChatModels } from "@/features/chat/lib/chat";
-import { cn } from "@/lib/utils";
 import type { ChatState } from "../lib/chat/state";
 
 export function ModelSelect({
@@ -26,14 +19,54 @@ export function ModelSelect({
 	chatState: ChatState;
 	className?: string;
 }) {
-	const { model, models, status, error, selectModel } =
-		useChatModels(chatState);
+	const {
+		model,
+		models,
+		provider,
+		providers,
+		status,
+		error,
+		selectModel,
+		selectProvider,
+	} = useChatModels(chatState);
 	const disabled = status !== "success";
 	return (
-		<>
-			<Select defaultValue={model} value={model} onValueChange={selectModel}>
+		<ButtonGroup>
+			<Select
+				disabled={disabled}
+				defaultValue={provider}
+				value={provider}
+				onValueChange={selectProvider}
+			>
 				<SelectTrigger
 					disabled={disabled}
+					size="none"
+					className="border-none"
+					render={
+						<InputGroupButton className={className} variant="ghost">
+							<SelectValue placeholder="default">
+								{(it) => it ?? provider ?? "default"}
+							</SelectValue>
+							<ChevronDown />
+						</InputGroupButton>
+					}
+				/>
+				<SelectContent>
+					{providers.map((v) => (
+						<SelectItem key={v} value={v}>
+							{v}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+
+			<Select
+				disabled={disabled || provider === undefined}
+				defaultValue={model}
+				value={model}
+				onValueChange={selectModel}
+			>
+				<SelectTrigger
 					size="none"
 					className="border-none"
 					render={
@@ -54,45 +87,6 @@ export function ModelSelect({
 				</SelectContent>
 			</Select>
 			<FieldError errors={[error]} />
-		</>
-	);
-}
-
-export function ModelMenubarMenu({
-	chatState,
-	className,
-}: {
-	chatState: ChatState;
-	className?: string;
-}) {
-	const { model, models, status, error, selectModel } =
-		useChatModels(chatState);
-	const disabled = status !== "success";
-	return (
-		<MenubarMenu>
-			<MenubarTrigger
-				disabled={disabled}
-				className={cn("min-w-26 flex justify-between", className)}
-				render={
-					<InputGroupButton variant={error && "destructive"}>
-						{error?.message ?? model}
-						<ChevronDown />
-					</InputGroupButton>
-				}
-			/>
-			<MenubarContent>
-				<MenubarRadioGroup
-					className="*:justify-end"
-					value={model}
-					onValueChange={selectModel}
-				>
-					{models.map((it) => (
-						<MenubarRadioItem key={it.id} value={it.id}>
-							{it.provider.id?.toString()} {it.id}
-						</MenubarRadioItem>
-					))}
-				</MenubarRadioGroup>
-			</MenubarContent>
-		</MenubarMenu>
+		</ButtonGroup>
 	);
 }

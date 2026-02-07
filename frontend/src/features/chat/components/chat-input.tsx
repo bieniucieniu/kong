@@ -6,10 +6,9 @@ import {
 	InputGroupButton,
 	InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Menubar } from "@/components/ui/menubar";
-import { ModelMenubarMenu } from "@/features/chat/components/model-select";
 import { useChatContext, useChatInput } from "@/features/chat/lib/chat";
 import type { ChatState } from "../lib/chat/state";
+import { ModelSelect } from "./model-select";
 
 export function ChatInput({
 	initial,
@@ -51,15 +50,12 @@ export function ChatInput({
 				value={prompt}
 			/>
 			<InputGroupAddon align="block-end">
-				<Menubar>
-					<ModelMenubarMenu chatState={state} />
-				</Menubar>
+				<ModelSelect chatState={state} />
 				<InputGroupButton
 					className="ml-auto"
-					disabled={disabled}
-					onClick={() => submit()}
+					onClick={() => disabled || submit()}
 				>
-					{disabled ? "" : <ArrowRight />}
+					{disabled ? "type something first" : <ArrowRight />}
 				</InputGroupButton>
 			</InputGroupAddon>
 		</InputGroup>
