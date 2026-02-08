@@ -1,4 +1,4 @@
-package com.bieniucieniu.features.shared.response
+package com.bieniucieniu.features.shared.models
 
 import kotlinx.serialization.Serializable
 

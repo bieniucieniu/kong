@@ -1,4 +1,4 @@
-package com.bieniucieniu.features.auth
+package com.bieniucieniu.features.auth.models
 
 import kotlinx.serialization.Serializable
 

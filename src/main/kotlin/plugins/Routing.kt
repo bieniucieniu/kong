@@ -1,7 +1,7 @@
 package com.bieniucieniu.plugins
 
 
-import com.bieniucieniu.features.shared.response.ErrorResponse
+import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting

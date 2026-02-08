@@ -1,4 +1,4 @@
-package com.bieniucieniu.features.ai
+package com.bieniucieniu.features.ai.services
 
 import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel

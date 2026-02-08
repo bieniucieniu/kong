@@ -1,6 +1,7 @@
 package com.bieniucieniu.features.ai
 
 import ai.koog.ktor.Koog
+import com.bieniucieniu.features.ai.routes.aiRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.core.qualifier.named
@@ -26,7 +27,7 @@ fun Application.configureAi() {
         }
     }
     routing {
-        route("/api") {
+        route("/api/ai") {
             aiRoutes()
         }
     }
