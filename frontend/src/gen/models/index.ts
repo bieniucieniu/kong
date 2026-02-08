@@ -12,3 +12,4 @@ export * from "./errorResponse";
 export * from "./serializableLLModel";
 export * from "./serializableLLModelCapabilitiesItem";
 export * from "./serializableLLModelProvider";
+export * from "./serializableLLMProvider";

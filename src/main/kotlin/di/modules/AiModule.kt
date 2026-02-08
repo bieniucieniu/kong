@@ -18,7 +18,7 @@ fun Application.getAiModules() = module {
         AiService(
             listOf(get<OllamaService>(), get<GoogleService>())
                 .filter { it.isActive() }
-                .associateBy { it.name }
+                .associateBy { it.provider.id }
         )
     }
 }

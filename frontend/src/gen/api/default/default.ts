@@ -21,7 +21,12 @@ import type {
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
-import type { Chat, ErrorResponse, SerializableLLModel } from "../../models";
+import type {
+	Chat,
+	ErrorResponse,
+	SerializableLLModel,
+	SerializableLLMProvider,
+} from "../../models";
 
 export type getApiGoogleLoginResponseDefault = {
 	data: unknown;
@@ -681,7 +686,7 @@ export const usePostApiAiChat = <TError = unknown, TContext = unknown>(
  * Get list of all providers
  */
 export type getApiAiProvidersResponse200 = {
-	data: string[];
+	data: SerializableLLMProvider[];
 	status: 200;
 };
 
@@ -872,7 +877,7 @@ export function useGetApiAiProviders<
  * Get default provider
  */
 export type getApiAiProvidersDefaultResponse200 = {
-	data: string;
+	data: SerializableLLMProvider;
 	status: 200;
 };
 
@@ -1065,462 +1070,41 @@ export function useGetApiAiProvidersDefault<
 /**
  * Get list of all models
  */
-export type getApiAiModelsProviderResponse200 = {
+export type getApiAiModelsProviderIdResponse200 = {
 	data: SerializableLLModel[];
 	status: 200;
 };
 
-export type getApiAiModelsProviderResponse204 = {
+export type getApiAiModelsProviderIdResponse204 = {
 	data: SerializableLLModel[];
 	status: 204;
 };
 
-export type getApiAiModelsProviderResponse400 = {
+export type getApiAiModelsProviderIdResponse400 = {
 	data: ErrorResponse;
 	status: 400;
 };
 
-export type getApiAiModelsProviderResponseSuccess = (
-	| getApiAiModelsProviderResponse200
-	| getApiAiModelsProviderResponse204
+export type getApiAiModelsProviderIdResponseSuccess = (
+	| getApiAiModelsProviderIdResponse200
+	| getApiAiModelsProviderIdResponse204
 ) & {
 	headers: Headers;
 };
-export type getApiAiModelsProviderResponseError =
-	getApiAiModelsProviderResponse400 & {
-		headers: Headers;
-	};
-
-export const getGetApiAiModelsProviderUrl = (provider: string) => {
-	return `/api/ai/models/${provider}`;
-};
-
-export const getApiAiModelsProvider = async (
-	provider: string,
-	options?: RequestInit,
-): Promise<getApiAiModelsProviderResponseSuccess> => {
-	const res = await fetch(getGetApiAiModelsProviderUrl(provider), {
-		...options,
-		method: "GET",
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-	if (!res.ok) {
-		const err: globalThis.Error & {
-			info?: getApiAiModelsProviderResponseError["data"];
-			status?: number;
-		} = new globalThis.Error();
-		const data: getApiAiModelsProviderResponseError["data"] = body
-			? JSON.parse(body)
-			: {};
-		err.info = data;
-		err.status = res.status;
-		throw err;
-	}
-	const data: getApiAiModelsProviderResponseSuccess["data"] = body
-		? JSON.parse(body)
-		: {};
-	return {
-		data,
-		status: res.status,
-		headers: res.headers,
-	} as getApiAiModelsProviderResponseSuccess;
-};
-
-export const getGetApiAiModelsProviderQueryKey = (provider: string) => {
-	return ["api", "ai", "models", provider] as const;
-};
-
-export const getGetApiAiModelsProviderQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-) => {
-	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
-
-	const queryKey =
-		queryOptions?.queryKey ?? getGetApiAiModelsProviderQueryKey(provider);
-
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getApiAiModelsProvider>>
-	> = ({ signal }) =>
-		getApiAiModelsProvider(provider, { signal, ...fetchOptions });
-
-	return {
-		queryKey,
-		queryFn,
-		enabled: !!provider,
-		...queryOptions,
-	} as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetApiAiModelsProviderQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiAiModelsProvider>>
->;
-export type GetApiAiModelsProviderQueryError = ErrorResponse;
-
-export function useGetApiAiModelsProvider<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options: {
-		query: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-					TError,
-					Awaited<ReturnType<typeof getApiAiModelsProvider>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiAiModelsProvider<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-					TError,
-					Awaited<ReturnType<typeof getApiAiModelsProvider>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiAiModelsProvider<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-
-export function useGetApiAiModelsProvider<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProvider>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getGetApiAiModelsProviderQueryOptions(provider, options);
-
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-	return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type getApiAiModelsProviderDefaultResponse200 = {
-	data: SerializableLLModel;
-	status: 200;
-};
-
-export type getApiAiModelsProviderDefaultResponse404 = {
-	data: ErrorResponse;
-	status: 404;
-};
-
-export type getApiAiModelsProviderDefaultResponseSuccess =
-	getApiAiModelsProviderDefaultResponse200 & {
-		headers: Headers;
-	};
-export type getApiAiModelsProviderDefaultResponseError =
-	getApiAiModelsProviderDefaultResponse404 & {
-		headers: Headers;
-	};
-
-export const getGetApiAiModelsProviderDefaultUrl = (provider: string) => {
-	return `/api/ai/models/${provider}/default`;
-};
-
-export const getApiAiModelsProviderDefault = async (
-	provider: string,
-	options?: RequestInit,
-): Promise<getApiAiModelsProviderDefaultResponseSuccess> => {
-	const res = await fetch(getGetApiAiModelsProviderDefaultUrl(provider), {
-		...options,
-		method: "GET",
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-	if (!res.ok) {
-		const err: globalThis.Error & {
-			info?: getApiAiModelsProviderDefaultResponseError["data"];
-			status?: number;
-		} = new globalThis.Error();
-		const data: getApiAiModelsProviderDefaultResponseError["data"] = body
-			? JSON.parse(body)
-			: {};
-		err.info = data;
-		err.status = res.status;
-		throw err;
-	}
-	const data: getApiAiModelsProviderDefaultResponseSuccess["data"] = body
-		? JSON.parse(body)
-		: {};
-	return {
-		data,
-		status: res.status,
-		headers: res.headers,
-	} as getApiAiModelsProviderDefaultResponseSuccess;
-};
-
-export const getGetApiAiModelsProviderDefaultQueryKey = (provider: string) => {
-	return ["api", "ai", "models", provider, "default"] as const;
-};
-
-export const getGetApiAiModelsProviderDefaultQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-) => {
-	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
-
-	const queryKey =
-		queryOptions?.queryKey ??
-		getGetApiAiModelsProviderDefaultQueryKey(provider);
-
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>
-	> = ({ signal }) =>
-		getApiAiModelsProviderDefault(provider, { signal, ...fetchOptions });
-
-	return {
-		queryKey,
-		queryFn,
-		enabled: !!provider,
-		...queryOptions,
-	} as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetApiAiModelsProviderDefaultQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>
->;
-export type GetApiAiModelsProviderDefaultQueryError = ErrorResponse;
-
-export function useGetApiAiModelsProviderDefault<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options: {
-		query: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-					TError,
-					Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiAiModelsProviderDefault<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-					TError,
-					Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiAiModelsProviderDefault<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-
-export function useGetApiAiModelsProviderDefault<
-	TData = Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-	TError = ErrorResponse,
->(
-	provider: string,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAiModelsProviderDefault>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getGetApiAiModelsProviderDefaultQueryOptions(
-		provider,
-		options,
-	);
-
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-	return { ...query, queryKey: queryOptions.queryKey };
-}
-
-/**
- * Get model by name
- */
-export type getApiAiModelsProviderIdResponse200 = {
-	data: SerializableLLModel;
-	status: 200;
-};
-
-export type getApiAiModelsProviderIdResponse404 = {
-	data: ErrorResponse;
-	status: 404;
-};
-
-export type getApiAiModelsProviderIdResponseSuccess =
-	getApiAiModelsProviderIdResponse200 & {
-		headers: Headers;
-	};
 export type getApiAiModelsProviderIdResponseError =
-	getApiAiModelsProviderIdResponse404 & {
+	getApiAiModelsProviderIdResponse400 & {
 		headers: Headers;
 	};
 
-export const getGetApiAiModelsProviderIdUrl = (
-	provider: string,
-	id: string,
-) => {
-	return `/api/ai/models/${provider}/${id}`;
+export const getGetApiAiModelsProviderIdUrl = (providerId: string) => {
+	return `/api/ai/models/${providerId}`;
 };
 
 export const getApiAiModelsProviderId = async (
-	provider: string,
-	id: string,
+	providerId: string,
 	options?: RequestInit,
 ): Promise<getApiAiModelsProviderIdResponseSuccess> => {
-	const res = await fetch(getGetApiAiModelsProviderIdUrl(provider, id), {
+	const res = await fetch(getGetApiAiModelsProviderIdUrl(providerId), {
 		...options,
 		method: "GET",
 	});
@@ -1548,19 +1132,15 @@ export const getApiAiModelsProviderId = async (
 	} as getApiAiModelsProviderIdResponseSuccess;
 };
 
-export const getGetApiAiModelsProviderIdQueryKey = (
-	provider: string,
-	id: string,
-) => {
-	return ["api", "ai", "models", provider, id] as const;
+export const getGetApiAiModelsProviderIdQueryKey = (providerId: string) => {
+	return ["api", "ai", "models", providerId] as const;
 };
 
 export const getGetApiAiModelsProviderIdQueryOptions = <
 	TData = Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
 	TError = ErrorResponse,
 >(
-	provider: string,
-	id: string,
+	providerId: string,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -1575,17 +1155,17 @@ export const getGetApiAiModelsProviderIdQueryOptions = <
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
 	const queryKey =
-		queryOptions?.queryKey ?? getGetApiAiModelsProviderIdQueryKey(provider, id);
+		queryOptions?.queryKey ?? getGetApiAiModelsProviderIdQueryKey(providerId);
 
 	const queryFn: QueryFunction<
 		Awaited<ReturnType<typeof getApiAiModelsProviderId>>
 	> = ({ signal }) =>
-		getApiAiModelsProviderId(provider, id, { signal, ...fetchOptions });
+		getApiAiModelsProviderId(providerId, { signal, ...fetchOptions });
 
 	return {
 		queryKey,
 		queryFn,
-		enabled: !!(provider && id),
+		enabled: !!providerId,
 		...queryOptions,
 	} as UseQueryOptions<
 		Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
@@ -1603,8 +1183,7 @@ export function useGetApiAiModelsProviderId<
 	TData = Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
 	TError = ErrorResponse,
 >(
-	provider: string,
-	id: string,
+	providerId: string,
 	options: {
 		query: Partial<
 			UseQueryOptions<
@@ -1631,8 +1210,7 @@ export function useGetApiAiModelsProviderId<
 	TData = Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
 	TError = ErrorResponse,
 >(
-	provider: string,
-	id: string,
+	providerId: string,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -1659,8 +1237,7 @@ export function useGetApiAiModelsProviderId<
 	TData = Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
 	TError = ErrorResponse,
 >(
-	provider: string,
-	id: string,
+	providerId: string,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -1680,8 +1257,7 @@ export function useGetApiAiModelsProviderId<
 	TData = Awaited<ReturnType<typeof getApiAiModelsProviderId>>,
 	TError = ErrorResponse,
 >(
-	provider: string,
-	id: string,
+	providerId: string,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -1697,8 +1273,449 @@ export function useGetApiAiModelsProviderId<
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
 	const queryOptions = getGetApiAiModelsProviderIdQueryOptions(
-		provider,
-		id,
+		providerId,
+		options,
+	);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAiModelsProviderIdDefaultResponse200 = {
+	data: SerializableLLModel;
+	status: 200;
+};
+
+export type getApiAiModelsProviderIdDefaultResponse404 = {
+	data: ErrorResponse;
+	status: 404;
+};
+
+export type getApiAiModelsProviderIdDefaultResponseSuccess =
+	getApiAiModelsProviderIdDefaultResponse200 & {
+		headers: Headers;
+	};
+export type getApiAiModelsProviderIdDefaultResponseError =
+	getApiAiModelsProviderIdDefaultResponse404 & {
+		headers: Headers;
+	};
+
+export const getGetApiAiModelsProviderIdDefaultUrl = (providerId: string) => {
+	return `/api/ai/models/${providerId}/default`;
+};
+
+export const getApiAiModelsProviderIdDefault = async (
+	providerId: string,
+	options?: RequestInit,
+): Promise<getApiAiModelsProviderIdDefaultResponseSuccess> => {
+	const res = await fetch(getGetApiAiModelsProviderIdDefaultUrl(providerId), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAiModelsProviderIdDefaultResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAiModelsProviderIdDefaultResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAiModelsProviderIdDefaultResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiModelsProviderIdDefaultResponseSuccess;
+};
+
+export const getGetApiAiModelsProviderIdDefaultQueryKey = (
+	providerId: string,
+) => {
+	return ["api", "ai", "models", providerId, "default"] as const;
+};
+
+export const getGetApiAiModelsProviderIdDefaultQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ??
+		getGetApiAiModelsProviderIdDefaultQueryKey(providerId);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>
+	> = ({ signal }) =>
+		getApiAiModelsProviderIdDefault(providerId, { signal, ...fetchOptions });
+
+	return {
+		queryKey,
+		queryFn,
+		enabled: !!providerId,
+		...queryOptions,
+	} as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiModelsProviderIdDefaultQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>
+>;
+export type GetApiAiModelsProviderIdDefaultQueryError = ErrorResponse;
+
+export function useGetApiAiModelsProviderIdDefault<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelsProviderIdDefault<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelsProviderIdDefault<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiModelsProviderIdDefault<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdDefault>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiModelsProviderIdDefaultQueryOptions(
+		providerId,
+		options,
+	);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Get model by name
+ */
+export type getApiAiModelsProviderIdModelIdResponse200 = {
+	data: SerializableLLModel;
+	status: 200;
+};
+
+export type getApiAiModelsProviderIdModelIdResponse404 = {
+	data: ErrorResponse;
+	status: 404;
+};
+
+export type getApiAiModelsProviderIdModelIdResponseSuccess =
+	getApiAiModelsProviderIdModelIdResponse200 & {
+		headers: Headers;
+	};
+export type getApiAiModelsProviderIdModelIdResponseError =
+	getApiAiModelsProviderIdModelIdResponse404 & {
+		headers: Headers;
+	};
+
+export const getGetApiAiModelsProviderIdModelIdUrl = (
+	providerId: string,
+	modelId: string,
+) => {
+	return `/api/ai/models/${providerId}/${modelId}`;
+};
+
+export const getApiAiModelsProviderIdModelId = async (
+	providerId: string,
+	modelId: string,
+	options?: RequestInit,
+): Promise<getApiAiModelsProviderIdModelIdResponseSuccess> => {
+	const res = await fetch(
+		getGetApiAiModelsProviderIdModelIdUrl(providerId, modelId),
+		{
+			...options,
+			method: "GET",
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAiModelsProviderIdModelIdResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAiModelsProviderIdModelIdResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAiModelsProviderIdModelIdResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiModelsProviderIdModelIdResponseSuccess;
+};
+
+export const getGetApiAiModelsProviderIdModelIdQueryKey = (
+	providerId: string,
+	modelId: string,
+) => {
+	return ["api", "ai", "models", providerId, modelId] as const;
+};
+
+export const getGetApiAiModelsProviderIdModelIdQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	modelId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ??
+		getGetApiAiModelsProviderIdModelIdQueryKey(providerId, modelId);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>
+	> = ({ signal }) =>
+		getApiAiModelsProviderIdModelId(providerId, modelId, {
+			signal,
+			...fetchOptions,
+		});
+
+	return {
+		queryKey,
+		queryFn,
+		enabled: !!(providerId && modelId),
+		...queryOptions,
+	} as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiModelsProviderIdModelIdQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>
+>;
+export type GetApiAiModelsProviderIdModelIdQueryError = ErrorResponse;
+
+export function useGetApiAiModelsProviderIdModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	modelId: string,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelsProviderIdModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	modelId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiModelsProviderIdModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	modelId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiModelsProviderIdModelId<
+	TData = Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+	TError = ErrorResponse,
+>(
+	providerId: string,
+	modelId: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiModelsProviderIdModelId>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiModelsProviderIdModelIdQueryOptions(
+		providerId,
+		modelId,
 		options,
 	);
 

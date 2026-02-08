@@ -84,18 +84,18 @@ fun Route.aiRoutes() {
         }
         cacheOutput(30.minutes) {
             get("providers") {
-                val providers = s.getProvidersNames()
+                val providers = s.getProviders()
                 if (providers.isEmpty()) call.respond(
                     HttpStatusCode.NotFound,
                     ErrorResponse("No providers found")
-                ) else call.respond(providers)
+                ) else call.respond(providers.map { it.toSerializableLLMProvider() })
 
             }.describe {
                 description = "Get list of all providers"
                 responses {
                     HttpStatusCode.OK {
                         description = "Default provider"
-                        schema = jsonSchema<List<String>>()
+                        schema = jsonSchema<List<SerializableLLMProvider>>()
                     }
                     HttpStatusCode.NotFound {
                         description = "No default provider"
@@ -108,13 +108,13 @@ fun Route.aiRoutes() {
                 if (p == null) call.respond(
                     HttpStatusCode.NoContent,
                     ErrorResponse("no default provider")
-                ) else call.respond("\"$p\"")
+                ) else call.respond(p.toSerializableLLMProvider())
             }.describe {
                 description = "Get default provider"
                 responses {
                     HttpStatusCode.OK {
                         description = "Default provider"
-                        schema = jsonSchema<String>()
+                        schema = jsonSchema<SerializableLLMProvider>()
                     }
                     HttpStatusCode.NotFound {
                         description = "No default provider"
@@ -122,9 +122,9 @@ fun Route.aiRoutes() {
                     }
                 }
             }
-            get("models/{provider}") {
+            get("models/{provider_id}") {
                 val provider =
-                    call.parameters["provider"] ?: return@get call.respond(
+                    call.parameters["provider_id"] ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
                         ErrorResponse("Provider not provided")
                     )
@@ -152,9 +152,9 @@ fun Route.aiRoutes() {
                     }
                 }
             }
-            get("models/{provider}/default") {
+            get("models/{provider_id}/default") {
                 val provider =
-                    call.parameters["provider"] ?: return@get call.respond(
+                    call.parameters["provider_id"] ?: return@get call.respond(
                         HttpStatusCode.BadRequest,
                         ErrorResponse("Provider not provided")
                     )
@@ -178,12 +178,12 @@ fun Route.aiRoutes() {
                 }
             }
 
-            get("models/{provider}/{id}") {
-                val provider = call.parameters["id"] ?: return@get call.respond(
+            get("models/{provider_id}/{model_id}") {
+                val provider = call.parameters["provider_id"] ?: return@get call.respond(
                     HttpStatusCode.BadRequest,
                     ErrorResponse("Provider not provided")
                 )
-                val name = call.parameters["id"] ?: return@get call.respond(
+                val name = call.parameters["model_id"] ?: return@get call.respond(
                     HttpStatusCode.BadRequest,
                     ErrorResponse("Model not provided")
                 )

@@ -8,12 +8,17 @@ import {
 	useState,
 } from "react";
 import {
-	useGetApiAiModelsProvider,
-	useGetApiAiModelsProviderDefault,
+	useGetApiAiModelsProviderId,
+	useGetApiAiModelsProviderIdDefault,
 	useGetApiAiProviders,
 	useGetApiAiProvidersDefault,
 } from "@/gen/api/default/default";
-import type { Chat, ErrorResponse, SerializableLLModel } from "@/gen/models";
+import type {
+	Chat,
+	ErrorResponse,
+	SerializableLLModel,
+	SerializableLLMProvider,
+} from "@/gen/models";
 import { useSignal, useSignalState } from "@/lib/hooks/state/signal";
 import { fetchAiChat } from "./source";
 import { type ChatState, type CreateChatOptions, createChat } from "./state";
@@ -22,7 +27,7 @@ export interface UseChatModelsReturn {
 	model: string | undefined;
 	models: SerializableLLModel[];
 	provider: string | undefined;
-	providers: string[];
+	providers: SerializableLLMProvider[];
 	status: "error" | "pending" | "success";
 	error: ErrorResponse | null;
 	selectModel: (str: string | undefined | null) => void;
@@ -47,12 +52,12 @@ export function useChatModels(
 ): UseChatModelsReturn {
 	const providers = useGetApiAiProviders();
 	const defaultProvider = useGetApiAiProvidersDefault();
-	const provider = useSignalState(s.provider) || defaultProvider.data?.data;
+	const provider = useSignalState(s.provider) || defaultProvider.data?.data.id;
 
-	const models = useGetApiAiModelsProvider(provider ?? "", {
+	const models = useGetApiAiModelsProviderId(provider ?? "", {
 		query: { enabled: !!provider },
 	});
-	const defaultModel = useGetApiAiModelsProviderDefault(provider ?? "", {
+	const defaultModel = useGetApiAiModelsProviderIdDefault(provider ?? "", {
 		query: { enabled: !!provider },
 	});
 

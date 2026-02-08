@@ -53,8 +53,8 @@ export function ModelSelect({
 				/>
 				<SelectContent>
 					{providers.map((v) => (
-						<SelectItem key={v} value={v}>
-							{v}
+						<SelectItem key={v.id} value={v.id}>
+							{v.display}
 						</SelectItem>
 					))}
 				</SelectContent>

@@ -17,9 +17,7 @@ ai:
     username: ${?OLLAMA_USERNAME}
     password: ${?OLLAMA_PASSWORD}
   google:
-    enable: false
     apikey: ${?GOOGLE_API_KEY}
-    baseUrl: https://generativelanguage.googleapis.com
 oauth2:
   google:
     clientId: ${GOOGLE_CLIENT_ID}

@@ -15,6 +15,8 @@ version = "0.0.1"
 
 ktor {
     openApi {
+        codeInferenceEnabled = false
+        onlyCommented = true
     }
 }
 

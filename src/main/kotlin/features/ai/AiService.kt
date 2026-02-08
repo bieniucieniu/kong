@@ -1,5 +1,6 @@
 package com.bieniucieniu.features.ai
 
+import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import com.bieniucieniu.features.ai.providers.shared.AiProviderService
 
@@ -13,11 +14,11 @@ class AiService(val services: Map<String, AiProviderService>) {
         return services[provider]?.getDefaultModel()
     }
 
-    fun getProvidersNames(): List<String> {
-        return services.keys.toList()
+    fun getProviders(): List<LLMProvider> {
+        return services.values.map { it.provider }
     }
 
-    fun getDefaultProvider(): String? {
-        return services.keys.firstOrNull()
+    fun getDefaultProvider(): LLMProvider? {
+        return services.values.firstOrNull()?.provider
     }
 }

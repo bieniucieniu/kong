@@ -1,7 +1,7 @@
 package com.bieniucieniu.features.ai.providers.ollama
 
 import ai.koog.prompt.llm.LLMCapability
-import ai.koog.prompt.llm.LLMProvider.Ollama
+import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import com.bieniucieniu.features.ai.providers.shared.AiProviderService
 import io.ktor.client.*
@@ -14,6 +14,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class OllamaService(val httpClient: HttpClient, val application: Application) : AiProviderService {
+    override val provider: LLMProvider = LLMProvider.Ollama
     private val ollamaBaseUrl =
         application.environment.config
             .propertyOrNull("ai.ollama.baseUrl")?.getString()
@@ -27,7 +28,7 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
         return getAvailableModels().models.map {
             LLModel(
                 id = it.name,
-                provider = Ollama,
+                provider = LLMProvider.Ollama,
                 capabilities = listOf(
                     LLMCapability.Temperature,
                     LLMCapability.Schema.JSON.Basic,
@@ -85,7 +86,7 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
 
 
 val GEMMA_3_4B = LLModel(
-    provider = Ollama,
+    provider = LLMProvider.Ollama,
     id = "gemma3:4b",
     capabilities = listOf(
         LLMCapability.Temperature,
