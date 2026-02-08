@@ -3,6 +3,7 @@ val koog_version = "0.5.1"
 val kotlin_version = "2.3.0"
 val ktor_version = "3.4.0"
 val logback_version = "1.5.13"
+val exposed_version = "1.0.0"
 
 plugins {
     kotlin("jvm") version "2.3.0"
@@ -25,6 +26,9 @@ application {
 }
 
 kotlin {
+    compilerOptions {
+        optIn.add("io.ktor.utils.io.ExperimentalKtorApi")
+    }
     jvmToolchain(21)
 }
 
@@ -60,8 +64,9 @@ dependencies {
     implementation("io.github.flaxoos:ktor-server-rate-limiting:2.2.1")
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("org.postgresql:postgresql:42.7.9")
-    implementation("org.jetbrains.exposed:exposed-core:0.61.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.61.0")
+    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
     implementation("com.h2database:h2:2.3.232")
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

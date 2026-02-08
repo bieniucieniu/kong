@@ -5,6 +5,7 @@ import io.ktor.utils.io.*
 
 @OptIn(InternalAPI::class)
 fun Route.authRoutes() {
+    userRoutes()
     authGoogleRoutes()
     authDiscordRoutes()
 }
