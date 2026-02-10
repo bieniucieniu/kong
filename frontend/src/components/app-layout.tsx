@@ -8,8 +8,12 @@ import {
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
+	getGetApiAuthUsersSessionQueryKey,
+	useGetApiAuthUsersSession,
+	usePostApiAuthUsersLogout,
 } from "@/gen/api/default/default";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
+import { FieldError } from "./ui/field";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -26,18 +30,41 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export function SessionMenu({ className }: { className?: string }) {
+	const q = useGetApiAuthUsersSession();
+	const m = usePostApiAuthUsersLogout({
+		mutation: {
+			onSuccess: (_, __, ___, { client }) => {
+				client.invalidateQueries({
+					queryKey: getGetApiAuthUsersSessionQueryKey(),
+				});
+			},
+		},
+	});
 	return (
 		<MenubarMenu>
-			<MenubarTrigger className={className}>Login</MenubarTrigger>
+			<MenubarTrigger className={className}>
+				{q.data?.data ? (q.data.data.name ?? "unknown") : "Login"}
+			</MenubarTrigger>
 			<MenubarContent>
-				<MenubarItem
-					render={<a href={getGetApiAuthGoogleLoginUrl()}>login via Google</a>}
-				/>
-				<MenubarItem
-					render={
-						<a href={getGetApiAuthDiscordLoginUrl()}>login via Discord</a>
-					}
-				/>
+				{q.data?.data ? (
+					<>
+						<MenubarItem onClick={() => m.mutate()}>Logout</MenubarItem>
+						<FieldError errors={[m.error]} />
+					</>
+				) : (
+					<>
+						<MenubarItem
+							render={
+								<a href={getGetApiAuthGoogleLoginUrl()}>login via Google</a>
+							}
+						/>
+						<MenubarItem
+							render={
+								<a href={getGetApiAuthDiscordLoginUrl()}>login via Discord</a>
+							}
+						/>
+					</>
+				)}
 			</MenubarContent>
 		</MenubarMenu>
 	);

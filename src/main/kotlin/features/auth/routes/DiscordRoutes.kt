@@ -32,7 +32,8 @@ fun Route.authDiscordRoutes() {
                             UserSession(
                                 accessToken = principal.accessToken,
                                 provider = OAuth2Provider.Discord,
-                                params = principal.extraParameters,
+                                params = principal.extraParameters.names()
+                                    .associateWith { principal.extraParameters[it] },
                             )
                         )
                         call.respondRedirect("/")
