@@ -8,6 +8,7 @@ import {
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
+	useGetApiAuthUsersSession,
 } from "@/gen/api/default/default";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
 
@@ -26,18 +27,29 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export function SessionMenu({ className }: { className?: string }) {
+	const q = useGetApiAuthUsersSession();
 	return (
 		<MenubarMenu>
-			<MenubarTrigger className={className}>Login</MenubarTrigger>
+			<MenubarTrigger className={className}>
+				{q.data?.data?.name ?? "Login"}
+			</MenubarTrigger>
 			<MenubarContent>
-				<MenubarItem
-					render={<a href={getGetApiAuthGoogleLoginUrl()}>login via Google</a>}
-				/>
-				<MenubarItem
-					render={
-						<a href={getGetApiAuthDiscordLoginUrl()}>login via Discord</a>
-					}
-				/>
+				{q.data?.data ? (
+					<MenubarItem>Logout</MenubarItem>
+				) : (
+					<>
+						<MenubarItem
+							render={
+								<a href={getGetApiAuthGoogleLoginUrl()}>login via Google</a>
+							}
+						/>
+						<MenubarItem
+							render={
+								<a href={getGetApiAuthDiscordLoginUrl()}>login via Discord</a>
+							}
+						/>
+					</>
+				)}
 			</MenubarContent>
 		</MenubarMenu>
 	);

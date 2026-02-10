@@ -29,31 +29,33 @@ import type {
 	User,
 } from "../../models";
 
-export type getApiAuthUsersResponse200 = {
+export type getApiAuthUsersSessionResponse200 = {
 	data: User;
 	status: 200;
 };
 
-export type getApiAuthUsersResponse404 = {
+export type getApiAuthUsersSessionResponse401 = {
 	data: ErrorResponse;
-	status: 404;
+	status: 401;
 };
 
-export type getApiAuthUsersResponseSuccess = getApiAuthUsersResponse200 & {
-	headers: Headers;
-};
-export type getApiAuthUsersResponseError = getApiAuthUsersResponse404 & {
-	headers: Headers;
+export type getApiAuthUsersSessionResponseSuccess =
+	getApiAuthUsersSessionResponse200 & {
+		headers: Headers;
+	};
+export type getApiAuthUsersSessionResponseError =
+	getApiAuthUsersSessionResponse401 & {
+		headers: Headers;
+	};
+
+export const getGetApiAuthUsersSessionUrl = () => {
+	return `/api/auth/users/session`;
 };
 
-export const getGetApiAuthUsersUrl = () => {
-	return `/api/auth/users`;
-};
-
-export const getApiAuthUsers = async (
+export const getApiAuthUsersSession = async (
 	options?: RequestInit,
-): Promise<getApiAuthUsersResponseSuccess> => {
-	const res = await fetch(getGetApiAuthUsersUrl(), {
+): Promise<getApiAuthUsersSessionResponseSuccess> => {
+	const res = await fetch(getGetApiAuthUsersSessionUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -61,76 +63,81 @@ export const getApiAuthUsers = async (
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 	if (!res.ok) {
 		const err: globalThis.Error & {
-			info?: getApiAuthUsersResponseError["data"];
+			info?: getApiAuthUsersSessionResponseError["data"];
 			status?: number;
 		} = new globalThis.Error();
-		const data: getApiAuthUsersResponseError["data"] = body
+		const data: getApiAuthUsersSessionResponseError["data"] = body
 			? JSON.parse(body)
 			: {};
 		err.info = data;
 		err.status = res.status;
 		throw err;
 	}
-	const data: getApiAuthUsersResponseSuccess["data"] = body
+	const data: getApiAuthUsersSessionResponseSuccess["data"] = body
 		? JSON.parse(body)
 		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as getApiAuthUsersResponseSuccess;
+	} as getApiAuthUsersSessionResponseSuccess;
 };
 
-export const getGetApiAuthUsersQueryKey = () => {
-	return ["api", "auth", "users"] as const;
+export const getGetApiAuthUsersSessionQueryKey = () => {
+	return ["api", "auth", "users", "session"] as const;
 };
 
-export const getGetApiAuthUsersQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+export const getGetApiAuthUsersSessionQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 	TError = ErrorResponse,
 >(options?: {
 	query?: Partial<
-		UseQueryOptions<Awaited<ReturnType<typeof getApiAuthUsers>>, TError, TData>
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthUsersSession>>,
+			TError,
+			TData
+		>
 	>;
 	fetch?: RequestInit;
 }) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetApiAuthUsersQueryKey();
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthUsersSessionQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAuthUsers>>> = ({
-		signal,
-	}) => getApiAuthUsers({ signal, ...fetchOptions });
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthUsersSession>>
+	> = ({ signal }) => getApiAuthUsersSession({ signal, ...fetchOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiAuthUsers>>,
+		Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetApiAuthUsersQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiAuthUsers>>
+export type GetApiAuthUsersSessionQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthUsersSession>>
 >;
-export type GetApiAuthUsersQueryError = ErrorResponse;
+export type GetApiAuthUsersSessionQueryError = ErrorResponse;
 
-export function useGetApiAuthUsers<
-	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+export function useGetApiAuthUsersSession<
+	TData = Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 	TError = ErrorResponse,
 >(
 	options: {
 		query: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAuthUsers>>,
+				Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAuthUsers>>,
+					Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 					TError,
-					Awaited<ReturnType<typeof getApiAuthUsers>>
+					Awaited<ReturnType<typeof getApiAuthUsersSession>>
 				>,
 				"initialData"
 			>;
@@ -140,23 +147,23 @@ export function useGetApiAuthUsers<
 ): DefinedUseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiAuthUsers<
-	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+export function useGetApiAuthUsersSession<
+	TData = Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAuthUsers>>,
+				Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiAuthUsers>>,
+					Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 					TError,
-					Awaited<ReturnType<typeof getApiAuthUsers>>
+					Awaited<ReturnType<typeof getApiAuthUsersSession>>
 				>,
 				"initialData"
 			>;
@@ -166,14 +173,14 @@ export function useGetApiAuthUsers<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiAuthUsers<
-	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+export function useGetApiAuthUsersSession<
+	TData = Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAuthUsers>>,
+				Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 				TError,
 				TData
 			>
@@ -185,14 +192,14 @@ export function useGetApiAuthUsers<
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useGetApiAuthUsers<
-	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+export function useGetApiAuthUsersSession<
+	TData = Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiAuthUsers>>,
+				Awaited<ReturnType<typeof getApiAuthUsersSession>>,
 				TError,
 				TData
 			>
@@ -203,7 +210,7 @@ export function useGetApiAuthUsers<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetApiAuthUsersQueryOptions(options);
+	const queryOptions = getGetApiAuthUsersSessionQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,

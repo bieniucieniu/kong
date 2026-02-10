@@ -1,11 +1,13 @@
 package com.bieniucieniu.features.auth
 
+import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.UserSession
 import com.bieniucieniu.features.auth.routes.authRoutes
 import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import org.koin.ktor.ext.inject
@@ -31,7 +33,11 @@ fun Application.configureAuth() {
 
         session<UserSession>("auth-session") {
             validate { session ->
-                when(session)
+                when (session.provider) {
+                    OAuth2Provider.Google -> session
+                    OAuth2Provider.Discord -> session
+                    null -> null
+                }
             }
             challenge {
                 // Optional: what to do if session is missing
