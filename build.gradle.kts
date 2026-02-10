@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "com.bieniucieniu"
-version = "0.0.1"
+version = "0.0.0"
 
 ktor {
     openApi {

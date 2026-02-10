@@ -28,6 +28,16 @@ fun Application.configureAuth() {
 
 
     install(Authentication) {
+
+        session<UserSession>("auth-session") {
+            validate { session ->
+                when(session)
+            }
+            challenge {
+                // Optional: what to do if session is missing
+                call.respond(HttpStatusCode.Unauthorized, "No session found")
+            }
+        }
         run {
             val clientId = this@configureAuth.environment.config.propertyOrNull("oauth2.google.clientId")?.getString()
             val clientSecret =

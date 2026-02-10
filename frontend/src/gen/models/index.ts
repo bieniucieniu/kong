@@ -13,3 +13,5 @@ export * from "./serializableLLModel";
 export * from "./serializableLLModelCapabilitiesItem";
 export * from "./serializableLLModelProvider";
 export * from "./serializableLLMProvider";
+export * from "./user";
+export * from "./userId";

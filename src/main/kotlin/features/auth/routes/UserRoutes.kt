@@ -8,7 +8,7 @@ import io.ktor.openapi.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 fun Route.userRoutes() {
     route("users") {
@@ -26,6 +26,9 @@ fun Route.userRoutes() {
                     schema = jsonSchema<ErrorResponse>()
                 }
             }
+        }
+        get("session") {
+
         }
     }
 }

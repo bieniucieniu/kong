@@ -1,10 +1,11 @@
 package com.bieniucieniu.features.auth.repositories
 
 import com.bieniucieniu.features.auth.models.User
-import org.jetbrains.exposed.dao.UIntEntity
-import org.jetbrains.exposed.dao.UIntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.UIntIdTable
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.UIntIdTable
+import org.jetbrains.exposed.v1.dao.UIntEntity
+import org.jetbrains.exposed.v1.dao.UIntEntityClass
+
 
 const val MAX_VARCHAR_LENGTH = 255
 

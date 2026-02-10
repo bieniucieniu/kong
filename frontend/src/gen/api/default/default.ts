@@ -26,27 +26,34 @@ import type {
 	ErrorResponse,
 	SerializableLLModel,
 	SerializableLLMProvider,
+	User,
 } from "../../models";
 
-export type getApiGoogleLoginResponseDefault = {
-	data: unknown;
-	status: number;
-};
-export type getApiGoogleLoginResponseError =
-	getApiGoogleLoginResponseDefault & {
-		headers: Headers;
-	};
-
-export type getApiGoogleLoginResponse = getApiGoogleLoginResponseError;
-
-export const getGetApiGoogleLoginUrl = () => {
-	return `/api/google/login`;
+export type getApiAuthUsersResponse200 = {
+	data: User;
+	status: 200;
 };
 
-export const getApiGoogleLogin = async (
+export type getApiAuthUsersResponse404 = {
+	data: ErrorResponse;
+	status: 404;
+};
+
+export type getApiAuthUsersResponseSuccess = getApiAuthUsersResponse200 & {
+	headers: Headers;
+};
+export type getApiAuthUsersResponseError = getApiAuthUsersResponse404 & {
+	headers: Headers;
+};
+
+export const getGetApiAuthUsersUrl = () => {
+	return `/api/auth/users`;
+};
+
+export const getApiAuthUsers = async (
 	options?: RequestInit,
-): Promise<getApiGoogleLoginResponse> => {
-	const res = await fetch(getGetApiGoogleLoginUrl(), {
+): Promise<getApiAuthUsersResponseSuccess> => {
+	const res = await fetch(getGetApiAuthUsersUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -54,260 +61,76 @@ export const getApiGoogleLogin = async (
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 	if (!res.ok) {
 		const err: globalThis.Error & {
-			info?: getApiGoogleLoginResponseError["data"];
+			info?: getApiAuthUsersResponseError["data"];
 			status?: number;
 		} = new globalThis.Error();
-		const data: getApiGoogleLoginResponseError["data"] = body
+		const data: getApiAuthUsersResponseError["data"] = body
 			? JSON.parse(body)
 			: {};
 		err.info = data;
 		err.status = res.status;
 		throw err;
 	}
-	const data: getApiGoogleLoginResponse["data"] = body ? JSON.parse(body) : {};
-	return {
-		data,
-		status: res.status,
-		headers: res.headers,
-	} as getApiGoogleLoginResponse;
-};
-
-export const getGetApiGoogleLoginQueryKey = () => {
-	return ["api", "google", "login"] as const;
-};
-
-export const getGetApiGoogleLoginQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
-	TError = unknown,
->(options?: {
-	query?: Partial<
-		UseQueryOptions<
-			Awaited<ReturnType<typeof getApiGoogleLogin>>,
-			TError,
-			TData
-		>
-	>;
-	fetch?: RequestInit;
-}) => {
-	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleLoginQueryKey();
-
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getApiGoogleLogin>>
-	> = ({ signal }) => getApiGoogleLogin({ signal, ...fetchOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiGoogleLogin>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetApiGoogleLoginQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiGoogleLogin>>
->;
-export type GetApiGoogleLoginQueryError = unknown;
-
-export function useGetApiGoogleLogin<
-	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
-	TError = unknown,
->(
-	options: {
-		query: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleLogin>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleLogin>>,
-					TError,
-					Awaited<ReturnType<typeof getApiGoogleLogin>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiGoogleLogin<
-	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
-	TError = unknown,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleLogin>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleLogin>>,
-					TError,
-					Awaited<ReturnType<typeof getApiGoogleLogin>>
-				>,
-				"initialData"
-			>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetApiGoogleLogin<
-	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
-	TError = unknown,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleLogin>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
-
-export function useGetApiGoogleLogin<
-	TData = Awaited<ReturnType<typeof getApiGoogleLogin>>,
-	TError = unknown,
->(
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleLogin>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getGetApiGoogleLoginQueryOptions(options);
-
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-	return { ...query, queryKey: queryOptions.queryKey };
-}
-
-export type getApiGoogleCallbackResponseDefault = {
-	data: unknown;
-	status: number;
-};
-export type getApiGoogleCallbackResponseError =
-	getApiGoogleCallbackResponseDefault & {
-		headers: Headers;
-	};
-
-export type getApiGoogleCallbackResponse = getApiGoogleCallbackResponseError;
-
-export const getGetApiGoogleCallbackUrl = () => {
-	return `/api/google/callback`;
-};
-
-export const getApiGoogleCallback = async (
-	options?: RequestInit,
-): Promise<getApiGoogleCallbackResponse> => {
-	const res = await fetch(getGetApiGoogleCallbackUrl(), {
-		...options,
-		method: "GET",
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-	if (!res.ok) {
-		const err: globalThis.Error & {
-			info?: getApiGoogleCallbackResponseError["data"];
-			status?: number;
-		} = new globalThis.Error();
-		const data: getApiGoogleCallbackResponseError["data"] = body
-			? JSON.parse(body)
-			: {};
-		err.info = data;
-		err.status = res.status;
-		throw err;
-	}
-	const data: getApiGoogleCallbackResponse["data"] = body
+	const data: getApiAuthUsersResponseSuccess["data"] = body
 		? JSON.parse(body)
 		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as getApiGoogleCallbackResponse;
+	} as getApiAuthUsersResponseSuccess;
 };
 
-export const getGetApiGoogleCallbackQueryKey = () => {
-	return ["api", "google", "callback"] as const;
+export const getGetApiAuthUsersQueryKey = () => {
+	return ["api", "auth", "users"] as const;
 };
 
-export const getGetApiGoogleCallbackQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
-	TError = unknown,
+export const getGetApiAuthUsersQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+	TError = ErrorResponse,
 >(options?: {
 	query?: Partial<
-		UseQueryOptions<
-			Awaited<ReturnType<typeof getApiGoogleCallback>>,
-			TError,
-			TData
-		>
+		UseQueryOptions<Awaited<ReturnType<typeof getApiAuthUsers>>, TError, TData>
 	>;
 	fetch?: RequestInit;
 }) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleCallbackQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetApiAuthUsersQueryKey();
 
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getApiGoogleCallback>>
-	> = ({ signal }) => getApiGoogleCallback({ signal, ...fetchOptions });
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAuthUsers>>> = ({
+		signal,
+	}) => getApiAuthUsers({ signal, ...fetchOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiGoogleCallback>>,
+		Awaited<ReturnType<typeof getApiAuthUsers>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetApiGoogleCallbackQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiGoogleCallback>>
+export type GetApiAuthUsersQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthUsers>>
 >;
-export type GetApiGoogleCallbackQueryError = unknown;
+export type GetApiAuthUsersQueryError = ErrorResponse;
 
-export function useGetApiGoogleCallback<
-	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
-	TError = unknown,
+export function useGetApiAuthUsers<
+	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+	TError = ErrorResponse,
 >(
 	options: {
 		query: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiAuthUsers>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleCallback>>,
+					Awaited<ReturnType<typeof getApiAuthUsers>>,
 					TError,
-					Awaited<ReturnType<typeof getApiGoogleCallback>>
+					Awaited<ReturnType<typeof getApiAuthUsers>>
 				>,
 				"initialData"
 			>;
@@ -317,23 +140,23 @@ export function useGetApiGoogleCallback<
 ): DefinedUseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiGoogleCallback<
-	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
-	TError = unknown,
+export function useGetApiAuthUsers<
+	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiAuthUsers>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleCallback>>,
+					Awaited<ReturnType<typeof getApiAuthUsers>>,
 					TError,
-					Awaited<ReturnType<typeof getApiGoogleCallback>>
+					Awaited<ReturnType<typeof getApiAuthUsers>>
 				>,
 				"initialData"
 			>;
@@ -343,14 +166,14 @@ export function useGetApiGoogleCallback<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiGoogleCallback<
-	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
-	TError = unknown,
+export function useGetApiAuthUsers<
+	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiAuthUsers>>,
 				TError,
 				TData
 			>
@@ -362,14 +185,14 @@ export function useGetApiGoogleCallback<
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useGetApiGoogleCallback<
-	TData = Awaited<ReturnType<typeof getApiGoogleCallback>>,
-	TError = unknown,
+export function useGetApiAuthUsers<
+	TData = Awaited<ReturnType<typeof getApiAuthUsers>>,
+	TError = ErrorResponse,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleCallback>>,
+				Awaited<ReturnType<typeof getApiAuthUsers>>,
 				TError,
 				TData
 			>
@@ -380,7 +203,7 @@ export function useGetApiGoogleCallback<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetApiGoogleCallbackQueryOptions(options);
+	const queryOptions = getGetApiAuthUsersQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,
@@ -390,25 +213,25 @@ export function useGetApiGoogleCallback<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type getApiGoogleRevokeResponseDefault = {
+export type getApiAuthGoogleLoginResponseDefault = {
 	data: unknown;
 	status: number;
 };
-export type getApiGoogleRevokeResponseError =
-	getApiGoogleRevokeResponseDefault & {
+export type getApiAuthGoogleLoginResponseError =
+	getApiAuthGoogleLoginResponseDefault & {
 		headers: Headers;
 	};
 
-export type getApiGoogleRevokeResponse = getApiGoogleRevokeResponseError;
+export type getApiAuthGoogleLoginResponse = getApiAuthGoogleLoginResponseError;
 
-export const getGetApiGoogleRevokeUrl = () => {
-	return `/api/google/revoke`;
+export const getGetApiAuthGoogleLoginUrl = () => {
+	return `/api/auth/google/login`;
 };
 
-export const getApiGoogleRevoke = async (
+export const getApiAuthGoogleLogin = async (
 	options?: RequestInit,
-): Promise<getApiGoogleRevokeResponse> => {
-	const res = await fetch(getGetApiGoogleRevokeUrl(), {
+): Promise<getApiAuthGoogleLoginResponse> => {
+	const res = await fetch(getGetApiAuthGoogleLoginUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -416,35 +239,37 @@ export const getApiGoogleRevoke = async (
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 	if (!res.ok) {
 		const err: globalThis.Error & {
-			info?: getApiGoogleRevokeResponseError["data"];
+			info?: getApiAuthGoogleLoginResponseError["data"];
 			status?: number;
 		} = new globalThis.Error();
-		const data: getApiGoogleRevokeResponseError["data"] = body
+		const data: getApiAuthGoogleLoginResponseError["data"] = body
 			? JSON.parse(body)
 			: {};
 		err.info = data;
 		err.status = res.status;
 		throw err;
 	}
-	const data: getApiGoogleRevokeResponse["data"] = body ? JSON.parse(body) : {};
+	const data: getApiAuthGoogleLoginResponse["data"] = body
+		? JSON.parse(body)
+		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as getApiGoogleRevokeResponse;
+	} as getApiAuthGoogleLoginResponse;
 };
 
-export const getGetApiGoogleRevokeQueryKey = () => {
-	return ["api", "google", "revoke"] as const;
+export const getGetApiAuthGoogleLoginQueryKey = () => {
+	return ["api", "auth", "google", "login"] as const;
 };
 
-export const getGetApiGoogleRevokeQueryOptions = <
-	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+export const getGetApiAuthGoogleLoginQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 	TError = unknown,
 >(options?: {
 	query?: Partial<
 		UseQueryOptions<
-			Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+			Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 			TError,
 			TData
 		>
@@ -453,41 +278,41 @@ export const getGetApiGoogleRevokeQueryOptions = <
 }) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetApiGoogleRevokeQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetApiAuthGoogleLoginQueryKey();
 
 	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof getApiGoogleRevoke>>
-	> = ({ signal }) => getApiGoogleRevoke({ signal, ...fetchOptions });
+		Awaited<ReturnType<typeof getApiAuthGoogleLogin>>
+	> = ({ signal }) => getApiAuthGoogleLogin({ signal, ...fetchOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+		Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetApiGoogleRevokeQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getApiGoogleRevoke>>
+export type GetApiAuthGoogleLoginQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthGoogleLogin>>
 >;
-export type GetApiGoogleRevokeQueryError = unknown;
+export type GetApiAuthGoogleLoginQueryError = unknown;
 
-export function useGetApiGoogleRevoke<
-	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+export function useGetApiAuthGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 	TError = unknown,
 >(
 	options: {
 		query: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+					Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 					TError,
-					Awaited<ReturnType<typeof getApiGoogleRevoke>>
+					Awaited<ReturnType<typeof getApiAuthGoogleLogin>>
 				>,
 				"initialData"
 			>;
@@ -497,23 +322,23 @@ export function useGetApiGoogleRevoke<
 ): DefinedUseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiGoogleRevoke<
-	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+export function useGetApiAuthGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 				TError,
 				TData
 			>
 		> &
 			Pick<
 				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+					Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 					TError,
-					Awaited<ReturnType<typeof getApiGoogleRevoke>>
+					Awaited<ReturnType<typeof getApiAuthGoogleLogin>>
 				>,
 				"initialData"
 			>;
@@ -523,14 +348,14 @@ export function useGetApiGoogleRevoke<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
-export function useGetApiGoogleRevoke<
-	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+export function useGetApiAuthGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 				TError,
 				TData
 			>
@@ -542,14 +367,14 @@ export function useGetApiGoogleRevoke<
 	queryKey: DataTag<QueryKey, TData, TError>;
 };
 
-export function useGetApiGoogleRevoke<
-	TData = Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+export function useGetApiAuthGoogleLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 	TError = unknown,
 >(
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
-				Awaited<ReturnType<typeof getApiGoogleRevoke>>,
+				Awaited<ReturnType<typeof getApiAuthGoogleLogin>>,
 				TError,
 				TData
 			>
@@ -560,7 +385,927 @@ export function useGetApiGoogleRevoke<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetApiGoogleRevokeQueryOptions(options);
+	const queryOptions = getGetApiAuthGoogleLoginQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAuthGoogleCallbackResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiAuthGoogleCallbackResponseError =
+	getApiAuthGoogleCallbackResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiAuthGoogleCallbackResponse =
+	getApiAuthGoogleCallbackResponseError;
+
+export const getGetApiAuthGoogleCallbackUrl = () => {
+	return `/api/auth/google/callback`;
+};
+
+export const getApiAuthGoogleCallback = async (
+	options?: RequestInit,
+): Promise<getApiAuthGoogleCallbackResponse> => {
+	const res = await fetch(getGetApiAuthGoogleCallbackUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAuthGoogleCallbackResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAuthGoogleCallbackResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAuthGoogleCallbackResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAuthGoogleCallbackResponse;
+};
+
+export const getGetApiAuthGoogleCallbackQueryKey = () => {
+	return ["api", "auth", "google", "callback"] as const;
+};
+
+export const getGetApiAuthGoogleCallbackQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthGoogleCallbackQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthGoogleCallback>>
+	> = ({ signal }) => getApiAuthGoogleCallback({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAuthGoogleCallbackQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthGoogleCallback>>
+>;
+export type GetApiAuthGoogleCallbackQueryError = unknown;
+
+export function useGetApiAuthGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthGoogleCallback>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthGoogleCallback>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAuthGoogleCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleCallback>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAuthGoogleCallbackQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAuthGoogleRevokeResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiAuthGoogleRevokeResponseError =
+	getApiAuthGoogleRevokeResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiAuthGoogleRevokeResponse =
+	getApiAuthGoogleRevokeResponseError;
+
+export const getGetApiAuthGoogleRevokeUrl = () => {
+	return `/api/auth/google/revoke`;
+};
+
+export const getApiAuthGoogleRevoke = async (
+	options?: RequestInit,
+): Promise<getApiAuthGoogleRevokeResponse> => {
+	const res = await fetch(getGetApiAuthGoogleRevokeUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAuthGoogleRevokeResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAuthGoogleRevokeResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAuthGoogleRevokeResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAuthGoogleRevokeResponse;
+};
+
+export const getGetApiAuthGoogleRevokeQueryKey = () => {
+	return ["api", "auth", "google", "revoke"] as const;
+};
+
+export const getGetApiAuthGoogleRevokeQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthGoogleRevokeQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>
+	> = ({ signal }) => getApiAuthGoogleRevoke({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAuthGoogleRevokeQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>
+>;
+export type GetApiAuthGoogleRevokeQueryError = unknown;
+
+export function useGetApiAuthGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAuthGoogleRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthGoogleRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAuthGoogleRevokeQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAuthDiscordLoginResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiAuthDiscordLoginResponseError =
+	getApiAuthDiscordLoginResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiAuthDiscordLoginResponse =
+	getApiAuthDiscordLoginResponseError;
+
+export const getGetApiAuthDiscordLoginUrl = () => {
+	return `/api/auth/discord/login`;
+};
+
+export const getApiAuthDiscordLogin = async (
+	options?: RequestInit,
+): Promise<getApiAuthDiscordLoginResponse> => {
+	const res = await fetch(getGetApiAuthDiscordLoginUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAuthDiscordLoginResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAuthDiscordLoginResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAuthDiscordLoginResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAuthDiscordLoginResponse;
+};
+
+export const getGetApiAuthDiscordLoginQueryKey = () => {
+	return ["api", "auth", "discord", "login"] as const;
+};
+
+export const getGetApiAuthDiscordLoginQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthDiscordLoginQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthDiscordLogin>>
+	> = ({ signal }) => getApiAuthDiscordLogin({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAuthDiscordLoginQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthDiscordLogin>>
+>;
+export type GetApiAuthDiscordLoginQueryError = unknown;
+
+export function useGetApiAuthDiscordLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordLogin>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordLogin>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAuthDiscordLogin<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordLogin>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAuthDiscordLoginQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAuthDiscordCallbackResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiAuthDiscordCallbackResponseError =
+	getApiAuthDiscordCallbackResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiAuthDiscordCallbackResponse =
+	getApiAuthDiscordCallbackResponseError;
+
+export const getGetApiAuthDiscordCallbackUrl = () => {
+	return `/api/auth/discord/callback`;
+};
+
+export const getApiAuthDiscordCallback = async (
+	options?: RequestInit,
+): Promise<getApiAuthDiscordCallbackResponse> => {
+	const res = await fetch(getGetApiAuthDiscordCallbackUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAuthDiscordCallbackResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAuthDiscordCallbackResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAuthDiscordCallbackResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAuthDiscordCallbackResponse;
+};
+
+export const getGetApiAuthDiscordCallbackQueryKey = () => {
+	return ["api", "auth", "discord", "callback"] as const;
+};
+
+export const getGetApiAuthDiscordCallbackQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthDiscordCallbackQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthDiscordCallback>>
+	> = ({ signal }) => getApiAuthDiscordCallback({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAuthDiscordCallbackQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthDiscordCallback>>
+>;
+export type GetApiAuthDiscordCallbackQueryError = unknown;
+
+export function useGetApiAuthDiscordCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordCallback>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordCallback>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAuthDiscordCallback<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordCallback>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAuthDiscordCallbackQueryOptions(options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAuthDiscordRevokeResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type getApiAuthDiscordRevokeResponseError =
+	getApiAuthDiscordRevokeResponseDefault & {
+		headers: Headers;
+	};
+
+export type getApiAuthDiscordRevokeResponse =
+	getApiAuthDiscordRevokeResponseError;
+
+export const getGetApiAuthDiscordRevokeUrl = () => {
+	return `/api/auth/discord/revoke`;
+};
+
+export const getApiAuthDiscordRevoke = async (
+	options?: RequestInit,
+): Promise<getApiAuthDiscordRevokeResponse> => {
+	const res = await fetch(getGetApiAuthDiscordRevokeUrl(), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAuthDiscordRevokeResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAuthDiscordRevokeResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAuthDiscordRevokeResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAuthDiscordRevokeResponse;
+};
+
+export const getGetApiAuthDiscordRevokeQueryKey = () => {
+	return ["api", "auth", "discord", "revoke"] as const;
+};
+
+export const getGetApiAuthDiscordRevokeQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+	TError = unknown,
+>(options?: {
+	query?: Partial<
+		UseQueryOptions<
+			Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+			TError,
+			TData
+		>
+	>;
+	fetch?: RequestInit;
+}) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAuthDiscordRevokeQueryKey();
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>
+	> = ({ signal }) => getApiAuthDiscordRevoke({ signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAuthDiscordRevokeQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>
+>;
+export type GetApiAuthDiscordRevokeQueryError = unknown;
+
+export function useGetApiAuthDiscordRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+	TError = unknown,
+>(
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAuthDiscordRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAuthDiscordRevoke<
+	TData = Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+	TError = unknown,
+>(
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAuthDiscordRevoke>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAuthDiscordRevokeQueryOptions(options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,
