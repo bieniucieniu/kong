@@ -15,8 +15,12 @@ export function ChatInput({
 	state = useChatContext(),
 	className,
 	disabled,
+	onFocus,
+	autoFocus,
 }: {
 	initial?: { model?: string; prompt?: string };
+	onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
+	autoFocus?: boolean;
 	state?: ChatState;
 	className?: string;
 	disabled?: boolean;
@@ -42,6 +46,8 @@ export function ChatInput({
 		<InputGroup className={className}>
 			<InputGroupTextarea
 				onChange={(e) => setPrompt(e.target.value)}
+				onFocus={onFocus}
+				autoFocus={autoFocus}
 				onKeyDown={(e) => {
 					if (e.key === "Enter" && (e.shiftKey || e.ctrlKey) === true) {
 						submit();

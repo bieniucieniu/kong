@@ -38,3 +38,4 @@ out/
 .devenv
 src/main/resources/frontend/**/*
 
+frontend/.tanstack

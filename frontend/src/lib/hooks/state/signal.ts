@@ -1,17 +1,26 @@
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 
 class SignalState<T> {
 	private listeners: Set<() => void>;
 	state: T;
-	constructor(state: T) {
+	onSet: Set<(n: T) => void>;
+	constructor(state: T, onSet?: (n: T) => void) {
 		this.state = state;
 		this.listeners = new Set();
+		this.onSet = new Set();
+		if (onSet) this.onSet.add(onSet);
 	}
 	subscribe(fn: () => void): () => boolean {
 		this.listeners.add(fn);
 		return () => this.listeners.delete(fn);
 	}
+	register(fn: () => void): () => boolean {
+		this.onSet.add(fn);
+		return () => this.onSet.delete(fn);
+	}
+
 	dispach(): void {
+		dispatch(this.onSet, this.state);
 		dispatch(this.listeners);
 	}
 
@@ -26,16 +35,24 @@ class SignalState<T> {
 export type Setter<T> = <U extends T>(v: U) => U;
 export type { SignalState };
 
-export function createSignal<T>(state: T): SignalState<T> {
-	return new SignalState(state);
+export function createSignal<T>(
+	state: T,
+	onSet?: (n: T) => void,
+): SignalState<T> {
+	return new SignalState(state, onSet);
 }
 
 export function useSignal<T>(p: SignalState<T>): [state: T, setter: Setter<T>] {
 	return [useSignalState(p), useCallback((v) => p.update(v), [p])];
 }
 
-export function useCreateSignal<T>(state: T): SignalState<T> {
-	return useState(() => createSignal(state))[0];
+export function useCreateSignal<T>(
+	state: T,
+	onSet?: (n: T) => void,
+): SignalState<T> {
+	const ref = useRef(onSet);
+	ref.current = onSet;
+	return useState(() => createSignal(state, (s) => ref.current?.(s)))[0];
 }
 
 export function useSignalState<T, U>(

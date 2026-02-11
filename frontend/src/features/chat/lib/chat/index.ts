@@ -116,6 +116,7 @@ function useChatMutation(scope: string) {
 
 export function useCreateChat(
 	options: Omit<CreateChatOptions, "onExecutePrompt"> = {},
+	id: "new" | (string & {}),
 	scope: string = "global",
 ): ChatState {
 	const m = useChatMutation(scope);
@@ -128,9 +129,8 @@ export function useCreateChat(
 	const s = useState(() => createChat(opt))[0];
 
 	useEffect(() => {
-		if (options.initial?.model) s.model.update(options.initial?.model);
 		if (options.initial?.prompt?.trim()) s.pushPrompt(options.initial?.prompt);
-	}, []);
+	}, [options.initial?.prompt]);
 
 	return s;
 }

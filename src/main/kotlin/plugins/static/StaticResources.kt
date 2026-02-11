@@ -1,4 +1,4 @@
-package com.bieniucieniu.plugins
+package com.bieniucieniu.plugins.static
 
 import io.ktor.server.application.*
 

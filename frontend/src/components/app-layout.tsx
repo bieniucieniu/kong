@@ -8,7 +8,6 @@ import {
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
-	getGetApiAuthUsersSessionQueryKey,
 	useGetApiAuthUsersSession,
 	usePostApiAuthUsersLogout,
 } from "@/gen/api/default/default";
@@ -33,11 +32,7 @@ export function SessionMenu({ className }: { className?: string }) {
 	const q = useGetApiAuthUsersSession();
 	const m = usePostApiAuthUsersLogout({
 		mutation: {
-			onSuccess: (_, __, ___, { client }) => {
-				client.invalidateQueries({
-					queryKey: getGetApiAuthUsersSessionQueryKey(),
-				});
-			},
+			onSuccess: (_, __, ___, { client }) => client.clear(),
 		},
 	});
 	return (

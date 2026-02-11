@@ -1,12 +1,14 @@
 import type { RefObject } from "react";
 import type { Chat, ChatMessagesItem } from "@/gen/models";
 import { createSignal, type SignalState } from "@/lib/hooks/state/signal";
+import { getStored, updateStored } from "@/lib/hooks/state/storage";
 
+export type Chatid = "new" | (string & {});
 export type CreateChatOptions = {
 	executeOnPrompt?: boolean;
 	onMessagePushed?: (item: ChatMessagesItem) => void;
 	onExecutePrompt?: (item: Chat, onMessage: (item: string) => void) => void;
-	initial?: { model?: string; provider?: string; prompt?: string };
+	initial?: { prompt?: string };
 };
 export interface ChatState {
 	messages: SignalState<Chat["messages"]>;
@@ -19,9 +21,11 @@ export interface ChatState {
 }
 export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 	const messages = createSignal<Chat["messages"]>([]);
-	const model = createSignal<string | undefined>(opt.current.initial?.model);
-	const provider = createSignal<string | undefined>(
-		opt.current.initial?.provider,
+	const model = createSignal(getStored<string>("chat-model"), (s) =>
+		updateStored("chat-model", s),
+	);
+	const provider = createSignal(getStored<string>("chat-provider"), (s) =>
+		updateStored("chat-provider", s),
 	);
 	const prompt = createSignal<string>(opt.current.initial?.prompt || "");
 	const pushMessage = ({ prompt, author }: ChatMessagesItem) => {
