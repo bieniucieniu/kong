@@ -21,7 +21,7 @@ fun Application.configureAuth() {
     }
 
     install(Sessions) {
-        cookie<UserSession>("user_session") {
+        cookie<UserSession>("user-session") {
             cookie.path = "/"
             cookie.maxAgeInSeconds = 3600
         }

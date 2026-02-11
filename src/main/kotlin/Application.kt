@@ -14,6 +14,7 @@ fun Application.module() {
     configureKoin()
     configureDatabases()
     configureRoutingPlugins()
+
     configureAuth()
     configureAi()
     configureStaticResources()

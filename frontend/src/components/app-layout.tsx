@@ -8,9 +8,12 @@ import {
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
+	getGetApiAuthUsersSessionQueryKey,
 	useGetApiAuthUsersSession,
+	usePostApiAuthUsersLogout,
 } from "@/gen/api/default/default";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
+import { FieldError } from "./ui/field";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
@@ -28,14 +31,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
 export function SessionMenu({ className }: { className?: string }) {
 	const q = useGetApiAuthUsersSession();
+	const m = usePostApiAuthUsersLogout({
+		mutation: {
+			onSuccess: (_, __, ___, { client }) => {
+				client.invalidateQueries({
+					queryKey: getGetApiAuthUsersSessionQueryKey(),
+				});
+			},
+		},
+	});
 	return (
 		<MenubarMenu>
 			<MenubarTrigger className={className}>
-				{q.data?.data?.name ?? "Login"}
+				{q.data?.data ? (q.data.data.name ?? "unknown") : "Login"}
 			</MenubarTrigger>
 			<MenubarContent>
 				{q.data?.data ? (
-					<MenubarItem>Logout</MenubarItem>
+					<>
+						<MenubarItem onClick={() => m.mutate()}>Logout</MenubarItem>
+						<FieldError errors={[m.error]} />
+					</>
 				) : (
 					<>
 						<MenubarItem

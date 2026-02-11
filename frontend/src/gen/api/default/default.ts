@@ -24,10 +24,54 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
 	Chat,
 	ErrorResponse,
+	PostApiAuthUsersLogoutDefault,
 	SerializableLLModel,
 	SerializableLLMProvider,
+	Unit,
 	User,
 } from "../../models";
+
+export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
+export type HTTPStatusCode2xx = 200 | 201 | 202 | 203 | 204 | 205 | 206 | 207;
+export type HTTPStatusCode3xx = 300 | 301 | 302 | 303 | 304 | 305 | 307 | 308;
+export type HTTPStatusCode4xx =
+	| 400
+	| 401
+	| 402
+	| 403
+	| 404
+	| 405
+	| 406
+	| 407
+	| 408
+	| 409
+	| 410
+	| 411
+	| 412
+	| 413
+	| 414
+	| 415
+	| 416
+	| 417
+	| 418
+	| 419
+	| 420
+	| 421
+	| 422
+	| 423
+	| 424
+	| 426
+	| 428
+	| 429
+	| 431
+	| 451;
+export type HTTPStatusCode5xx = 500 | 501 | 502 | 503 | 504 | 505 | 507 | 511;
+export type HTTPStatusCodes =
+	| HTTPStatusCode1xx
+	| HTTPStatusCode2xx
+	| HTTPStatusCode3xx
+	| HTTPStatusCode4xx
+	| HTTPStatusCode5xx;
 
 export type getApiAuthUsersSessionResponse200 = {
 	data: User;
@@ -220,6 +264,136 @@ export function useGetApiAuthUsersSession<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
+export type postApiAuthUsersLogoutResponse200 = {
+	data: Unit;
+	status: 200;
+};
+
+export type postApiAuthUsersLogoutResponse401 = {
+	data: ErrorResponse;
+	status: 401;
+};
+
+export type postApiAuthUsersLogoutResponseDefault = {
+	data: PostApiAuthUsersLogoutDefault;
+	status: Exclude<HTTPStatusCodes, 200 | 401>;
+};
+
+export type postApiAuthUsersLogoutResponseSuccess =
+	postApiAuthUsersLogoutResponse200 & {
+		headers: Headers;
+	};
+export type postApiAuthUsersLogoutResponseError = (
+	| postApiAuthUsersLogoutResponse401
+	| postApiAuthUsersLogoutResponseDefault
+) & {
+	headers: Headers;
+};
+
+export const getPostApiAuthUsersLogoutUrl = () => {
+	return `/api/auth/users/logout`;
+};
+
+export const postApiAuthUsersLogout = async (
+	options?: RequestInit,
+): Promise<postApiAuthUsersLogoutResponseSuccess> => {
+	const res = await fetch(getPostApiAuthUsersLogoutUrl(), {
+		...options,
+		method: "POST",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: postApiAuthUsersLogoutResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: postApiAuthUsersLogoutResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: postApiAuthUsersLogoutResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as postApiAuthUsersLogoutResponseSuccess;
+};
+
+export const getPostApiAuthUsersLogoutMutationOptions = <
+	TError = ErrorResponse | PostApiAuthUsersLogoutDefault,
+	TContext = unknown,
+>(options?: {
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof postApiAuthUsersLogout>>,
+		TError,
+		void,
+		TContext
+	>;
+	fetch?: RequestInit;
+}): UseMutationOptions<
+	Awaited<ReturnType<typeof postApiAuthUsersLogout>>,
+	TError,
+	void,
+	TContext
+> => {
+	const mutationKey = ["postApiAuthUsersLogout"];
+	const { mutation: mutationOptions, fetch: fetchOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof postApiAuthUsersLogout>>,
+		void
+	> = () => {
+		return postApiAuthUsersLogout(fetchOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiAuthUsersLogoutMutationResult = NonNullable<
+	Awaited<ReturnType<typeof postApiAuthUsersLogout>>
+>;
+
+export type PostApiAuthUsersLogoutMutationError =
+	| ErrorResponse
+	| PostApiAuthUsersLogoutDefault;
+
+export const usePostApiAuthUsersLogout = <
+	TError = ErrorResponse | PostApiAuthUsersLogoutDefault,
+	TContext = unknown,
+>(
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof postApiAuthUsersLogout>>,
+			TError,
+			void,
+			TContext
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseMutationResult<
+	Awaited<ReturnType<typeof postApiAuthUsersLogout>>,
+	TError,
+	void,
+	TContext
+> => {
+	return useMutation(
+		getPostApiAuthUsersLogoutMutationOptions(options),
+		queryClient,
+	);
+};
 export type getApiAuthGoogleLoginResponseDefault = {
 	data: unknown;
 	status: number;
