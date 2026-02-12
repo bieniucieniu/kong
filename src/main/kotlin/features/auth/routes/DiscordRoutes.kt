@@ -15,7 +15,16 @@ import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
 
 @OptIn(InternalAPI::class)
-fun Route.authDiscordRoutes() {
+fun Route.authDiscordRoutes(
+    onAuth: suspend (OAuthAccessTokenResponse.OAuth2) -> UserSession = { principal ->
+        UserSession(
+            accessToken = principal.accessToken,
+            refreshToken = principal.refreshToken,
+            expiredIn = principal.expiresIn,
+            provider = OAuth2Provider.Discord,
+        )
+    }
+) {
     val client: HttpClient by inject()
     val authPlugin = application.pluginOrNull(Authentication) ?: return
     val providers = authPlugin.configuration().allProviders()
@@ -27,15 +36,9 @@ fun Route.authDiscordRoutes() {
                 }
                 get("callback") {
                     val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
+                    print(principal)
                     if (principal != null) {
-                        call.sessions.set(
-                            UserSession(
-                                accessToken = principal.accessToken,
-                                provider = OAuth2Provider.Discord,
-                                params = principal.extraParameters.names()
-                                    .associateWith { principal.extraParameters[it] },
-                            )
-                        )
+                        call.sessions.set(onAuth(principal))
                         call.respondRedirect("/")
                     } else call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid/no credentials"))
 

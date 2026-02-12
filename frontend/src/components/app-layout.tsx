@@ -38,7 +38,7 @@ export function SessionMenu({ className }: { className?: string }) {
 	return (
 		<MenubarMenu>
 			<MenubarTrigger className={className}>
-				{q.data?.data ? (q.data.data.name ?? "unknown") : "Login"}
+				{q.data?.data ? (q.data.data.username ?? "unknown") : "Login"}
 			</MenubarTrigger>
 			<MenubarContent>
 				{q.data?.data ? (

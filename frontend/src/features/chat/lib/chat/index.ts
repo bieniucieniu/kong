@@ -123,6 +123,7 @@ export function useCreateChat(
 	const opt = useRef<CreateChatOptions>(options);
 	opt.current = {
 		...options,
+		id,
 		onExecutePrompt: (chat, onMessage) => m.mutate({ chat, onMessage }),
 	};
 

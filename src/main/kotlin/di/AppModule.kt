@@ -1,6 +1,7 @@
 package com.bieniucieniu.di
 
 import com.bieniucieniu.di.modules.getAiModules
+import com.bieniucieniu.di.modules.getDiscordModules
 import com.bieniucieniu.di.modules.getHttpClientModules
 import io.ktor.server.application.*
 import kotlinx.serialization.json.Json
@@ -14,6 +15,6 @@ fun Application.getAppModules() = module {
             isLenient = true
         }
     }
-    includes(getAiModules(), getHttpClientModules())
+    includes(getHttpClientModules(), getAiModules(), getDiscordModules())
 }
 

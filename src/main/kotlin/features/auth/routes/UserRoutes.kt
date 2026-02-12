@@ -1,11 +1,9 @@
 package com.bieniucieniu.features.auth.routes
 
-import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.User
 import com.bieniucieniu.features.auth.models.UserSession
+import com.bieniucieniu.features.auth.services.UserService
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import io.ktor.client.*
-import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.auth.*
@@ -16,13 +14,15 @@ import io.ktor.server.sessions.*
 import org.koin.ktor.ext.inject
 
 fun Route.userRoutes() {
-    val client by inject<HttpClient>()
     authenticate("auth-session") {
+        val userService: UserService by inject()
         route("users") {
             get("session") {
                 val s = call.principal<UserSession>("auth-session")
-                if (s != null) call.respond(s)
-                else call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Unauthorized"))
+                val u = s?.let { userService.getUser(it) }
+                if (u != null) call.respond(u)
+                else if (s != null) call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Unauthorized"))
+                else call.respond(HttpStatusCode.Unauthorized, ErrorResponse("User does not exist"))
             }.describe {
                 responses {
                     HttpStatusCode.OK {
@@ -36,22 +36,29 @@ fun Route.userRoutes() {
 
             post("logout") {
                 val s = call.principal<UserSession>("auth-session")
+                print(s)
                 if (s != null) {
-                    call.sessions.clear("auth-session")
-                    val res = when (s.provider) {
-                        OAuth2Provider.Google -> client.get("https://oauth2.googleapis.com/revoke") {
-                            parameter("token", s.accessToken)
+                    try {
+                        val res = userService.revokeUser(s, application.environment.config)
+                        print(res)
+                        if (res != null && res.status.value !in 200..299)
+                            call.respond(
+                                res.status,
+                                ErrorResponse("Failed to revoke session for ${s.provider?.name}")
+                            )
+                        else {
+                            call.sessions.clear<UserSession>()
+                            call.respond(HttpStatusCode.OK)
                         }
 
-                        OAuth2Provider.Discord -> client.get("https://discord.com/api/oauth2/token/revoke") {
-                            parameter("token", s.accessToken)
-                        }
-
-                        null -> null
+                    } catch (e: Throwable) {
+                        print(e)
+                        return@post call.respond(
+                            HttpStatusCode.InternalServerError,
+                            ErrorResponse("Failed to revoke session for ${s.provider?.name}: ${e.message}")
+                        )
                     }
-                    if (res != null && res.status.value !in 200..299)
-                        call.respond(res.status, ErrorResponse("Failed to revoke session for ${s.provider?.name}"))
-                    else call.respond(HttpStatusCode.OK)
+
                 }
             }.describe {
                 responses {

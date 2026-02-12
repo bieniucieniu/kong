@@ -10,6 +10,10 @@ enum class OAuth2Provider {
 @Serializable
 data class UserSession(
     val accessToken: String,
+    val refreshToken: String?,
+    val username: String? = null,
+    val userId: ULong? = null,
+    val expiredIn: Long? = null,
     val provider: OAuth2Provider? = null,
-    val params: Map<String, String?>? = null
+    val params: Map<String, List<String>?>? = null
 )

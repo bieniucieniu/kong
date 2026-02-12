@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-fun Application.configureDatabases() {
+fun Application.installDatabases() {
     val url = environment.config.property("database.url").getString()
     val database = environment.config.propertyOrNull("database.database")?.getString() ?: "kong"
 

@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class User(
-    val id: UInt,
-    val name: String,
+    val id: ULong,
+    val username: String,
     val googleId: String?,
-    val discordId: String?,
+    val discordId: ULong?,
 ) {
 }

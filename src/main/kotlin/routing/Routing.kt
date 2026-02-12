@@ -1,4 +1,4 @@
-package com.bieniucieniu.plugins.Routing
+package com.bieniucieniu.routing
 
 
 import com.bieniucieniu.features.shared.models.ErrorResponse
@@ -24,10 +24,11 @@ import org.koin.ktor.ext.inject
 import kotlin.time.Duration.Companion.seconds
 
 
-fun Application.configureRoutingPlugins() {
+fun Application.installRoutingPlugins() {
     val jsonConfig: Json by inject()
     install(ContentNegotiation) {
         json(jsonConfig)
+        json(jsonConfig, ContentType.Application.FormUrlEncoded)
     }
     install(CachingHeaders) {
         options { call, outgoingContent ->

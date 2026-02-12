@@ -5,7 +5,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface SerializableLLMProvider {
-	id: string;
-	display: string;
-}
+export type UserDiscordId = {
+	"[UNINITIALIZED]": number;
+} | null;

@@ -11,11 +11,22 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
 
 @OptIn(InternalAPI::class)
-fun Route.authGoogleRoutes() {
+fun Route.authGoogleRoutes(
+    onAuth: suspend (OAuthAccessTokenResponse.OAuth2) -> UserSession = { principal ->
+        UserSession(
+            accessToken = principal.accessToken,
+            refreshToken = principal.refreshToken,
+            expiredIn = principal.expiresIn,
+            provider = OAuth2Provider.Google,
+            params = principal.extraParameters.toMap()
+        )
+    }
+) {
     val client: HttpClient by inject()
     val authPlugin = application.pluginOrNull(Authentication) ?: return
     val providers = authPlugin.configuration().allProviders()
@@ -28,12 +39,7 @@ fun Route.authGoogleRoutes() {
                 get("callback") {
                     val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
                     if (principal != null) {
-                        call.sessions.set(
-                            UserSession(
-                                accessToken = principal.accessToken,
-                                provider = OAuth2Provider.Google
-                            )
-                        )
+                        call.sessions.set(onAuth(principal))
                         call.respondRedirect("/")
                     } else call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid/no credentials"))
 

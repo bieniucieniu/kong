@@ -3,8 +3,9 @@ import type { Chat, ChatMessagesItem } from "@/gen/models";
 import { createSignal, type SignalState } from "@/lib/hooks/state/signal";
 import { getStored, updateStored } from "@/lib/hooks/state/storage";
 
-export type Chatid = "new" | (string & {});
+export type ChatId = "new" | (string & {});
 export type CreateChatOptions = {
+	id?: ChatId;
 	executeOnPrompt?: boolean;
 	onMessagePushed?: (item: ChatMessagesItem) => void;
 	onExecutePrompt?: (item: Chat, onMessage: (item: string) => void) => void;
