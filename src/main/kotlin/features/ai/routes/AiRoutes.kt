@@ -54,22 +54,26 @@ fun Route.aiRoutes() {
 
 
         call.respondBytesWriter(contentType = ContentType.Text.EventStream) {
-            var acc = " "
-            val writeAcc = suspend {
-                writeByteArray(acc.toByteArray())
-                flush()
-                acc = ""
-            }
-            writeAcc()
-            f.collect { chunk ->
-                val str = when (chunk) {
-                    is StreamFrame.Append -> chunk.text
-                    else -> ""
+            try {
+                var acc = " "
+                val writeAcc = suspend {
+                    writeByteArray(acc.toByteArray())
+                    flush()
+                    acc = ""
                 }
-                acc += str
-                if (acc.length > minChunkSize) writeAcc()
+                writeAcc()
+                f.collect { chunk ->
+                    val str = when (chunk) {
+                        is StreamFrame.Append -> chunk.text
+                        else -> ""
+                    }
+                    acc += str
+                    if (acc.length > minChunkSize) writeAcc()
+                }
+                writeAcc()
+            } catch (e: Throwable) {
+                writeByteArray("error: ${e.message}".toByteArray())
             }
-            writeAcc()
         }
     }.describe {
         description = "Chat with AI"

@@ -3,16 +3,15 @@ package com.bieniucieniu.di.modules
 import com.bieniucieniu.features.ai.providers.google.GoogleService
 import com.bieniucieniu.features.ai.providers.ollama.OllamaService
 import com.bieniucieniu.features.ai.services.AiService
-import io.ktor.server.application.*
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-fun Application.getAiModules() = module {
+val aiModules = module {
     single {
-        OllamaService(get(named("ollama-http-client")), this@getAiModules)
+        OllamaService(get(named("ollama-http-client")), get())
     }
     single {
-        GoogleService(this@getAiModules)
+        GoogleService(get())
     }
     single {
         AiService(

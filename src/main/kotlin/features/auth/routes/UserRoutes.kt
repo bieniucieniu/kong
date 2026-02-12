@@ -19,7 +19,7 @@ fun Route.userRoutes() {
         route("users") {
             get("session") {
                 val s = call.principal<UserSession>("auth-session")
-                val u = s?.let { userService.getUser(it) }
+                val u = s?.let { userService.getUserBySession(it) }
                 if (u != null) call.respond(u)
                 else if (s != null) call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Unauthorized"))
                 else call.respond(HttpStatusCode.Unauthorized, ErrorResponse("User does not exist"))
@@ -36,11 +36,9 @@ fun Route.userRoutes() {
 
             post("logout") {
                 val s = call.principal<UserSession>("auth-session")
-                print(s)
                 if (s != null) {
                     try {
-                        val res = userService.revokeUser(s, application.environment.config)
-                        print(res)
+                        val res = userService.revokeUser(s)
                         if (res != null && res.status.value !in 200..299)
                             call.respond(
                                 res.status,
@@ -52,7 +50,6 @@ fun Route.userRoutes() {
                         }
 
                     } catch (e: Throwable) {
-                        print(e)
                         return@post call.respond(
                             HttpStatusCode.InternalServerError,
                             ErrorResponse("Failed to revoke session for ${s.provider?.name}: ${e.message}")

@@ -36,7 +36,6 @@ fun Route.authDiscordRoutes(
                 }
                 get("callback") {
                     val principal: OAuthAccessTokenResponse.OAuth2? = call.authentication.principal()
-                    print(principal)
                     if (principal != null) {
                         call.sessions.set(onAuth(principal))
                         call.respondRedirect("/")

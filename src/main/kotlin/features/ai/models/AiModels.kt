@@ -18,6 +18,7 @@ enum class ChatMessageAuthor {
     Tool,
 }
 
+
 @Serializable
 data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 

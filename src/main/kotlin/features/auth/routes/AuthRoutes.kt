@@ -11,7 +11,19 @@ import org.koin.ktor.ext.inject
 fun Route.authRoutes() {
     val s: UserService by inject()
     userRoutes()
-    authGoogleRoutes()
+    authGoogleRoutes {
+        val us = UserSession(
+            accessToken = it.accessToken,
+            refreshToken = it.refreshToken,
+            expiredIn = it.expiresIn,
+            provider = OAuth2Provider.Google,
+        )
+        val u = s.ensureUserBySession(us)
+        us.copy(
+            userId = u.id,
+            username = u.username,
+        )
+    }
     authDiscordRoutes {
         val us = UserSession(
             accessToken = it.accessToken,
@@ -19,7 +31,7 @@ fun Route.authRoutes() {
             expiredIn = it.expiresIn,
             provider = OAuth2Provider.Discord,
         )
-        val u = s.ensureUser(us)
+        val u = s.ensureUserBySession(us)
         us.copy(
             userId = u.id,
             username = u.username,

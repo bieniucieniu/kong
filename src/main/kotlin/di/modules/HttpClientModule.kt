@@ -11,29 +11,14 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import org.koin.ktor.ext.get
 
-fun Application.getHttpClientModules() = module {
-    val client by lazy {
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(this@getHttpClientModules.get())
-            }
-            install(HttpTimeout) {
-                requestTimeoutMillis = null
-                connectTimeoutMillis = 60_000
-                socketTimeoutMillis = 60_000
-            }
-            install(Logging) {
-                logger = Logger.DEFAULT
-                level = LogLevel.ALL
-            }
-        }
-    }
+val httpClientModules = module {
     single(named("ollama-http-client")) {
-        val username = environment.config.propertyOrNull("ai.ollama.username")?.getString()
-        val password = environment.config.propertyOrNull("ai.ollama.password")?.getString()
-        val baseUrlRealm = environment.config.propertyOrNull("ai.ollama.baseUrlRealm")?.getString()
+        val client: HttpClient = get()
+        val application: Application = get()
+        val username = application.environment.config.propertyOrNull("ai.ollama.username")?.getString()
+        val password = application.environment.config.propertyOrNull("ai.ollama.password")?.getString()
+        val baseUrlRealm = application.environment.config.propertyOrNull("ai.ollama.baseUrlRealm")?.getString()
         if (username != null && password != null)
             client.config {
                 install(Auth) {
@@ -50,5 +35,18 @@ fun Application.getHttpClientModules() = module {
             }
         else client
     }
-    single { client }
+    single {
+        HttpClient(CIO) {
+            install(ContentNegotiation) { json(get()) }
+            install(HttpTimeout) {
+                requestTimeoutMillis = null
+                connectTimeoutMillis = 60_000
+                socketTimeoutMillis = 60_000
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.ALL
+            }
+        }
+    }
 }

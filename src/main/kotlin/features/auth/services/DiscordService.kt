@@ -8,18 +8,14 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import io.ktor.server.application.*
 
 
-@Serializable
-data class RevokeTokenDiscordBody(
-    val token: String,
-    @SerialName("token_type_hint")
-    val tokenTypeHint: String? = null
-)
+class DiscordService(val client: HttpClient, application: Application) {
+    val clientId = application.environment.config.propertyOrNull("oauth2.discord.clientId")?.getString()!!
+    val clientSecret = application.environment.config.propertyOrNull("oauth2.discord.clientSecret")
+        ?.getString()!!
 
-class DiscordService(val client: HttpClient) {
     suspend fun getUser(accessToken: String): DiscordUser =
         client.get("https://discord.com/api/users/@me") {
             header("Authorization", "Bearer $accessToken")
@@ -27,8 +23,7 @@ class DiscordService(val client: HttpClient) {
 
     suspend fun getUser(session: UserSession): DiscordUser = getUser(session.accessToken)
 
-    suspend fun revokeUser(session: UserSession, clientId: String, clientSecret: String): HttpResponse {
-
+    suspend fun revokeUser(session: UserSession): HttpResponse {
         if (session.refreshToken != null) {
             val res = client.post("https://discord.com/api/oauth2/token/revoke") {
                 header("Authorization", "Bearer ${session.accessToken}")

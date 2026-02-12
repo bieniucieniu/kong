@@ -1,13 +1,14 @@
 package com.bieniucieniu.di
 
-import com.bieniucieniu.di.modules.getAiModules
-import com.bieniucieniu.di.modules.getDiscordModules
-import com.bieniucieniu.di.modules.getHttpClientModules
+import com.bieniucieniu.di.modules.aiModules
+import com.bieniucieniu.di.modules.discordModules
+import com.bieniucieniu.di.modules.httpClientModules
 import io.ktor.server.application.*
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 fun Application.getAppModules() = module {
+    single { this@getAppModules }
     single {
         Json {
             ignoreUnknownKeys = true
@@ -15,6 +16,6 @@ fun Application.getAppModules() = module {
             isLenient = true
         }
     }
-    includes(getHttpClientModules(), getAiModules(), getDiscordModules())
+    includes(httpClientModules, aiModules, discordModules)
 }
 
