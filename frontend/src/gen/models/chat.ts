@@ -8,6 +8,8 @@ import type { ChatMessagesItem } from "./chatMessagesItem";
 
 export interface Chat {
 	messages: ChatMessagesItem[];
-	model: string;
-	provider: string;
+	/** @nullable */
+	model?: string | null;
+	/** @nullable */
+	provider?: string | null;
 }

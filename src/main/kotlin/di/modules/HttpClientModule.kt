@@ -13,6 +13,22 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val httpClientModules = module {
+    single {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(get())
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = null
+                connectTimeoutMillis = 60_000
+                socketTimeoutMillis = 60_000
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.ALL
+            }
+        }
+    }
     single(named("ollama-http-client")) {
         val client: HttpClient = get()
         val application: Application = get()
@@ -34,19 +50,5 @@ val httpClientModules = module {
                 }
             }
         else client
-    }
-    single {
-        HttpClient(CIO) {
-            install(ContentNegotiation) { json(get()) }
-            install(HttpTimeout) {
-                requestTimeoutMillis = null
-                connectTimeoutMillis = 60_000
-                socketTimeoutMillis = 60_000
-            }
-            install(Logging) {
-                logger = Logger.DEFAULT
-                level = LogLevel.ALL
-            }
-        }
     }
 }

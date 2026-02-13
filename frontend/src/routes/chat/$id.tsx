@@ -15,14 +15,16 @@ function RouteComponent() {
 
 	return (
 		<ChatProvider state={state}>
-			<div className="h-full flex flex-col items-center justify-end gap-4 p-4">
+			<div className="h-full flex flex-col relative items-center justify-end gap-4 p-4">
 				<div className="flex-1 w-full">
-					<ChatList className="h-[calc(100svh-13rem)]" />
+					<ChatList className="h-[calc(100svh-11rem)]" />
 				</div>
-				<ChatInput
-					autoFocus
-					className="max-w-100 [view-transition-name:main-input]"
-				/>
+				<div className="bg-background absolute bottom-4 w-full max-w-180">
+					<ChatInput
+						autoFocus
+						className="w-full max-w-180 [view-transition-name:main-input]"
+					/>
+				</div>
 			</div>
 		</ChatProvider>
 	);

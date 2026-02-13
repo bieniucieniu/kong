@@ -1,6 +1,5 @@
 import { Loader } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSignalState } from "@/lib/hooks/state/signal";
 import { cn } from "@/lib/utils";
 import { useChatContext, useIsChatMutating } from "../lib/chat";
@@ -42,8 +41,8 @@ export function ChatList({
 	}, [last, isAtBottom]);
 
 	return (
-		<ScrollArea
-			className={cn("w-full", className)}
+		<div
+			className={cn("w-full overflow-y-auto", className)}
 			onScroll={handleScroll}
 			ref={ref}
 		>
@@ -69,6 +68,6 @@ export function ChatList({
 					</div>
 				)}
 			</div>
-		</ScrollArea>
+		</div>
 	);
 }

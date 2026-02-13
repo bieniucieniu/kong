@@ -79,7 +79,8 @@ export function useChatModels(
 }
 
 export function useChatInput(chat: ChatState = useChatContext()) {
-	return [...useSignal(chat.prompt), chat.pushPrompt] as const;
+	const [prompt, setPrompt] = useSignal(chat.prompt);
+	return [prompt, setPrompt, chat.pushPrompt] as const;
 }
 const context = createContext<ChatState | null>(null);
 

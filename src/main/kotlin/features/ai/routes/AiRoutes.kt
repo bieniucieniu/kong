@@ -90,11 +90,11 @@ fun Route.aiRoutes() {
     cacheOutput(30.minutes) {
         route("providers") {
             get {
-                val providers = s.getProviders()
+                val providers = s.getProviders { it.toSerializableLLMProvider() }
                 if (providers.isEmpty()) call.respond(
                     HttpStatusCode.NotFound,
                     ErrorResponse("No providers found")
-                ) else call.respond(providers.map { it.toSerializableLLMProvider() })
+                ) else call.respond(providers)
 
             }.describe {
                 description = "Get list of all providers"

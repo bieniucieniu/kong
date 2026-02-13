@@ -11,7 +11,7 @@ import org.koin.ktor.ext.get
 fun Application.configureAi() {
     install(Koog) {
         llm {
-            environment.config.propertyOrNull("koog.ollama.baseUrl")?.getString().also {
+            environment.config.propertyOrNull("ai.ollama.baseUrl")?.getString().also {
                 ollama {
                     baseUrl = it
                     httpClient = get(named("ollama-http-client"))

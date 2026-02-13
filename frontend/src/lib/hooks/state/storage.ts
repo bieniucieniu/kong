@@ -8,7 +8,7 @@ export function updateStored<T>(
 	return value;
 }
 export function getStored<T>(
-	key: string,
+	gkey: string,
 	defaultValue: T,
 	storage?: Storage,
 ): T;

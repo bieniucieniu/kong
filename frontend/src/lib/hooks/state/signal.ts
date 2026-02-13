@@ -29,7 +29,7 @@ class SignalState<T> {
 			this.state = state;
 			this.dispach();
 		}
-		return this.state as U;
+		return state;
 	}
 }
 export type Setter<T> = <U extends T>(v: U) => U;

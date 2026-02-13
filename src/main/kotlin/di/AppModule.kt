@@ -1,6 +1,7 @@
 package com.bieniucieniu.di
 
 import com.bieniucieniu.di.modules.aiModules
+import com.bieniucieniu.di.modules.databaseModule
 import com.bieniucieniu.di.modules.discordModules
 import com.bieniucieniu.di.modules.httpClientModules
 import io.ktor.server.application.*
@@ -16,6 +17,6 @@ fun Application.getAppModules() = module {
             isLenient = true
         }
     }
-    includes(httpClientModules, aiModules, discordModules)
+    includes(databaseModule, httpClientModules, aiModules, discordModules)
 }
 

@@ -20,6 +20,9 @@
         "noExplicitAny": "off",
         "noAssignInExpressions": "off"
       },
+      "a11y": {
+        "useSemanticElements": "off"
+      },
       "correctness": {
         "useHookAtTopLevel": "off",
         "useExhaustiveDependencies": "off",

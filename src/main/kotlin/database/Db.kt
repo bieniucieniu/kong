@@ -1,4 +1,4 @@
-package com.bieniucieniu.db
+package com.bieniucieniu.database
 
 import com.bieniucieniu.features.auth.repositories.UsersTable
 import io.ktor.server.application.*

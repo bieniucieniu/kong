@@ -24,7 +24,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
 	Chat,
 	ErrorResponse,
-	PostApiAuthUsersLogoutDefault,
+	PostApiAuthUsersLogoutDefaultOne,
+	PostApiAuthUsersLogoutDefaultTwo,
 	SerializableLLModel,
 	SerializableLLMProvider,
 	Unit,
@@ -274,10 +275,16 @@ export type postApiAuthUsersLogoutResponse401 = {
 	status: 401;
 };
 
-export type postApiAuthUsersLogoutResponseDefault = {
-	data: PostApiAuthUsersLogoutDefault;
+export type postApiAuthUsersLogoutResponseDefaultApplicationJson = {
+	data: PostApiAuthUsersLogoutDefaultOne;
 	status: Exclude<HTTPStatusCodes, 200 | 401>;
 };
+
+export type postApiAuthUsersLogoutResponseDefaultApplicationXWwwFormUrlencoded =
+	{
+		data: PostApiAuthUsersLogoutDefaultTwo;
+		status: Exclude<HTTPStatusCodes, 200 | 401>;
+	};
 
 export type postApiAuthUsersLogoutResponseSuccess =
 	postApiAuthUsersLogoutResponse200 & {
@@ -285,7 +292,8 @@ export type postApiAuthUsersLogoutResponseSuccess =
 	};
 export type postApiAuthUsersLogoutResponseError = (
 	| postApiAuthUsersLogoutResponse401
-	| postApiAuthUsersLogoutResponseDefault
+	| postApiAuthUsersLogoutResponseDefaultApplicationJson
+	| postApiAuthUsersLogoutResponseDefaultApplicationXWwwFormUrlencoded
 ) & {
 	headers: Headers;
 };
@@ -326,7 +334,10 @@ export const postApiAuthUsersLogout = async (
 };
 
 export const getPostApiAuthUsersLogoutMutationOptions = <
-	TError = ErrorResponse | PostApiAuthUsersLogoutDefault,
+	TError =
+		| ErrorResponse
+		| PostApiAuthUsersLogoutDefaultOne
+		| PostApiAuthUsersLogoutDefaultTwo,
 	TContext = unknown,
 >(options?: {
 	mutation?: UseMutationOptions<
@@ -367,10 +378,14 @@ export type PostApiAuthUsersLogoutMutationResult = NonNullable<
 
 export type PostApiAuthUsersLogoutMutationError =
 	| ErrorResponse
-	| PostApiAuthUsersLogoutDefault;
+	| PostApiAuthUsersLogoutDefaultOne
+	| PostApiAuthUsersLogoutDefaultTwo;
 
 export const usePostApiAuthUsersLogout = <
-	TError = ErrorResponse | PostApiAuthUsersLogoutDefault,
+	TError =
+		| ErrorResponse
+		| PostApiAuthUsersLogoutDefaultOne
+		| PostApiAuthUsersLogoutDefaultTwo,
 	TContext = unknown,
 >(
 	options?: {
@@ -1499,25 +1514,26 @@ export function useGetApiAuthDiscordRevoke<
 /**
  * Chat with AI
  */
-export type postApiAiChatResponseDefault = {
+export type postApiAiChatWithJsonResponseDefault = {
 	data: unknown;
 	status: number;
 };
-export type postApiAiChatResponseError = postApiAiChatResponseDefault & {
-	headers: Headers;
-};
+export type postApiAiChatWithJsonResponseError =
+	postApiAiChatWithJsonResponseDefault & {
+		headers: Headers;
+	};
 
-export type postApiAiChatResponse = postApiAiChatResponseError;
+export type postApiAiChatWithJsonResponse = postApiAiChatWithJsonResponseError;
 
-export const getPostApiAiChatUrl = () => {
+export const getPostApiAiChatWithJsonUrl = () => {
 	return `/api/ai/chat`;
 };
 
-export const postApiAiChat = async (
+export const postApiAiChatWithJson = async (
 	chat: Chat,
 	options?: RequestInit,
-): Promise<postApiAiChatResponse> => {
-	const res = await fetch(getPostApiAiChatUrl(), {
+): Promise<postApiAiChatWithJsonResponse> => {
+	const res = await fetch(getPostApiAiChatWithJsonUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1527,42 +1543,44 @@ export const postApiAiChat = async (
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 	if (!res.ok) {
 		const err: globalThis.Error & {
-			info?: postApiAiChatResponseError["data"];
+			info?: postApiAiChatWithJsonResponseError["data"];
 			status?: number;
 		} = new globalThis.Error();
-		const data: postApiAiChatResponseError["data"] = body
+		const data: postApiAiChatWithJsonResponseError["data"] = body
 			? JSON.parse(body)
 			: {};
 		err.info = data;
 		err.status = res.status;
 		throw err;
 	}
-	const data: postApiAiChatResponse["data"] = body ? JSON.parse(body) : {};
+	const data: postApiAiChatWithJsonResponse["data"] = body
+		? JSON.parse(body)
+		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as postApiAiChatResponse;
+	} as postApiAiChatWithJsonResponse;
 };
 
-export const getPostApiAiChatMutationOptions = <
+export const getPostApiAiChatWithJsonMutationOptions = <
 	TError = unknown,
 	TContext = unknown,
 >(options?: {
 	mutation?: UseMutationOptions<
-		Awaited<ReturnType<typeof postApiAiChat>>,
+		Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 		TError,
 		{ data: Chat },
 		TContext
 	>;
 	fetch?: RequestInit;
 }): UseMutationOptions<
-	Awaited<ReturnType<typeof postApiAiChat>>,
+	Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 	TError,
 	{ data: Chat },
 	TContext
 > => {
-	const mutationKey = ["postApiAiChat"];
+	const mutationKey = ["postApiAiChatWithJson"];
 	const { mutation: mutationOptions, fetch: fetchOptions } = options
 		? options.mutation &&
 			"mutationKey" in options.mutation &&
@@ -1572,27 +1590,27 @@ export const getPostApiAiChatMutationOptions = <
 		: { mutation: { mutationKey }, fetch: undefined };
 
 	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof postApiAiChat>>,
+		Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 		{ data: Chat }
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return postApiAiChat(data, fetchOptions);
+		return postApiAiChatWithJson(data, fetchOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
 };
 
-export type PostApiAiChatMutationResult = NonNullable<
-	Awaited<ReturnType<typeof postApiAiChat>>
+export type PostApiAiChatWithJsonMutationResult = NonNullable<
+	Awaited<ReturnType<typeof postApiAiChatWithJson>>
 >;
-export type PostApiAiChatMutationBody = Chat;
-export type PostApiAiChatMutationError = unknown;
+export type PostApiAiChatWithJsonMutationBody = Chat;
+export type PostApiAiChatWithJsonMutationError = unknown;
 
-export const usePostApiAiChat = <TError = unknown, TContext = unknown>(
+export const usePostApiAiChatWithJson = <TError = unknown, TContext = unknown>(
 	options?: {
 		mutation?: UseMutationOptions<
-			Awaited<ReturnType<typeof postApiAiChat>>,
+			Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 			TError,
 			{ data: Chat },
 			TContext
@@ -1601,12 +1619,132 @@ export const usePostApiAiChat = <TError = unknown, TContext = unknown>(
 	},
 	queryClient?: QueryClient,
 ): UseMutationResult<
-	Awaited<ReturnType<typeof postApiAiChat>>,
+	Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 	TError,
 	{ data: Chat },
 	TContext
 > => {
-	return useMutation(getPostApiAiChatMutationOptions(options), queryClient);
+	return useMutation(
+		getPostApiAiChatWithJsonMutationOptions(options),
+		queryClient,
+	);
+};
+/**
+ * Chat with AI
+ */
+export type postApiAiChatWithUrlEncodedResponseDefault = {
+	data: unknown;
+	status: number;
+};
+export type postApiAiChatWithUrlEncodedResponseError =
+	postApiAiChatWithUrlEncodedResponseDefault & {
+		headers: Headers;
+	};
+
+export type postApiAiChatWithUrlEncodedResponse =
+	postApiAiChatWithUrlEncodedResponseError;
+
+export const getPostApiAiChatWithUrlEncodedUrl = () => {
+	return `/api/ai/chat`;
+};
+
+export const postApiAiChatWithUrlEncoded = async (
+	options?: RequestInit,
+): Promise<postApiAiChatWithUrlEncodedResponse> => {
+	const res = await fetch(getPostApiAiChatWithUrlEncodedUrl(), {
+		...options,
+		method: "POST",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: postApiAiChatWithUrlEncodedResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: postApiAiChatWithUrlEncodedResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: postApiAiChatWithUrlEncodedResponse["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as postApiAiChatWithUrlEncodedResponse;
+};
+
+export const getPostApiAiChatWithUrlEncodedMutationOptions = <
+	TError = unknown,
+	TContext = unknown,
+>(options?: {
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>,
+		TError,
+		void,
+		TContext
+	>;
+	fetch?: RequestInit;
+}): UseMutationOptions<
+	Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>,
+	TError,
+	void,
+	TContext
+> => {
+	const mutationKey = ["postApiAiChatWithUrlEncoded"];
+	const { mutation: mutationOptions, fetch: fetchOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>,
+		void
+	> = () => {
+		return postApiAiChatWithUrlEncoded(fetchOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type PostApiAiChatWithUrlEncodedMutationResult = NonNullable<
+	Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>
+>;
+
+export type PostApiAiChatWithUrlEncodedMutationError = unknown;
+
+export const usePostApiAiChatWithUrlEncoded = <
+	TError = unknown,
+	TContext = unknown,
+>(
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>,
+			TError,
+			void,
+			TContext
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseMutationResult<
+	Awaited<ReturnType<typeof postApiAiChatWithUrlEncoded>>,
+	TError,
+	void,
+	TContext
+> => {
+	return useMutation(
+		getPostApiAiChatWithUrlEncodedMutationOptions(options),
+		queryClient,
+	);
 };
 /**
  * Get list of all providers

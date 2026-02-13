@@ -23,7 +23,7 @@ enum class ChatMessageAuthor {
 data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 
 @Serializable
-data class Chat(val messages: List<ChatMessage>, val model: String, val provider: String)
+data class Chat(val messages: List<ChatMessage>, val model: String? = null, val provider: String? = null)
 
 @Serializable
 data class SerializableLLMProvider(val id: String, val display: String) {
@@ -38,7 +38,7 @@ data class SerializableLLModel(
     val contextLength: Long,
     val maxOutputTokens: Long? = null,
 ) {
-    fun supports(capability: LLMCapability): Boolean = capabilities.contains(capability)
+    fun supports(capability: LLMCapability): Boolean = capabilities.any { it.id == capability.id }
     fun toLLModel(): LLModel? = LLModel(
         provider = provider.toLLMProvider() ?: return null,
         id = id,
@@ -54,12 +54,13 @@ fun LLModel.toSerializableLLModel() = SerializableLLModel(
     capabilities = capabilities,
     contextLength = contextLength,
     maxOutputTokens = maxOutputTokens,
-)
+
+    )
 
 fun LLMProvider.toSerializableLLMProvider() = SerializableLLMProvider(id, display)
 
-fun findProviderById(id: String): LLMProvider? {
-    return LLMProvider::class.nestedClasses
-        .mapNotNull { it.objectInstance as? LLMProvider } // Get the singleton instance
+fun findProviderById(id: String): LLMProvider? =
+    LLMProvider::class.nestedClasses
+        .mapNotNull { it.objectInstance as? LLMProvider }
         .find { it.id.equals(id, ignoreCase = true) }
-}
+

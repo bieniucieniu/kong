@@ -5,7 +5,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostApiAuthUsersLogoutDefault = {
+export type PostApiAuthUsersLogoutDefaultOne = {
 	message: string;
 	/** @nullable */
 	reason?: string[] | null;
