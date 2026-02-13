@@ -1,0 +1,38 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Limbs (Far side) -->
+  <rect x="32" y="70" width="10" height="20" rx="5" fill="#1A1A1A" /> <!-- Back leg -->
+  <rect x="68" y="60" width="12" height="30" rx="6" fill="#1A1A1A" /> <!-- Front arm -->
+
+  <!-- Main Body Silhouette -->
+  <path
+    d="
+    M 25 85 
+    C 15 80, 15 55, 30 50 
+    C 45 45, 55 25, 75 30 
+    C 85 35, 90 45, 85 60 
+    L 80 90 
+    L 65 90 
+    C 65 75, 60 70, 50 75
+    C 40 80, 35 85, 35 90
+    L 20 90 
+    Z"
+    fill="#333333" />
+
+  <!-- Head Detail -->
+  <path d="M 72 31 C 70 15, 95 15, 95 35 C 95 50, 80 55, 75 50" fill="#333333" />
+
+  <!-- Face/Muzzle Area -->
+  <path d="M 85 30 Q 93 30 93 40 Q 93 48 85 48" fill="#444444" />
+
+  <!-- Eye -->
+  <circle cx="88" cy="34" r="1.5" fill="#000000" />
+
+  <!-- Ear -->
+  <path d="M 78 35 Q 76 35 76 38" stroke="#222" stroke-width="1" fill="none" />
+
+  <!-- Silverback Highlights -->
+  <path d="M 35 55 Q 50 48 65 52" stroke="#FFFFFF" stroke-width="4" opacity="0.2" fill="none" />
+
+  <!-- Ground Shadow (Optional) -->
+  <ellipse cx="55" cy="92" rx="35" ry="3" fill="#000000" opacity="0.1" />
+</svg>
