@@ -35,24 +35,17 @@ fun Route.userRoutes() {
             }
 
             post("logout") {
-                val s = call.principal<UserSession>("auth-session")
-                if (s != null) {
-                    try {
-                        val res = userService.revokeUser(s)
-                        if (res != null && res.status.value !in 200..299)
-                            call.respond(
-                                res.status,
-                                ErrorResponse("Failed to revoke session for ${s.provider?.name}")
-                            )
-                        else {
+                call.principal<UserSession>("auth-session")?.let {
+                    val res = userService.callRevokeUser(it)
+                    when (res?.status?.value) {
+                        in 200..299 -> {
                             call.sessions.clear<UserSession>()
                             call.respond(HttpStatusCode.OK)
                         }
 
-                    } catch (e: Throwable) {
-                        return@post call.respond(
-                            HttpStatusCode.InternalServerError,
-                            ErrorResponse("Failed to revoke session for ${s.provider?.name}: ${e.message}")
+                        else -> call.respond(
+                            res?.status ?: HttpStatusCode.InternalServerError,
+                            ErrorResponse("Failed to revoke session for ${it.provider?.name}")
                         )
                     }
 

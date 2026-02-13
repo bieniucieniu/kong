@@ -2,6 +2,7 @@ package com.bieniucieniu.features.ai.repositories
 
 import com.bieniucieniu.features.ai.models.ChatMessage
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
+import com.bieniucieniu.features.ai.models.ChatSession
 import com.bieniucieniu.features.auth.repositories.UsersTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.UuidTable
@@ -14,7 +15,7 @@ const val MAX_VARCHAR_LENGTH = 255
 
 object ChatSessionTable : UuidTable("chat_session") {
     val ownerId = uuid("owner_id").references(UsersTable.id)
-    val name = varchar("name", MAX_VARCHAR_LENGTH)
+    val name = varchar("name", MAX_VARCHAR_LENGTH).nullable().default(null)
     val systemPrompt = text("system_prompt").nullable().default(null)
 }
 
@@ -25,13 +26,34 @@ object ChatMessageTable : UuidTable("chat_message") {
     val createdAt = long("created_at")
 }
 
-class ChatSessionEntity(id: EntityID<Uuid>) : UuidEntity(id) {
-    companion object : UuidEntityClass<ChatSessionEntity>(ChatSessionTable)
+class ChatSessionDao(id: EntityID<Uuid>) : UuidEntity(id) {
+    companion object : UuidEntityClass<ChatSessionDao>(ChatSessionTable)
 
     var ownerId by ChatSessionTable.ownerId
     var name by ChatSessionTable.name
     var systemPrompt by ChatSessionTable.systemPrompt
-    var messages = ChatMessageEntity referrersOn ChatMessageTable.sessionId
+
+    fun toChatSession() = ChatSession(
+        id = id.toString(),
+        name = name,
+        systemPrompt = systemPrompt,
+    )
+}
+
+class ChatSessionWithMessagesDao(id: EntityID<Uuid>) : UuidEntity(id) {
+    companion object : UuidEntityClass<ChatSessionDao>(ChatSessionTable)
+
+    var ownerId by ChatSessionTable.ownerId
+    var name by ChatSessionTable.name
+    var systemPrompt by ChatSessionTable.systemPrompt
+    val messages by ChatMessageEntity referrersOn ChatMessageTable.sessionId
+
+    fun toChatSession(includeMessages: Boolean = true) = ChatSession(
+        id = id.toString(),
+        name = name,
+        systemPrompt = systemPrompt,
+        messages = if (includeMessages) messages.map { it.toChatMessage() } else emptyList()
+    )
 }
 
 class ChatMessageEntity(id: EntityID<Uuid>) : UuidEntity(id) {
@@ -43,5 +65,9 @@ class ChatMessageEntity(id: EntityID<Uuid>) : UuidEntity(id) {
     var createdAt by ChatMessageTable.createdAt
 
 
-    fun toChatMessage() = ChatMessage(content, ChatMessageAuthor.fromString(role) ?: ChatMessageAuthor.Agent)
+    fun toChatMessage() = ChatMessage(
+        ChatMessageAuthor.fromString(role) ?: ChatMessageAuthor.Agent,
+        content,
+        createdAt
+    )
 }

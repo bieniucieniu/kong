@@ -19,7 +19,7 @@ export function ChatList({
 	const ref = useRef<HTMLDivElement>(null);
 
 	let last = chat.length > 0 ? chat[chat.length - 1] : undefined;
-	last = last?.author !== "user" ? last : undefined;
+	last = last?.role !== "user" ? last : undefined;
 
 	const [isAtBottom, setIsAtBottom] = useState(true);
 
@@ -48,7 +48,7 @@ export function ChatList({
 		>
 			<div className="h-full flex flex-col gap-4 py-4 items-start w-[min(100%,48rem)] mx-auto">
 				{chat.map((item, i) => {
-					const { prompt: message, author } = item;
+					const { content: message, role: author } = item;
 					const key = `${author}-${i}-${message.slice(0, 10)}`;
 					return (
 						<ChatMessageCard

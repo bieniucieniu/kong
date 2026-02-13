@@ -14,6 +14,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
+import kotlin.uuid.Uuid
 
 @OptIn(InternalAPI::class)
 fun Route.authGoogleRoutes(
@@ -23,7 +24,8 @@ fun Route.authGoogleRoutes(
             refreshToken = principal.refreshToken,
             expiredIn = principal.expiresIn,
             provider = OAuth2Provider.Google,
-            params = principal.extraParameters.toMap()
+            params = principal.extraParameters.toMap(),
+            userId = Uuid.NIL
         )
     }
 ) {

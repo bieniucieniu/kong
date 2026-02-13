@@ -4,9 +4,10 @@
  * My API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChatPromptMessagesItemAuthor } from "./chatPromptMessagesItemAuthor";
+import type { ChatPromptMessagesItemRole } from "./chatPromptMessagesItemRole";
 
 export type ChatPromptMessagesItem = {
-	prompt: string;
-	author: ChatPromptMessagesItemAuthor;
+	role: ChatPromptMessagesItemRole;
+	content: string;
+	createAt?: number;
 };

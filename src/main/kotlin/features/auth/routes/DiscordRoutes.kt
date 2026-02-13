@@ -13,6 +13,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
+import kotlin.uuid.Uuid
 
 @OptIn(InternalAPI::class)
 fun Route.authDiscordRoutes(
@@ -22,6 +23,7 @@ fun Route.authDiscordRoutes(
             refreshToken = principal.refreshToken,
             expiredIn = principal.expiresIn,
             provider = OAuth2Provider.Discord,
+            userId = Uuid.NIL
         )
     }
 ) {

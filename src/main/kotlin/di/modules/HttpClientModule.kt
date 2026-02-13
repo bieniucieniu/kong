@@ -27,6 +27,7 @@ val httpClientModules = module {
                 logger = Logger.DEFAULT
                 level = LogLevel.ALL
             }
+
         }
     }
     single(named("ollama-http-client")) {

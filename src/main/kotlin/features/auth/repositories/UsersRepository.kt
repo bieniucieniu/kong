@@ -17,9 +17,9 @@ object UsersTable : UuidTable("users") {
     val discordId = ulong("discord_id").nullable().uniqueIndex()
 }
 
-class UserEntity(id: EntityID<Uuid>) : UuidEntity(id) {
+class UserDao(id: EntityID<Uuid>) : UuidEntity(id) {
 
-    companion object : UuidEntityClass<UserEntity>(UsersTable)
+    companion object : UuidEntityClass<UserDao>(UsersTable)
 
     fun toUser() = User(id.value, username, googleId, discordId)
 

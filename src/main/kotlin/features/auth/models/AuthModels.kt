@@ -13,7 +13,7 @@ data class UserSession(
     val accessToken: String,
     val refreshToken: String?,
     val username: String? = null,
-    val userId: Uuid? = null,
+    val userId: Uuid,
     val expiredIn: Long? = null,
     val provider: OAuth2Provider? = null,
     val params: Map<String, List<String>?>? = null

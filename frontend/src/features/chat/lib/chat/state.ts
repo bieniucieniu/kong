@@ -28,16 +28,16 @@ export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 	const model = createStoredSignal<string>("chat-model");
 	const provider = createStoredSignal<string>("chat-provider");
 	const prompt = createSignal<string>(opt.current.initial?.prompt || "");
-	const pushMessage = ({ prompt, author }: ChatPromptMessagesItem) => {
+	const pushMessage = ({ content, role }: ChatPromptMessagesItem) => {
 		const p = messages.state;
 		const prev = p.length > 0 ? p[p.length - 1] : undefined;
-		if (prev?.author === author) {
+		if (prev?.role === role) {
 			p[p.length - 1] = {
 				...prev,
-				prompt: prev.prompt + prompt,
+				content: prev.content + content,
 			};
 		} else {
-			const item = { prompt, author };
+			const item = { content, role };
 			p.push(item);
 			opt.current.onMessagePushed?.(item);
 		}
@@ -50,14 +50,14 @@ export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 				model: model.state,
 				provider: provider.state,
 			},
-			(p) => pushMessage({ prompt: p, author: "agent" }),
+			(p) => pushMessage({ content: p, role: "agent" }),
 		);
 	const pushPrompt = (p: string = prompt.state) => {
 		p = p.trim();
 		if (!p.length) return messages.state;
 
 		const prev = messages.state;
-		const next = pushMessage({ prompt: p, author: "user" });
+		const next = pushMessage({ content: p, role: "user" });
 		console.log(
 			prev,
 			next,

@@ -3,7 +3,7 @@ package com.bieniucieniu.features.auth.services
 import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.User
 import com.bieniucieniu.features.auth.models.UserSession
-import com.bieniucieniu.features.auth.repositories.UserEntity
+import com.bieniucieniu.features.auth.repositories.UserDao
 import com.bieniucieniu.features.auth.repositories.UsersTable
 import io.ktor.client.statement.*
 import org.jetbrains.exposed.v1.core.eq
@@ -11,22 +11,22 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import kotlin.uuid.Uuid
 
 class UserService(val discordService: DiscordService, val googleService: GoogleService) {
-    suspend fun getUserById(id: Uuid) = suspendTransaction { UserEntity.findById(id)?.toUser() }
+    suspend fun getUserById(id: Uuid) = suspendTransaction { UserDao.findById(id)?.toUser() }
     suspend fun getUserBySession(userSession: UserSession): User? =
         suspendTransaction {
-            userSession.userId?.let { getUserById(userSession.userId) }
+            getUserById(userSession.userId)
                 ?: when (userSession.provider) {
                     OAuth2Provider.Discord -> {
                         val du = discordService.getUser(userSession)
                         suspendTransaction {
-                            UserEntity.find { UsersTable.discordId eq du.id }.firstOrNull()?.toUser()
+                            UserDao.find { UsersTable.discordId eq du.id }.firstOrNull()?.toUser()
                         }
                     }
 
                     OAuth2Provider.Google -> {
                         val gu = googleService.getUser(userSession)
                         suspendTransaction {
-                            UserEntity.find { UsersTable.googleId eq gu.sub }.firstOrNull()?.toUser()
+                            UserDao.find { UsersTable.googleId eq gu.sub }.firstOrNull()?.toUser()
                         }
                     }
 
@@ -45,7 +45,7 @@ class UserService(val discordService: DiscordService, val googleService: GoogleS
             when (userSession.provider) {
                 OAuth2Provider.Discord -> {
                     val du = discordService.getUser(userSession)
-                    UserEntity.new {
+                    UserDao.new {
                         username = du.username
                         discordId = du.id
                     }.toUser()
@@ -53,7 +53,7 @@ class UserService(val discordService: DiscordService, val googleService: GoogleS
 
                 OAuth2Provider.Google -> {
                     val gu = googleService.getUser(userSession)
-                    UserEntity.new {
+                    UserDao.new {
                         username = gu.name
                         googleId = gu.sub
                     }.toUser()
@@ -73,7 +73,7 @@ class UserService(val discordService: DiscordService, val googleService: GoogleS
             getUserBySession(userSession) ?: createUserBySession(userSession)
         }
 
-    suspend fun revokeUser(userSession: UserSession): HttpResponse? =
+    suspend fun callRevokeUser(userSession: UserSession): HttpResponse? =
         when (userSession.provider) {
             OAuth2Provider.Discord -> discordService.revokeUser(userSession)
             OAuth2Provider.Google -> googleService.revokeUser(userSession)
