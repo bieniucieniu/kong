@@ -5,10 +5,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { UserDiscordId } from "./userDiscordId";
-import type { UserId } from "./userId";
 
 export interface User {
-	id: UserId;
+	id: string;
 	username: string;
 	/** @nullable */
 	googleId?: string | null;

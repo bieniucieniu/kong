@@ -28,6 +28,7 @@ application {
 kotlin {
     compilerOptions {
         optIn.add("io.ktor.utils.io.ExperimentalKtorApi")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
     }
     jvmToolchain(21)
 }

@@ -14,7 +14,7 @@ import {
 	useGetApiAiProvidersDefault,
 } from "@/gen/api/default/default";
 import type {
-	Chat,
+	ChatPrompt,
 	ErrorResponse,
 	SerializableLLModel,
 	SerializableLLMProvider,
@@ -36,7 +36,7 @@ export interface UseChatModelsReturn {
 
 export function useChatMessages(
 	s: ChatState = useChatContext(),
-): Chat["messages"] {
+): ChatPrompt["messages"] {
 	return useSignalState(s.messages);
 }
 export function useIsChatMutating() {
@@ -109,7 +109,7 @@ function useChatMutation(scope: string) {
 			chat,
 			onMessage: onMutate,
 		}: {
-			chat: Chat;
+			chat: ChatPrompt;
 			onMessage: (item: string) => void;
 		}) => fetchAiChat(chat, (d) => onMutate(d)),
 	});

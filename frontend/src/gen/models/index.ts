@@ -5,9 +5,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from "./chat";
-export * from "./chatMessagesItem";
-export * from "./chatMessagesItemAuthor";
+export * from "./chatPrompt";
+export * from "./chatPromptMessagesItem";
+export * from "./chatPromptMessagesItemAuthor";
 export * from "./errorResponse";
 export * from "./postApiAuthUsersLogoutDefaultOne";
 export * from "./postApiAuthUsersLogoutDefaultTwo";
@@ -18,4 +18,3 @@ export * from "./serializableLLMProvider";
 export * from "./unit";
 export * from "./user";
 export * from "./userDiscordId";
-export * from "./userId";

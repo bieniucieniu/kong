@@ -15,7 +15,18 @@ enum class ChatMessageAuthor {
     Agent,
 
     @SerialName("tool")
-    Tool,
+    Tool;
+
+    companion object {
+        fun fromString(str: String): ChatMessageAuthor? {
+            return when (str.trim().lowercase()) {
+                "user" -> User
+                "agent" -> Agent
+                "tool" -> Tool
+                else -> null
+            }
+        }
+    }
 }
 
 
@@ -23,7 +34,7 @@ enum class ChatMessageAuthor {
 data class ChatMessage(val prompt: String, val author: ChatMessageAuthor)
 
 @Serializable
-data class Chat(val messages: List<ChatMessage>, val model: String? = null, val provider: String? = null)
+data class ChatPrompt(val messages: List<ChatMessage>, val model: String? = null, val provider: String? = null)
 
 @Serializable
 data class SerializableLLMProvider(val id: String, val display: String) {

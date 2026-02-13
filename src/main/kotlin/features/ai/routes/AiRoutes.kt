@@ -25,7 +25,7 @@ fun Route.aiRoutes() {
         assert(s.isActive()) {
             "no active/provided services in ${s.services.keys.joinToString()}"
         }
-        val p = call.receive<Chat>()
+        val p = call.receive<ChatPrompt>()
         val minChunkSize = 50
         val model =
             s.getAvailableLLModels(p.provider)
@@ -78,7 +78,7 @@ fun Route.aiRoutes() {
     }.describe {
         description = "Chat with AI"
         requestBody {
-            schema = jsonSchema<Chat>()
+            schema = jsonSchema<ChatPrompt>()
         }
 
         responses {

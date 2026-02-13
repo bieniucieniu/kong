@@ -22,7 +22,7 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type {
-	Chat,
+	ChatPrompt,
 	ErrorResponse,
 	PostApiAuthUsersLogoutDefaultOne,
 	PostApiAuthUsersLogoutDefaultTwo,
@@ -1530,14 +1530,14 @@ export const getPostApiAiChatWithJsonUrl = () => {
 };
 
 export const postApiAiChatWithJson = async (
-	chat: Chat,
+	chatPrompt: ChatPrompt,
 	options?: RequestInit,
 ): Promise<postApiAiChatWithJsonResponse> => {
 	const res = await fetch(getPostApiAiChatWithJsonUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(chat),
+		body: JSON.stringify(chatPrompt),
 	});
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
@@ -1570,14 +1570,14 @@ export const getPostApiAiChatWithJsonMutationOptions = <
 	mutation?: UseMutationOptions<
 		Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 		TError,
-		{ data: Chat },
+		{ data: ChatPrompt },
 		TContext
 	>;
 	fetch?: RequestInit;
 }): UseMutationOptions<
 	Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 	TError,
-	{ data: Chat },
+	{ data: ChatPrompt },
 	TContext
 > => {
 	const mutationKey = ["postApiAiChatWithJson"];
@@ -1591,7 +1591,7 @@ export const getPostApiAiChatWithJsonMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof postApiAiChatWithJson>>,
-		{ data: Chat }
+		{ data: ChatPrompt }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -1604,7 +1604,7 @@ export const getPostApiAiChatWithJsonMutationOptions = <
 export type PostApiAiChatWithJsonMutationResult = NonNullable<
 	Awaited<ReturnType<typeof postApiAiChatWithJson>>
 >;
-export type PostApiAiChatWithJsonMutationBody = Chat;
+export type PostApiAiChatWithJsonMutationBody = ChatPrompt;
 export type PostApiAiChatWithJsonMutationError = unknown;
 
 export const usePostApiAiChatWithJson = <TError = unknown, TContext = unknown>(
@@ -1612,7 +1612,7 @@ export const usePostApiAiChatWithJson = <TError = unknown, TContext = unknown>(
 		mutation?: UseMutationOptions<
 			Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 			TError,
-			{ data: Chat },
+			{ data: ChatPrompt },
 			TContext
 		>;
 		fetch?: RequestInit;
@@ -1621,7 +1621,7 @@ export const usePostApiAiChatWithJson = <TError = unknown, TContext = unknown>(
 ): UseMutationResult<
 	Awaited<ReturnType<typeof postApiAiChatWithJson>>,
 	TError,
-	{ data: Chat },
+	{ data: ChatPrompt },
 	TContext
 > => {
 	return useMutation(

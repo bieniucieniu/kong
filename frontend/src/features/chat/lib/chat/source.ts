@@ -1,8 +1,11 @@
 import { getPostApiAiChatWithJsonUrl } from "@/gen/api/default/default";
-import type { Chat } from "@/gen/models";
+import type { ChatPrompt } from "@/gen/models";
 import { collect } from "./collect";
 
-export async function fetchAiChat(chat: Chat, onCollect: (d: string) => void) {
+export async function fetchAiChat(
+	chat: ChatPrompt,
+	onCollect: (d: string) => void,
+) {
 	const res = await fetch(getPostApiAiChatWithJsonUrl(), {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },

@@ -8,9 +8,10 @@ import com.bieniucieniu.features.auth.repositories.UsersTable
 import io.ktor.client.statement.*
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import kotlin.uuid.Uuid
 
 class UserService(val discordService: DiscordService, val googleService: GoogleService) {
-    suspend fun getUserById(id: ULong) = suspendTransaction { UserEntity.findById(id)?.toUser() }
+    suspend fun getUserById(id: Uuid) = suspendTransaction { UserEntity.findById(id)?.toUser() }
     suspend fun getUserBySession(userSession: UserSession): User? =
         suspendTransaction {
             userSession.userId?.let { getUserById(userSession.userId) }
@@ -30,7 +31,7 @@ class UserService(val discordService: DiscordService, val googleService: GoogleS
                     }
 
                     else -> User(
-                        id = userSession.userId ?: 0u,
+                        id = userSession.userId ?: Uuid.NIL,
                         username = userSession.username ?: "<unknown>",
                         googleId = null,
                         discordId = null
@@ -59,7 +60,7 @@ class UserService(val discordService: DiscordService, val googleService: GoogleS
                 }
 
                 else -> User(
-                    id = userSession.userId ?: 0u,
+                    id = userSession.userId ?: Uuid.NIL,
                     username = userSession.username ?: "<unknown>",
                     googleId = null,
                     discordId = null
