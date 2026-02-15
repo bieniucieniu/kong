@@ -11,6 +11,8 @@ import io.ktor.http.content.*
 import io.ktor.openapi.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
+import io.ktor.server.http.content.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -19,6 +21,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.*
 import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.inject
 import kotlin.time.Duration.Companion.seconds
@@ -31,7 +34,7 @@ fun Application.installRoutingPlugins() {
         json(jsonConfig, ContentType.Application.FormUrlEncoded)
     }
     install(CachingHeaders) {
-        options { call, outgoingContent ->
+        options { _, outgoingContent ->
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
                 ContentType.Text.Html -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
@@ -64,8 +67,23 @@ fun Application.installRoutingPlugins() {
     }
 
     routing {
-        swaggerUI(path = "swagger") {
-            info = OpenApiInfo(title = "My API", version = "1.0.0")
+        val dev: Boolean? = environment.config.propertyOrNull("ktor.development")?.getAs()
+        if (dev == true) {
+            swaggerUI(path = "swagger") {
+                info = OpenApiInfo(title = "My API", version = "1.0.0")
+            }
+        } else {
+            // ignore!
+            staticResources("/", "frontend").describe {
+                description = "static frontend resources"
+                responses {
+                    HttpStatusCode.OK {
+                        ContentType.Text.Html()
+                    }
+                    HttpStatusCode.NotFound {
+                    }
+                }
+            }
         }
 
         route("/") {

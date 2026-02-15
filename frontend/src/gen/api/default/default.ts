@@ -1511,15 +1511,25 @@ export function useGetApiAuthDiscordRevoke<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type postApiAiChatNewResponseDefault = {
-	data: unknown;
-	status: number;
-};
-export type postApiAiChatNewResponseError = postApiAiChatNewResponseDefault & {
-	headers: Headers;
+/**
+ * Create new chat session
+ */
+export type postApiAiChatNewResponse200 = {
+	data: ChatPrompt;
+	status: 200;
 };
 
-export type postApiAiChatNewResponse = postApiAiChatNewResponseError;
+export type postApiAiChatNewResponse401 = {
+	data: ErrorResponse;
+	status: 401;
+};
+
+export type postApiAiChatNewResponseSuccess = postApiAiChatNewResponse200 & {
+	headers: Headers;
+};
+export type postApiAiChatNewResponseError = postApiAiChatNewResponse401 & {
+	headers: Headers;
+};
 
 export const getPostApiAiChatNewUrl = () => {
 	return `/api/ai/chat/new`;
@@ -1527,7 +1537,7 @@ export const getPostApiAiChatNewUrl = () => {
 
 export const postApiAiChatNew = async (
 	options?: RequestInit,
-): Promise<postApiAiChatNewResponse> => {
+): Promise<postApiAiChatNewResponseSuccess> => {
 	const res = await fetch(getPostApiAiChatNewUrl(), {
 		...options,
 		method: "POST",
@@ -1546,16 +1556,18 @@ export const postApiAiChatNew = async (
 		err.status = res.status;
 		throw err;
 	}
-	const data: postApiAiChatNewResponse["data"] = body ? JSON.parse(body) : {};
+	const data: postApiAiChatNewResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
 	return {
 		data,
 		status: res.status,
 		headers: res.headers,
-	} as postApiAiChatNewResponse;
+	} as postApiAiChatNewResponseSuccess;
 };
 
 export const getPostApiAiChatNewMutationOptions = <
-	TError = unknown,
+	TError = ErrorResponse,
 	TContext = unknown,
 >(options?: {
 	mutation?: UseMutationOptions<
@@ -1594,9 +1606,9 @@ export type PostApiAiChatNewMutationResult = NonNullable<
 	Awaited<ReturnType<typeof postApiAiChatNew>>
 >;
 
-export type PostApiAiChatNewMutationError = unknown;
+export type PostApiAiChatNewMutationError = ErrorResponse;
 
-export const usePostApiAiChatNew = <TError = unknown, TContext = unknown>(
+export const usePostApiAiChatNew = <TError = ErrorResponse, TContext = unknown>(
 	options?: {
 		mutation?: UseMutationOptions<
 			Awaited<ReturnType<typeof postApiAiChatNew>>,

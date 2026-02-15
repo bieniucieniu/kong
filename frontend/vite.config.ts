@@ -18,6 +18,9 @@ export default defineConfig({
 		}),
 		tailwindcss(),
 	],
+	build: {
+		outDir: "../src/main/resources/frontend",
+	},
 
 	server: {
 		proxy: {
