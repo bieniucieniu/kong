@@ -9,7 +9,6 @@ import kotlin.uuid.Uuid
 
 fun Route.authRoutes() {
     val s: UserService by inject()
-    userRoutes()
     authGoogleRoutes {
         val us = UserSession(
             accessToken = it.accessToken,

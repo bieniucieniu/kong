@@ -20,7 +20,6 @@ fun Route.providerRoutes() {
             val providers = s.getProviders { it.toSerializableLLMProvider() }
             if (providers.isEmpty()) call.notFound("No providers found")
             else call.respond(providers)
-
         }.describe {
             description = "Get list of all providers"
             responses {

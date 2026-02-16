@@ -1,6 +1,7 @@
 package com.bieniucieniu.routing
 
 
+import com.bieniucieniu.errors.auth.UnauthorizedException
 import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
@@ -28,6 +29,7 @@ import kotlin.time.Duration.Companion.seconds
 
 
 fun Application.installRoutingPlugins() {
+    val dev: Boolean? by lazy { environment.config.propertyOrNull("ktor.development")?.getAs() }
     val jsonConfig: Json by inject()
     install(ContentNegotiation) {
         json(jsonConfig)
@@ -43,23 +45,39 @@ fun Application.installRoutingPlugins() {
         }
     }
     install(StatusPages) {
-        exception<Throwable> { call, cause ->
+        fun buildInnerCause(e: Throwable): List<String> {
             val reason = mutableListOf<String>()
-            var innerCause = cause.cause
+            var innerCause = e.cause
             while (innerCause != null) {
-                reason.add(cause.message ?: "Unknown error")
+                reason.add(e.message ?: "Unknown error")
                 innerCause = innerCause.cause
             }
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                ErrorResponse(cause.message ?: "Unknown error", reason = reason)
-            )
+            return reason
+        }
+
+        exception<Throwable> { call, cause ->
+            when (cause) {
+                is UnauthorizedException -> {
+                    call.respond(
+                        HttpStatusCode.Unauthorized,
+                        ErrorResponse(cause.message ?: "Unauthorized", reason = buildInnerCause(cause))
+                    )
+                }
+
+                else -> call.respond(
+                    HttpStatusCode.InternalServerError,
+                    ErrorResponse(cause.message ?: "Unknown error", reason = buildInnerCause(cause))
+                )
+            }
+
         }
     }
     install(Compression)
 
-    install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
-    install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+    if (environment.config.propertyOrNull("ktor.proxy")?.getAs<Boolean>() == true) {
+        install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+        install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+    }
     install(SimpleCache) {
         memoryCache {
             invalidateAt = 10.seconds
@@ -67,24 +85,29 @@ fun Application.installRoutingPlugins() {
     }
 
     routing {
-        val dev: Boolean? = environment.config.propertyOrNull("ktor.development")?.getAs()
         if (dev == true) {
             swaggerUI(path = "swagger") {
                 info = OpenApiInfo(title = "My API", version = "1.0.0")
+                source = OpenApiDocSource.FirstOf(
+                    OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
+                        // filter out all wildcard matching to fix schema gen on frontend (orval)
+                        routingRoot.descendants().filter { !it.path.contains("...}") }
+                    },
+                )
             }
-        } else {
-            // ignore!
-            staticResources("/", "frontend").describe {
-                description = "static frontend resources"
-                responses {
-                    HttpStatusCode.OK {
-                        ContentType.Text.Html()
-                    }
-                    HttpStatusCode.NotFound {
-                    }
+        }
+
+        staticResources("/", "frontend").describe {
+            description = "static frontend resources"
+            responses {
+                HttpStatusCode.OK {
+                    ContentType.Text.Html()
+                }
+                HttpStatusCode.NotFound {
                 }
             }
         }
+
 
         route("/") {
             install(RateLimiting) {
@@ -96,4 +119,10 @@ fun Application.installRoutingPlugins() {
             }
         }
     }
+}
+
+
+fun Application.isProxy(): Boolean {
+    val proxy = environment.config.propertyOrNull("ktor.proxy")?.getString()?.trim()?.lowercase()
+    return proxy == "true" || proxy == "yes" || proxy == "on"
 }

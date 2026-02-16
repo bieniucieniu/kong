@@ -32,23 +32,10 @@ class ChatSessionDao(id: EntityID<Uuid>) : UuidEntity(id) {
     var ownerId by ChatSessionTable.ownerId
     var name by ChatSessionTable.name
     var systemPrompt by ChatSessionTable.systemPrompt
-
-    fun toChatSession() = ChatSession(
-        id = id.toString(),
-        name = name,
-        systemPrompt = systemPrompt,
-    )
-}
-
-class ChatSessionWithMessagesDao(id: EntityID<Uuid>) : UuidEntity(id) {
-    companion object : UuidEntityClass<ChatSessionDao>(ChatSessionTable)
-
-    var ownerId by ChatSessionTable.ownerId
-    var name by ChatSessionTable.name
-    var systemPrompt by ChatSessionTable.systemPrompt
     val messages by ChatMessageEntity referrersOn ChatMessageTable.sessionId
 
-    fun toChatSession(includeMessages: Boolean = true) = ChatSession(
+
+    fun toChatSession(includeMessages: Boolean = false) = ChatSession(
         id = id.toString(),
         name = name,
         systemPrompt = systemPrompt,

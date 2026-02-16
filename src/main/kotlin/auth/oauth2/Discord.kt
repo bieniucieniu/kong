@@ -8,13 +8,14 @@ import io.ktor.server.auth.*
  * if [clientId] or [clientSecret] is null auth won't be installed
  */
 fun AuthenticationConfig.configureDiscordOauth2(
+    key: String,
     clientId: String?,
     clientSecret: String?,
     frontendUrl: String?,
     httpClient: HttpClient,
 ) {
     if (clientId != null && clientSecret != null)
-        oauth("auth-oauth-discord") {
+        oauth(key) {
             urlProvider = { "${frontendUrl}/api/auth/discord/callback" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(

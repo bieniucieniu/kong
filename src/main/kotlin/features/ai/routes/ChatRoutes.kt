@@ -6,7 +6,6 @@ import com.bieniucieniu.features.ai.models.ChatMessageAuthor
 import com.bieniucieniu.features.ai.models.ChatPrompt
 import com.bieniucieniu.features.ai.repositories.ChatSessionDao
 import com.bieniucieniu.features.ai.repositories.ChatSessionTable
-import com.bieniucieniu.features.ai.repositories.ChatSessionWithMessagesDao
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.auth.models.UserSession
 import com.bieniucieniu.features.shared.models.ErrorResponse
@@ -63,13 +62,11 @@ fun Route.chatRoutes() {
             (ChatSessionTable.id eq id) and (ChatSessionTable.ownerId eq session.userId)
         }
         val s =
-            if (includeMessages) ChatSessionWithMessagesDao.find(conn).firstOrNull()?.toChatSession()
+            if (includeMessages) ChatSessionDao.find(conn).firstOrNull()?.toChatSession()
             else ChatSessionDao.find(conn).firstOrNull()?.toChatSession()
 
-
-        s ?: return@get call.notFound("chat session not found")
-
-        call.respond(s)
+        if (s != null) call.respond(s)
+        else call.notFound("chat session not found")
     }.describe {
         responses {
             HttpStatusCode.OK {
@@ -96,8 +93,10 @@ fun Route.chatRoutes() {
         val session = call.principal<UserSession>() ?: return@post call.unauthorized()
         val s = ChatSessionDao.find {
             (ChatSessionTable.id eq id) and (ChatSessionTable.ownerId eq session.userId)
-        }
+        }.firstOrNull()?.toChatSession(true)
 
+        if (s != null) call.respond(s)
+        else call.notFound("chat session not found")
     }.describe {
         description = "Chat with AI on stable session"
         requestBody {
@@ -105,7 +104,6 @@ fun Route.chatRoutes() {
         }
 
         responses {
-
             HttpStatusCode.OK {
                 ContentType.Text.EventStream()
             }
@@ -125,11 +123,7 @@ fun Route.chatRoutes() {
             return@post call.serviceUnavailable("no active/provided services in ${s.services.keys.joinToString()}")
 
         val p = call.receive<ChatPrompt>()
-        val model =
-            s.getAvailableLLModels(p.provider)
-                .find { it.id == p.model }
-                ?: s.getDefaultModel(p.provider)
-        print(model)
+        val model = s.getAvailableLLModels(p.provider).find { it.id == p.model } ?: s.getDefaultModel(p.provider)
         val f = llm().executeStreaming(
             prompt = prompt("chat") {
                 system("You are a helpful assistant. Write short, simple and concise answers")
@@ -141,10 +135,7 @@ fun Route.chatRoutes() {
                     }
                 }
             },
-            model = model ?: run {
-                call.badRequest("Model not found")
-                return@post
-            }
+            model = model ?: return@post call.badRequest("Model not found")
         )
         var acc = ""
         call.streamFlow(f) { acc += it }

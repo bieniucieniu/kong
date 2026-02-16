@@ -19,9 +19,9 @@ fun Route.modelRoutes() {
     route("models") {
         get("{provider_id}") {
             val provider = call.parameters["provider_id"] ?: return@get call.badRequest("Provider not provided")
-            val models = s.getAvailableLLModels(provider)
-            if (models.isEmpty()) call.noContent(emptyList<SerializableLLModel>())
-            else call.respond(models.map { it.toSerializableLLModel() })
+            val m = s.getAvailableLLModels(provider)
+            if (m.isEmpty()) call.noContent(emptyList<SerializableLLModel>())
+            else call.respond(m.map { it.toSerializableLLModel() })
         }.describe {
             description = "Get list of all models"
             responses {
@@ -41,9 +41,10 @@ fun Route.modelRoutes() {
         }
         get("{provider_id}/default") {
             val provider = call.parameters["provider_id"] ?: return@get call.badRequest("Provider not provided")
-            s.getDefaultModel(provider)?.toSerializableLLModel()?.let {
-                call.respond(it)
-            } ?: call.notFound("Model not found, probably all services are inactive")
+            val m = s.getDefaultModel(provider)?.toSerializableLLModel()
+
+            if (m != null) call.respond(m)
+            else call.notFound("Model not found, probably all services are inactive")
         }.describe {
             responses {
                 HttpStatusCode.OK {

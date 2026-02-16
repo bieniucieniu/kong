@@ -1,12 +1,13 @@
 package com.bieniucieniu.features.auth.routes
 
+import com.bieniucieniu.auth.authenticateGoogleSession
+import com.bieniucieniu.auth.isGoogleSessionActive
 import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.UserSession
 import com.bieniucieniu.features.shared.models.ErrorResponse
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -30,10 +31,8 @@ fun Route.authGoogleRoutes(
     }
 ) {
     val client: HttpClient by inject()
-    val authPlugin = application.pluginOrNull(Authentication) ?: return
-    val providers = authPlugin.configuration().allProviders()
-    if (providers.containsKey("auth-oauth-google"))
-        authenticate("auth-oauth-google") {
+    if (isGoogleSessionActive())
+        authenticateGoogleSession {
             route("google") {
                 get("login") {
                     call.respondRedirect("callback")

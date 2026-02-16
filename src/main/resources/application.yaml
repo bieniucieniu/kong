@@ -6,6 +6,7 @@ ktor:
     modules:
       - com.bieniucieniu.ApplicationKt.module
   development: true
+  proxy: true
 ai:
   ollama:
     baseUrl: ${?OLLAMA_BASE_URL}
@@ -18,6 +19,9 @@ ai:
     password: ${?OLLAMA_PASSWORD}
   google:
     apikey: ${?GOOGLE_API_KEY}
+session:
+  encryptKey: ${ENCRYPT_KEY}
+  signKey: ${SIGN_KEY}
 oauth2:
   google:
     clientId: ${?GOOGLE_CLIENT_ID}
