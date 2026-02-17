@@ -75,8 +75,8 @@ fun Application.installRoutingPlugins() {
     install(Compression)
 
     if (environment.config.propertyOrNull("ktor.proxy")?.getAs<Boolean>() == true) {
-        install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
-        install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+        install(ForwardedHeaders)
+        install(XForwardedHeaders)
     }
     install(SimpleCache) {
         memoryCache {
@@ -91,7 +91,7 @@ fun Application.installRoutingPlugins() {
                 source = OpenApiDocSource.FirstOf(
                     OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
                         // filter out all wildcard matching to fix schema gen on frontend (orval)
-                        routingRoot.descendants().filter { !it.path.contains("...}") }
+                        routingRoot.descendants().filterNot { it.path.contains("...}") }
                     },
                 )
             }
@@ -119,10 +119,4 @@ fun Application.installRoutingPlugins() {
             }
         }
     }
-}
-
-
-fun Application.isProxy(): Boolean {
-    val proxy = environment.config.propertyOrNull("ktor.proxy")?.getString()?.trim()?.lowercase()
-    return proxy == "true" || proxy == "yes" || proxy == "on"
 }

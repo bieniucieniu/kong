@@ -6,7 +6,6 @@ import com.bieniucieniu.features.ai.configureAi
 import com.bieniucieniu.features.auth.configureAuth
 import com.bieniucieniu.routing.installRoutingPlugins
 import io.ktor.server.application.*
-import io.ktor.server.routing.*
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.koin.ktor.ext.get
 
@@ -19,8 +18,6 @@ fun Application.module() {
     installRoutingPlugins()
     installAuthPlugins()
 
-    routing {
-        configureAuth()
-        configureAi()
-    }
+    configureAuth()
+    configureAi()
 }

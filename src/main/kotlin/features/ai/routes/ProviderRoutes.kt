@@ -13,10 +13,11 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import org.koin.ktor.ext.inject
 
-fun Route.providerRoutes() {
+fun Route.modelProviderRoutes() {
     val s: AiService by inject()
     route("providers") {
         get {
+            print("Extracting models...\n")
             val providers = s.getProviders { it.toSerializableLLMProvider() }
             if (providers.isEmpty()) call.notFound("No providers found")
             else call.respond(providers)

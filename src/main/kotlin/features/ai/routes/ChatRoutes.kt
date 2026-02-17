@@ -2,6 +2,7 @@ package com.bieniucieniu.features.ai.routes
 
 import ai.koog.ktor.llm
 import ai.koog.prompt.dsl.prompt
+import ai.koog.prompt.llm.OllamaModels
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
 import com.bieniucieniu.features.ai.models.ChatPrompt
 import com.bieniucieniu.features.ai.repositories.ChatSessionDao
@@ -124,6 +125,7 @@ fun Route.chatRoutes() {
 
         val p = call.receive<ChatPrompt>()
         val model = s.getAvailableLLModels(p.provider).find { it.id == p.model } ?: s.getDefaultModel(p.provider)
+        OllamaModels
         val f = llm().executeStreaming(
             prompt = prompt("chat") {
                 system("You are a helpful assistant. Write short, simple and concise answers")

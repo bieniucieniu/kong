@@ -1,14 +1,13 @@
 [versions]
 exposed = "1.0.0"
-h2 = "2.3.232"
 koin = "4.1.2-Beta1"
-koog = "0.5.1"
+koog = "0.6.2"
 kotlin = "2.3.0"
 ktor = "3.4.0"
 ktorRateLimiting = "2.2.1"
 ktorSimpleCache = "0.57.7"
 logback = "1.5.13"
-postgresql = "42.7.9"
+postgresql = "42.7.10"
 
 [libraries]
 # AI
