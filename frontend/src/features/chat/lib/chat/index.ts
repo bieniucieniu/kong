@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import {
+	postApiAiChatNew,
 	useGetApiAiModelsProviderId,
 	useGetApiAiModelsProviderIdDefault,
 	useGetApiAiProviders,
@@ -20,7 +21,7 @@ import type {
 	SerializableLLMProvider,
 } from "@/gen/models";
 import { useSignal, useSignalState } from "@/lib/hooks/state/signal";
-import { fetchAiChat } from "./source";
+import { fetchAiChat, fetchAiChatFree } from "./source";
 import { type ChatState, type CreateChatOptions, createChat } from "./state";
 
 export interface UseChatModelsReturn {
@@ -99,33 +100,46 @@ export function ChatProvider({
 	return createElement(context.Provider, { value: state }, children);
 }
 
-function useChatMutation(scope: string) {
+function useChatMutation(id: string) {
 	return useMutation({
 		mutationKey: ["postAiChat"],
 		scope: {
-			id: scope,
+			id,
 		},
 		mutationFn: async ({
+			id,
 			chat,
 			onMessage: onMutate,
+			onIdAssigned,
 		}: {
+			id?: string;
 			chat: ChatPrompt;
 			onMessage: (item: string) => void;
-		}) => fetchAiChat(chat, (d) => onMutate(d)),
+			onIdAssigned: (id: string) => void;
+		}) => {
+			if (id === "free") return fetchAiChatFree(chat, (d) => onMutate(d));
+			id ??= "new";
+
+			if (id === "new") {
+				const res = await postApiAiChatNew();
+				onIdAssigned?.((id = res.data.id));
+			}
+			return fetchAiChat(id, chat, (d) => onMutate(d));
+		},
 	});
 }
 
 export function useCreateChat(
 	options: Omit<CreateChatOptions, "onExecutePrompt"> = {},
-	id: "new" | (string & {}),
+	onIdAssigned: (id: string) => void,
 	scope: string = "global",
 ): ChatState {
 	const m = useChatMutation(scope);
 	const opt = useRef<CreateChatOptions>(options);
 	opt.current = {
 		...options,
-		id,
-		onExecutePrompt: (chat, onMessage) => m.mutate({ chat, onMessage }),
+		onExecutePrompt: (chat, onMessage) =>
+			m.mutate({ id: opt.current.id, chat, onMessage, onIdAssigned }),
 	};
 
 	const s = useState(() => createChat(opt))[0];

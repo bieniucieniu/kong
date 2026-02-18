@@ -36,6 +36,7 @@ suspend fun RoutingCall.streamFlow(
     f: Flow<StreamFrame>,
     contentType: ContentType = ContentType.Text.EventStream,
     minChunkSize: Int = 50,
+    onToolCall: (StreamFrame.ToolCall) -> String? = { null },
     onFlush: (String) -> Unit = {}
 ) {
     respondBytesWriter(contentType = contentType) {
@@ -51,6 +52,7 @@ suspend fun RoutingCall.streamFlow(
             f.collect { chunk ->
                 val str = when (chunk) {
                     is StreamFrame.Append -> chunk.text
+                    is StreamFrame.ToolCall -> onToolCall(chunk) ?: ""
                     else -> ""
                 }
                 acc += str

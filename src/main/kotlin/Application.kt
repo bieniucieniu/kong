@@ -6,10 +6,11 @@ import com.bieniucieniu.features.ai.configureAi
 import com.bieniucieniu.features.auth.configureAuth
 import com.bieniucieniu.routing.installRoutingPlugins
 import io.ktor.server.application.*
+import io.ktor.server.cio.*
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.koin.ktor.ext.get
 
-fun main(args: Array<String>) = io.ktor.server.cio.EngineMain.main(args)
+fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
     installKoin()

@@ -3,15 +3,19 @@ import { ChatInput } from "@/features/chat/components/chat-input";
 import { ChatList } from "@/features/chat/components/chat-list";
 import { ChatProvider, useCreateChat } from "@/features/chat/lib/chat";
 
-export const Route = createFileRoute("/chat/$id")({
+export const Route = createFileRoute("/chat/")({
 	component: RouteComponent,
-	validateSearch: (s: unknown) => s as { prompt?: string },
+	validateSearch: (s: unknown) => s as { prompt?: string; id?: string },
 });
 
 function RouteComponent() {
-	const { id } = Route.useParams();
+	const n = Route.useNavigate();
 	const initial = Route.useSearch();
-	const state = useCreateChat({ initial }, id);
+	const state = useCreateChat({ initial }, (id) =>
+		n({
+			params: { id },
+		}),
+	);
 
 	return (
 		<ChatProvider state={state}>

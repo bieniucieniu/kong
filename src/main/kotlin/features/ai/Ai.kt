@@ -19,20 +19,21 @@ import kotlin.time.Duration.Companion.minutes
 fun Application.configureAi() {
     val ollamaService: OllamaService by inject()
     install(Koog) {
+        val config = environment.config
         llm {
-            environment.config.propertyOrNull("ai.ollama.baseUrl")?.getString().also {
+            config.propertyOrNull("ai.ollama.baseUrl")?.getString().also { url ->
                 ollama {
-                    baseUrl = it
+                    baseUrl = url
                     httpClient = get(named("ollama-http-client"))
                 }.also {
-                    val models = environment.config.propertyOrNull("ai.ollama.models")?.getList()
-                    if (!models.isNullOrEmpty()) launch {
-                        ollamaService.ensureInstalledModels(models)
-                    }
+                    config.propertyOrNull("ai.ollama.models")?.getList()
+                        .takeIf { it.isNullOrEmpty() }
+                        ?.also { launch { ollamaService.ensureInstalledModels(it) } }
                 }
             }
 
-            environment.config.propertyOrNull("ai.google.apikey")?.getString()?.also {
+
+            config.propertyOrNull("ai.google.apikey")?.getString()?.also {
                 google(it) {
                     httpClient = get()
                 }
@@ -52,3 +53,4 @@ fun Application.configureAi() {
         }
     }
 }
+

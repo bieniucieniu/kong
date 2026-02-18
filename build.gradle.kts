@@ -68,10 +68,13 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.migration.core)
+    implementation(libs.exposed.migration.jdbc)
     implementation(libs.postgresql)
 
     // Logging
     implementation(libs.logback.classic)
+
 
     // Testing
     testImplementation(libs.kotlin.test.junit)

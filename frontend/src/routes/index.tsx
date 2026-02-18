@@ -13,7 +13,7 @@ function RouteComponent() {
 			executeOnPrompt: false,
 			onMessagePushed: () => {},
 		},
-		"new",
+		() => {},
 	);
 
 	return (
@@ -22,7 +22,7 @@ function RouteComponent() {
 				<ChatInput
 					onFocus={() =>
 						n({
-							to: "/chat/$id",
+							to: "/chat",
 							params: { id: "new" },
 							viewTransition: true,
 						})

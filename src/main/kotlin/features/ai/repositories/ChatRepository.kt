@@ -21,7 +21,7 @@ object ChatSessionTable : UuidTable("chat_session") {
 
 object ChatMessageTable : UuidTable("chat_message") {
     val sessionId = uuid("session_id").references(ChatSessionTable.id)
-    val role = varchar("role", MAX_VARCHAR_LENGTH)
+    val role = enumerationByName<ChatMessageAuthor>("role", MAX_VARCHAR_LENGTH)
     val content = text("content")
     val createdAt = long("created_at")
 }
@@ -32,7 +32,7 @@ class ChatSessionDao(id: EntityID<Uuid>) : UuidEntity(id) {
     var ownerId by ChatSessionTable.ownerId
     var name by ChatSessionTable.name
     var systemPrompt by ChatSessionTable.systemPrompt
-    val messages by ChatMessageEntity referrersOn ChatMessageTable.sessionId
+    val messages by ChatMessageDao referrersOn ChatMessageTable.sessionId
 
 
     fun toChatSession(includeMessages: Boolean = false) = ChatSession(
@@ -43,8 +43,8 @@ class ChatSessionDao(id: EntityID<Uuid>) : UuidEntity(id) {
     )
 }
 
-class ChatMessageEntity(id: EntityID<Uuid>) : UuidEntity(id) {
-    companion object : UuidEntityClass<ChatMessageEntity>(ChatMessageTable)
+class ChatMessageDao(id: EntityID<Uuid>) : UuidEntity(id) {
+    companion object : UuidEntityClass<ChatMessageDao>(ChatMessageTable)
 
     var sessionId by ChatMessageTable.sessionId
     var role by ChatMessageTable.role
@@ -53,7 +53,7 @@ class ChatMessageEntity(id: EntityID<Uuid>) : UuidEntity(id) {
 
 
     fun toChatMessage() = ChatMessage(
-        ChatMessageAuthor.fromString(role) ?: ChatMessageAuthor.Agent,
+        role,
         content,
         createdAt
     )

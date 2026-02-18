@@ -56,6 +56,8 @@ fun Application.installRoutingPlugins() {
         }
 
         exception<Throwable> { call, cause ->
+            print(cause)
+            cause.printStackTrace()
             when (cause) {
                 is UnauthorizedException -> {
                     call.respond(

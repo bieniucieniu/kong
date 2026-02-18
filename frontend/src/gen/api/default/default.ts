@@ -23,6 +23,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type {
 	ChatPrompt,
+	ChatSession,
 	ErrorResponse,
 	PostApiAuthUsersLogoutDefaultOne,
 	PostApiAuthUsersLogoutDefaultTwo,
@@ -1515,7 +1516,7 @@ export function useGetApiAuthDiscordRevoke<
  * Create new chat session
  */
 export type postApiAiChatNewResponse200 = {
-	data: ChatPrompt;
+	data: ChatSession;
 	status: 200;
 };
 
