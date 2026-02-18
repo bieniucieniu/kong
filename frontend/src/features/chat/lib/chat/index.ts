@@ -118,8 +118,7 @@ function useChatMutation(id: string) {
 			onIdAssigned: (id: string) => void;
 		}) => {
 			if (id === "free") return fetchAiChatFree(chat, (d) => onMutate(d));
-			id ??= "new";
-
+			id ||= "new";
 			if (id === "new") {
 				const res = await postApiAiChatNew();
 				onIdAssigned?.((id = res.data.id));

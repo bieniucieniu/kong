@@ -59,10 +59,11 @@ fun Route.chatRoutes() {
 
         val session = call.principal<UserSession>() ?: return@get call.unauthorized()
 
-        val conn = (ChatSessionTable.id eq id) and (ChatSessionTable.ownerId eq session.userId)
-        val s =
+        val s = suspendTransaction {
+            val conn = (ChatSessionTable.id eq id) and (ChatSessionTable.ownerId eq session.userId)
             if (includeMessages) ChatSessionDao.find(conn).firstOrNull()?.toChatSession()
             else ChatSessionDao.find(conn).firstOrNull()?.toChatSession()
+        }
 
         if (s != null) call.respond(s)
         else call.notFound("chat session not found")
@@ -124,6 +125,8 @@ fun Route.chatRoutes() {
         var acc = ""
         call.streamFlow(f) { acc += it }
         suspendTransaction {
+
+            ChatMessageDao.count()
             ChatMessageDao.new {
                 sessionId = id
                 role = ChatMessageAuthor.User

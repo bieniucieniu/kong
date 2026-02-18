@@ -11,11 +11,12 @@ export const Route = createFileRoute("/chat/")({
 function RouteComponent() {
 	const n = Route.useNavigate();
 	const initial = Route.useSearch();
-	const state = useCreateChat({ initial }, (id) =>
+	const state = useCreateChat({ initial }, (id) => {
+		console.log(id);
 		n({
-			params: { id },
-		}),
-	);
+			search: { id },
+		});
+	});
 
 	return (
 		<ChatProvider state={state}>
