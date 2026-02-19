@@ -2,7 +2,7 @@ package com.bieniucieniu.auth
 
 import com.bieniucieniu.auth.oauth2.configureDiscordOauth2
 import com.bieniucieniu.auth.oauth2.installGoogleOauth2
-import com.bieniucieniu.errors.auth.UnauthorizedException
+import com.bieniucieniu.errors.responses.unauthorized
 import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.UserSession
 import io.ktor.client.*
@@ -74,7 +74,7 @@ fun Application.installAuthPlugins() {
 fun RoutingContext.getUserSession(): UserSession = call.getUserSession()
 
 fun RoutingCall.getUserSession(): UserSession =
-    principal<UserSession>(USER_SESSION_KEY) ?: throw UnauthorizedException("Unauthorized")
+    principal<UserSession>(USER_SESSION_KEY) ?: throw unauthorized("Unauthorized")
 
 fun Route.authenticateUserSession(build: Route.() -> Unit) = authenticate(USER_SESSION_KEY, build = build)
 

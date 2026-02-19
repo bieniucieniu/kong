@@ -8,13 +8,13 @@ import {
 	useState,
 } from "react";
 import {
-	postApiAiChatNew,
 	useGetApiAiModelsProviderId,
 	useGetApiAiModelsProviderIdDefault,
 	useGetApiAiProviders,
 	useGetApiAiProvidersDefault,
 } from "@/gen/api/default/default";
 import type {
+	ChatPrompt,
 	ChatPromptsList,
 	ErrorResponse,
 	SerializableLLModel,
@@ -110,35 +110,47 @@ function useChatMutation(id: string) {
 			id,
 			chat,
 			onMessage: onMutate,
-			onIdAssigned,
 		}: {
-			id?: string;
-			chat: ChatPromptsList;
+			id: string;
+			chat: ChatPromptsList & ChatPrompt;
 			onMessage: (item: string) => void;
-			onIdAssigned: (id: string) => void;
 		}) => {
-			if (id === "free") return fetchAiChatFree(chat, (d) => onMutate(d));
-			id ||= "new";
-			if (id === "new") {
-				const res = await postApiAiChatNew();
-				onIdAssigned?.((id = res.data.id));
+			if (id === "free") {
+				return fetchAiChatFree(
+					{
+						messages: chat.messages,
+						model: chat.model,
+						provider: chat.provider,
+					},
+					(d) => onMutate(d),
+				);
 			}
-			return fetchAiChat(id, chat, (d) => onMutate(d));
+
+			return fetchAiChat(
+				id,
+				{
+					message: chat.message,
+					model: chat.model,
+					provider: chat.provider,
+				},
+				(d) => onMutate(d),
+			);
 		},
 	});
 }
 
 export function useCreateChat(
+	id: string,
 	options: Omit<CreateChatOptions, "onExecutePrompt"> = {},
-	onIdAssigned: (id: string) => void,
 	scope: string = "global",
 ): ChatState {
 	const m = useChatMutation(scope);
 	const opt = useRef<CreateChatOptions>(options);
 	opt.current = {
 		...options,
-		onExecutePrompt: (chat, onMessage) =>
-			m.mutate({ id: opt.current.id, chat, onMessage, onIdAssigned }),
+		onExecutePrompt: (chat, onMessage) => {
+			return m.mutate({ id, chat, onMessage });
+		},
 	};
 
 	const s = useState(() => createChat(opt))[0];

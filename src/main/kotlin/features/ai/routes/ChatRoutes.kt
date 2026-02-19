@@ -2,6 +2,8 @@ package com.bieniucieniu.features.ai.routes
 
 import ai.koog.ktor.llm
 import com.bieniucieniu.auth.getUserSession
+import com.bieniucieniu.errors.responses.badRequest
+import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
 import com.bieniucieniu.features.ai.models.ChatPrompt
 import com.bieniucieniu.features.ai.models.ChatPromptsList
@@ -9,8 +11,6 @@ import com.bieniucieniu.features.ai.models.ChatSession
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import com.bieniucieniu.features.shared.responses.badRequest
-import com.bieniucieniu.features.shared.responses.notFound
 import com.bieniucieniu.features.shared.responses.streamFlow
 import io.ktor.http.*
 import io.ktor.openapi.*
@@ -47,14 +47,16 @@ fun Route.chatRoutes() {
         }
     }
     get("chat/{id}") {
-        val o = s.getUserChatSession(
-            id = call.parameters["id"]?.let { Uuid.parseHexDash(it) } ?: return@get call.badRequest("Missing id"),
-            session = getUserSession(),
-            includeMessages = call.queryParameters["include_messages"]?.toBoolean() ?: true
-        ) ?: call.notFound("chat session not found")
-
-
-
+        val id = call.parameters["id"]?.let { Uuid.parseHexDash(it) }
+            ?: throw badRequest("Missing id")
+        val includeMessages = call.queryParameters["include_messages"]?.toBoolean() ?: true
+        val o = suspendTransaction {
+            s.getUserChatSession(
+                id = id,
+                session = getUserSession(),
+                includeMessages = includeMessages
+            )
+        } ?: throw notFound("chat session not found")
         call.respond(o)
     }.describe {
         parameters {
@@ -82,17 +84,18 @@ fun Route.chatRoutes() {
         }
     }
     post("chat/{id}") {
-        val id = call.parameters["id"]?.let { Uuid.parseHexDash(it) } ?: return@post call.badRequest("Missing id")
+        val id = call.parameters["id"]?.let { Uuid.parseHexDash(it) } ?: throw badRequest("Missing id")
         suspendTransaction {
-            val cs = s.getUserChatSession(id, getUserSession())
-                ?: return@suspendTransaction call.notFound("Chat session not found")
+            val cs = s.getUserChatSession(id, getUserSession(), includeMessages = true)
+                ?: throw notFound("Chat session not found")
 
             val p = call.receive<ChatPrompt>()
-            val m = s.getModel(p.model, p.provider) ?: return@suspendTransaction call.badRequest("Model not found")
+            val m = s.getModel(p.model, p.provider) ?: throw badRequest("Model not found")
 
-            s.saveMessage(cs.id, ChatMessageAuthor.User, p.message)
+            print("messages: ${cs.messages}")
             val f = llm().executeStreaming(cs.buildPrompt { user(p.message) }, m)
 
+            s.saveMessage(cs.id, ChatMessageAuthor.User, p.message)
             var acc = ""
             call.streamFlow(f) { acc += it }
             s.saveMessage(cs.id, ChatMessageAuthor.Agent, acc)
@@ -124,8 +127,7 @@ fun Route.chatRoutes() {
     }
     post("chat") {
         val p = call.receive<ChatPromptsList>()
-        val m = s.getModel(p.model, p.provider) ?: return@post call.badRequest("Model not found")
-
+        val m = s.getModel() ?: throw badRequest("Model not found")
         val f = llm().executeStreaming(p.buildPrompt(), m)
         var acc = ""
         call.streamFlow(f) { acc += it }

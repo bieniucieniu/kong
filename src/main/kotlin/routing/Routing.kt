@@ -1,7 +1,9 @@
 package com.bieniucieniu.routing
 
 
-import com.bieniucieniu.errors.auth.UnauthorizedException
+import com.bieniucieniu.errors.responses.ResponsesException
+import com.bieniucieniu.errors.responses.ResponsesExceptionWithContent
+import com.bieniucieniu.errors.responses.UnauthorizedException
 import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
@@ -65,6 +67,21 @@ fun Application.installRoutingPlugins() {
                     call.respond(
                         HttpStatusCode.Unauthorized,
                         ErrorResponse(cause.message ?: "Unauthorized", reason = collectInnerCauses(cause))
+                    )
+                }
+
+                is ResponsesException -> {
+                    call.respond(
+                        cause.status,
+                        ErrorResponse(cause.message ?: "Unknown error", reason = collectInnerCauses(cause))
+                    )
+                }
+
+                is ResponsesExceptionWithContent -> {
+                    call.respond(
+                        cause.status,
+                        cause.content,
+                        cause.typeInfo,
                     )
                 }
 

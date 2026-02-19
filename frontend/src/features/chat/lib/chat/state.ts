@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import type {
+	ChatPrompt,
 	ChatPromptsList,
 	ChatPromptsListMessagesItem,
 } from "@/gen/models";
@@ -8,11 +9,10 @@ import { createStoredSignal } from "@/lib/hooks/state/stored-signal";
 
 export type ChatId = "new" | (string & {});
 export type CreateChatOptions = {
-	id?: ChatId;
 	executeOnPrompt?: boolean;
 	onMessagePushed?: (item: ChatPromptsListMessagesItem) => void;
 	onExecutePrompt?: (
-		item: ChatPromptsList,
+		item: ChatPromptsList & ChatPrompt,
 		onMessage: (item: string) => void,
 	) => void;
 	initial?: { prompt?: string };
@@ -26,7 +26,7 @@ export interface ChatState {
 		args: ChatPromptsListMessagesItem,
 	) => ChatPromptsListMessagesItem[];
 	pushPrompt: (p: string) => ChatPromptsListMessagesItem[];
-	executePrompt: () => void;
+	executePrompt: (str?: string) => void;
 }
 export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 	const messages = createSignal<ChatPromptsList["messages"]>([]);
@@ -48,9 +48,12 @@ export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 		}
 		return messages.update([...p]);
 	};
-	const executePrompt = () =>
+	const getLastMessage = () => messages.state[messages.state.length - 1];
+
+	const executePrompt = (message: string = getLastMessage()?.content || "") =>
 		opt.current.onExecutePrompt?.(
 			{
+				message,
 				messages: messages.state,
 				model: model.state,
 				provider: provider.state,
@@ -72,7 +75,7 @@ export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
 			provider.state,
 		);
 		if (prev !== next && opt.current.executeOnPrompt !== false) {
-			executePrompt();
+			executePrompt(p);
 		}
 		prompt.update("");
 		return messages.state;

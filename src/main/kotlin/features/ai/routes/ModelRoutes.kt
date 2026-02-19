@@ -1,12 +1,12 @@
 package com.bieniucieniu.features.ai.routes
 
+import com.bieniucieniu.errors.responses.badRequest
+import com.bieniucieniu.errors.responses.noContent
+import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.SerializableLLModel
 import com.bieniucieniu.features.ai.models.toSerializableLLModel
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import com.bieniucieniu.features.shared.responses.badRequest
-import com.bieniucieniu.features.shared.responses.noContent
-import com.bieniucieniu.features.shared.responses.notFound
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.response.*
@@ -18,9 +18,9 @@ fun Route.modelRoutes() {
     val s: AiService by inject()
     route("models") {
         get("{provider_id}") {
-            val provider = call.parameters["provider_id"] ?: return@get call.badRequest("Provider not provided")
+            val provider = call.parameters["provider_id"] ?: throw badRequest("Provider not provided")
             val m = s.getAvailableLLModels(provider)
-            if (m.isEmpty()) call.noContent(emptyList<SerializableLLModel>())
+            if (m.isEmpty()) throw noContent("no content", emptyList<SerializableLLModel>())
             else call.respond(m.map { it.toSerializableLLModel() })
         }.describe {
             description = "Get list of all models"
@@ -40,11 +40,11 @@ fun Route.modelRoutes() {
             }
         }
         get("{provider_id}/default") {
-            val provider = call.parameters["provider_id"] ?: return@get call.badRequest("Provider not provided")
+            val provider = call.parameters["provider_id"] ?: throw badRequest("Provider not provided")
             val m = s.getDefaultModel(provider)?.toSerializableLLModel()
+                ?: throw notFound("Model not found, probably all services are inactive")
 
-            if (m != null) call.respond(m)
-            else call.notFound("Model not found, probably all services are inactive")
+            call.respond(m)
         }.describe {
             responses {
                 HttpStatusCode.OK {
@@ -60,11 +60,10 @@ fun Route.modelRoutes() {
         }
 
         get("{provider_id}/{model_id}") {
-            val provider = call.parameters["provider_id"] ?: return@get call.badRequest("Provider not provided")
-            val name = call.parameters["model_id"] ?: return@get call.badRequest("Model not provided")
-            val model = s.getAvailableLLModels(provider).find { it.id == name }
-            if (model != null) call.respond(model.toSerializableLLModel())
-            else call.notFound("Model not found")
+            val provider = call.parameters["provider_id"] ?: throw badRequest("Provider not provided")
+            val name = call.parameters["model_id"] ?: throw badRequest("Model not provided")
+            val model = s.getAvailableLLModels(provider).find { it.id == name } ?: throw notFound("Model not found")
+            call.respond(model.toSerializableLLModel())
         }.describe {
             description = "Get model by name"
             responses {

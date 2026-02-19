@@ -52,7 +52,7 @@ data class ChatMessage(
 data class ChatPrompt(val message: String, val model: String? = null, val provider: String? = null)
 
 @Serializable
-data class ChatPromptsList(val messages: List<ChatMessage>, val model: String? = null, val provider: String? = null)
+data class ChatPromptsList(val messages: List<ChatMessage>)
 
 @Serializable
 data class SerializableLLMProvider(val id: String, val display: String) {

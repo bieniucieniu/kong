@@ -1,11 +1,10 @@
 package com.bieniucieniu.features.ai.routes
 
+import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.SerializableLLMProvider
 import com.bieniucieniu.features.ai.models.toSerializableLLMProvider
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import com.bieniucieniu.features.shared.responses.noContent
-import com.bieniucieniu.features.shared.responses.notFound
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.response.*
@@ -18,9 +17,10 @@ fun Route.modelProviderRoutes() {
     route("providers") {
         get {
             print("Extracting models...\n")
-            val providers = s.getProviders { it.toSerializableLLMProvider() }
-            if (providers.isEmpty()) call.notFound("No providers found")
-            else call.respond(providers)
+            val providers = s.getProviders { it.toSerializableLLMProvider() }.takeIf { it.isNotEmpty() }
+                ?: throw notFound("No providers found")
+
+            call.respond(providers)
         }.describe {
             description = "Get list of all providers"
             responses {
@@ -35,9 +35,9 @@ fun Route.modelProviderRoutes() {
             }
         }
         get("default") {
-            val p = s.getDefaultService()?.provider
-            if (p == null) call.noContent("no default provider")
-            else call.respond(p.toSerializableLLMProvider())
+            val p = s.getDefaultService()?.provider ?: throw notFound("no default provider")
+
+            call.respond(p.toSerializableLLMProvider())
         }.describe {
             description = "Get default provider"
             responses {
