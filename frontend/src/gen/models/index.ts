@@ -5,9 +5,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export * from "./chatPrompt";
-export * from "./chatPromptMessagesItem";
-export * from "./chatPromptMessagesItemRole";
+export * from "./chatPromptsList";
+export * from "./chatPromptsListMessagesItem";
+export * from "./chatPromptsListMessagesItemRole";
 export * from "./chatSession";
 export * from "./chatSessionMessagesItem";
 export * from "./chatSessionMessagesItemRole";

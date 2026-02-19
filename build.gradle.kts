@@ -67,6 +67,8 @@ dependencies {
     // Database
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
+    implementation(libs.exposed.datetime)
+    implementation(libs.exposed.jdbc)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.migration.core)
     implementation(libs.exposed.migration.jdbc)

@@ -11,11 +11,5 @@ import org.koin.dsl.module
 val aiModules = module {
     single { OllamaService(get(named("ollama-http-client")), get()) }.bind<AiProviderService>()
     single { GoogleService(get()) }.bind<AiProviderService>()
-    single {
-        AiService(
-            getAll<AiProviderService>()
-                .filter { it.isActive() }
-                .associateBy { it.provider.id }
-        )
-    }
+    single { AiService(getAll<AiProviderService>()) }
 }

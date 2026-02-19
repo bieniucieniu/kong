@@ -2,12 +2,12 @@ import {
 	getPostApiAiChatIdWithJsonUrl,
 	getPostApiAiChatWithJsonUrl,
 } from "@/gen/api/default/default";
-import type { ChatPrompt } from "@/gen/models";
+import type { ChatPromptsList } from "@/gen/models";
 import { collect } from "./collect";
 
 export async function fetchAiChat(
 	id: string,
-	chat: ChatPrompt,
+	chat: ChatPromptsList,
 	onCollect: (d: string) => void,
 ) {
 	const res = await fetch(getPostApiAiChatIdWithJsonUrl(id), {
@@ -27,7 +27,7 @@ export async function fetchAiChat(
 	}
 }
 export async function fetchAiChatFree(
-	chat: ChatPrompt,
+	chat: ChatPromptsList,
 	onCollect: (d: string) => void,
 ) {
 	const res = await fetch(getPostApiAiChatWithJsonUrl(), {

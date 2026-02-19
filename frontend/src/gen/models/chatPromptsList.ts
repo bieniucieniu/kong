@@ -4,10 +4,10 @@
  * My API
  * OpenAPI spec version: 1.0.0
  */
-import type { ChatPromptMessagesItem } from "./chatPromptMessagesItem";
+import type { ChatPromptsListMessagesItem } from "./chatPromptsListMessagesItem";
 
-export interface ChatPrompt {
-	messages: ChatPromptMessagesItem[];
+export interface ChatPromptsList {
+	messages: ChatPromptsListMessagesItem[];
 	/** @nullable */
 	model?: string | null;
 	/** @nullable */

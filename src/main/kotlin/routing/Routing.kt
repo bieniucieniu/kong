@@ -6,7 +6,6 @@ import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting
-import io.github.flaxoos.ktor.server.plugins.ratelimiter.implementations.TokenBucket
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.openapi.*
@@ -29,7 +28,9 @@ import kotlin.time.Duration.Companion.seconds
 
 
 fun Application.installRoutingPlugins() {
-    val dev: Boolean? by lazy { environment.config.propertyOrNull("ktor.development")?.getAs() }
+    val config = environment.config
+    val dev: Boolean by lazy { config.propertyOrNull("ktor.development")?.getAs() ?: false }
+    val proxy: Boolean by lazy { config.propertyOrNull("ktor.proxy")?.getAs() ?: false }
     val jsonConfig: Json by inject()
     install(ContentNegotiation) {
         json(jsonConfig)
@@ -45,12 +46,13 @@ fun Application.installRoutingPlugins() {
         }
     }
     install(StatusPages) {
-        fun buildInnerCause(e: Throwable): List<String> {
+        fun collectInnerCauses(e: Throwable): List<String> {
+            var e = e.cause
+
             val reason = mutableListOf<String>()
-            var innerCause = e.cause
-            while (innerCause != null) {
+            while (e != null) {
                 reason.add(e.message ?: "Unknown error")
-                innerCause = innerCause.cause
+                e = e.cause
             }
             return reason
         }
@@ -62,13 +64,13 @@ fun Application.installRoutingPlugins() {
                 is UnauthorizedException -> {
                     call.respond(
                         HttpStatusCode.Unauthorized,
-                        ErrorResponse(cause.message ?: "Unauthorized", reason = buildInnerCause(cause))
+                        ErrorResponse(cause.message ?: "Unauthorized", reason = collectInnerCauses(cause))
                     )
                 }
 
                 else -> call.respond(
                     HttpStatusCode.InternalServerError,
-                    ErrorResponse(cause.message ?: "Unknown error", reason = buildInnerCause(cause))
+                    ErrorResponse(cause.message ?: "Unknown error", reason = collectInnerCauses(cause))
                 )
             }
 
@@ -76,7 +78,7 @@ fun Application.installRoutingPlugins() {
     }
     install(Compression)
 
-    if (environment.config.propertyOrNull("ktor.proxy")?.getAs<Boolean>() == true) {
+    if (proxy) {
         install(ForwardedHeaders)
         install(XForwardedHeaders)
     }
@@ -87,15 +89,14 @@ fun Application.installRoutingPlugins() {
     }
 
     routing {
-        if (dev == true) {
+        if (dev) {
             swaggerUI(path = "swagger") {
                 info = OpenApiInfo(title = "My API", version = "1.0.0")
-                source = OpenApiDocSource.FirstOf(
-                    OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
-                        // filter out all wildcard matching to fix schema gen on frontend (orval)
-                        routingRoot.descendants().filterNot { it.path.contains("...}") }
-                    },
-                )
+                source = OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
+                    // filter out all wildcard matching to fix schema gen on frontend (orval)
+                    routingRoot.descendants().filterNot { it.path.contains("...}") }
+                }
+
             }
         }
 
@@ -111,13 +112,10 @@ fun Application.installRoutingPlugins() {
         }
 
 
-        route("/") {
-            install(RateLimiting) {
-                rateLimiter {
-                    type = TokenBucket::class
-                    capacity = 100
-                    rate = 10.seconds
-                }
+        install(RateLimiting) {
+            rateLimiter {
+                capacity = 100
+                rate = 10.seconds
             }
         }
     }

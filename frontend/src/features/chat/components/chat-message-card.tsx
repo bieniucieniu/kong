@@ -2,7 +2,7 @@ import { ClipboardListIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Markdown } from "@/components/ui/markdown";
-import type { ChatPromptMessagesItem } from "@/gen/models";
+import type { ChatPromptsListMessagesItem } from "@/gen/models";
 import { cn } from "@/lib/utils";
 
 export function ChatMessageCard({
@@ -10,7 +10,7 @@ export function ChatMessageCard({
 	className,
 }: {
 	className?: string;
-	message: ChatPromptMessagesItem;
+	message: ChatPromptsListMessagesItem;
 }) {
 	return (
 		<div className={cn("relative px-2 py-1 min-w-48", className)}>

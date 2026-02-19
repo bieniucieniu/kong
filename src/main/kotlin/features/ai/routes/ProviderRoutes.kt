@@ -35,7 +35,7 @@ fun Route.modelProviderRoutes() {
             }
         }
         get("default") {
-            val p = s.getDefaultProvider()
+            val p = s.getDefaultService()?.provider
             if (p == null) call.noContent("no default provider")
             else call.respond(p.toSerializableLLMProvider())
         }.describe {

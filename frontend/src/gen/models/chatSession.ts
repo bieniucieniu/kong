@@ -12,5 +12,7 @@ export interface ChatSession {
 	name?: string | null;
 	/** @nullable */
 	systemPrompt?: string | null;
+	/** @nullable */
+	updatedAt?: string | null;
 	messages?: ChatSessionMessagesItem[];
 }

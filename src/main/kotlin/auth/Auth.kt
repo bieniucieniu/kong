@@ -71,8 +71,10 @@ fun Application.installAuthPlugins() {
 
 }
 
-fun RoutingContext.getUserSession(): UserSession =
-    call.principal<UserSession>(USER_SESSION_KEY) ?: throw UnauthorizedException("Unauthorized")
+fun RoutingContext.getUserSession(): UserSession = call.getUserSession()
+
+fun RoutingCall.getUserSession(): UserSession =
+    principal<UserSession>(USER_SESSION_KEY) ?: throw UnauthorizedException("Unauthorized")
 
 fun Route.authenticateUserSession(build: Route.() -> Unit) = authenticate(USER_SESSION_KEY, build = build)
 

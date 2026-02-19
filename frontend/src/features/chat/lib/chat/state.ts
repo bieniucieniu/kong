@@ -1,5 +1,8 @@
 import type { RefObject } from "react";
-import type { ChatPrompt, ChatPromptMessagesItem } from "@/gen/models";
+import type {
+	ChatPromptsList,
+	ChatPromptsListMessagesItem,
+} from "@/gen/models";
 import { createSignal, type SignalState } from "@/lib/hooks/state/signal";
 import { createStoredSignal } from "@/lib/hooks/state/stored-signal";
 
@@ -7,28 +10,30 @@ export type ChatId = "new" | (string & {});
 export type CreateChatOptions = {
 	id?: ChatId;
 	executeOnPrompt?: boolean;
-	onMessagePushed?: (item: ChatPromptMessagesItem) => void;
+	onMessagePushed?: (item: ChatPromptsListMessagesItem) => void;
 	onExecutePrompt?: (
-		item: ChatPrompt,
+		item: ChatPromptsList,
 		onMessage: (item: string) => void,
 	) => void;
 	initial?: { prompt?: string };
 };
 export interface ChatState {
-	messages: SignalState<ChatPrompt["messages"]>;
+	messages: SignalState<ChatPromptsList["messages"]>;
 	model: SignalState<string | undefined>;
 	provider: SignalState<string | undefined>;
 	prompt: SignalState<string>;
-	pushMessage: (args: ChatPromptMessagesItem) => ChatPromptMessagesItem[];
-	pushPrompt: (p: string) => ChatPromptMessagesItem[];
+	pushMessage: (
+		args: ChatPromptsListMessagesItem,
+	) => ChatPromptsListMessagesItem[];
+	pushPrompt: (p: string) => ChatPromptsListMessagesItem[];
 	executePrompt: () => void;
 }
 export function createChat(opt: RefObject<CreateChatOptions>): ChatState {
-	const messages = createSignal<ChatPrompt["messages"]>([]);
+	const messages = createSignal<ChatPromptsList["messages"]>([]);
 	const model = createStoredSignal<string>("chat-model");
 	const provider = createStoredSignal<string>("chat-provider");
 	const prompt = createSignal<string>(opt.current.initial?.prompt || "");
-	const pushMessage = ({ content, role }: ChatPromptMessagesItem) => {
+	const pushMessage = ({ content, role }: ChatPromptsListMessagesItem) => {
 		const p = messages.state;
 		const prev = p.length > 0 ? p[p.length - 1] : undefined;
 		if (prev?.role === role) {

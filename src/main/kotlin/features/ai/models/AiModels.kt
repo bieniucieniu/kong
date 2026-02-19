@@ -5,6 +5,9 @@ import ai.koog.prompt.llm.LLMProvider
 import ai.koog.prompt.llm.LLModel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 @Serializable
 enum class ChatMessageAuthor {
@@ -31,9 +34,10 @@ enum class ChatMessageAuthor {
 
 @Serializable
 data class ChatSession(
-    val id: String,
+    val id: Uuid,
     val name: String? = null,
     val systemPrompt: String? = null,
+    val updatedAt: Instant? = null,
     val messages: List<ChatMessage> = emptyList()
 )
 
@@ -41,7 +45,7 @@ data class ChatSession(
 data class ChatMessage(
     val role: ChatMessageAuthor,
     val content: String,
-    val createAt: Long = System.currentTimeMillis()
+    val createAt: Instant = Clock.System.now()
 )
 
 @Serializable

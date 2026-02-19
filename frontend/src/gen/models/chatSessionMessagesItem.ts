@@ -9,5 +9,5 @@ import type { ChatSessionMessagesItemRole } from "./chatSessionMessagesItemRole"
 export type ChatSessionMessagesItem = {
 	role: ChatSessionMessagesItemRole;
 	content: string;
-	createAt?: number;
+	createAt?: string;
 };
