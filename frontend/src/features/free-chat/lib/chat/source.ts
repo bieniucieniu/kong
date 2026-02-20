@@ -1,9 +1,9 @@
+import { collect } from "@/features/shared/collect";
 import {
 	getPostApiAiChatIdWithJsonUrl,
 	getPostApiAiChatWithJsonUrl,
 } from "@/gen/api/default/default";
 import type { ChatPrompt, ChatPromptsList } from "@/gen/models";
-import { collect } from "../shared/collect";
 
 export async function fetchAiChat(
 	id: string,

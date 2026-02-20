@@ -22,10 +22,13 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import type {
+	ChatMessage,
 	ChatPrompt,
 	ChatPromptsList,
 	ChatSession,
 	ErrorResponse,
+	GetApiAiChatIdMessagesParams,
+	GetApiAiChatIdParams,
 	PostApiAuthUsersLogoutDefaultOne,
 	PostApiAuthUsersLogoutDefaultTwo,
 	SerializableLLModel,
@@ -1629,6 +1632,253 @@ export const usePostApiAiChatNew = <TError = ErrorResponse, TContext = unknown>(
 > => {
 	return useMutation(getPostApiAiChatNewMutationOptions(options), queryClient);
 };
+export type getApiAiChatIdMessagesResponse200 = {
+	data: ChatMessage[];
+	status: 200;
+};
+
+export type getApiAiChatIdMessagesResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type getApiAiChatIdMessagesResponse404 = {
+	data: ErrorResponse;
+	status: 404;
+};
+
+export type getApiAiChatIdMessagesResponseSuccess =
+	getApiAiChatIdMessagesResponse200 & {
+		headers: Headers;
+	};
+export type getApiAiChatIdMessagesResponseError = (
+	| getApiAiChatIdMessagesResponse400
+	| getApiAiChatIdMessagesResponse404
+) & {
+	headers: Headers;
+};
+
+export const getGetApiAiChatIdMessagesUrl = (
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/ai/chat/${id}/messages?${stringifiedParams}`
+		: `/api/ai/chat/${id}/messages`;
+};
+
+export const getApiAiChatIdMessages = async (
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+	options?: RequestInit,
+): Promise<getApiAiChatIdMessagesResponseSuccess> => {
+	const res = await fetch(getGetApiAiChatIdMessagesUrl(id, params), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAiChatIdMessagesResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAiChatIdMessagesResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAiChatIdMessagesResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiChatIdMessagesResponseSuccess;
+};
+
+export const getGetApiAiChatIdMessagesQueryKey = (
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+) => {
+	return [
+		"api",
+		"ai",
+		"chat",
+		id,
+		"messages",
+		...(params ? [params] : []),
+	] as const;
+};
+
+export const getGetApiAiChatIdMessagesQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAiChatIdMessagesQueryKey(id, params);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAiChatIdMessages>>
+	> = ({ signal }) =>
+		getApiAiChatIdMessages(id, params, { signal, ...fetchOptions });
+
+	return {
+		queryKey,
+		queryFn,
+		enabled: !!id,
+		...queryOptions,
+	} as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiChatIdMessagesQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiChatIdMessages>>
+>;
+export type GetApiAiChatIdMessagesQueryError = ErrorResponse;
+
+export function useGetApiAiChatIdMessages<
+	TData = Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	params: undefined | GetApiAiChatIdMessagesParams,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiChatIdMessages>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiChatIdMessages<
+	TData = Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiChatIdMessages>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiChatIdMessages<
+	TData = Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiChatIdMessages<
+	TData = Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+	TError = ErrorResponse,
+>(
+	id: string,
+	params?: GetApiAiChatIdMessagesParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiChatIdMessages>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiChatIdMessagesQueryOptions(
+		id,
+		params,
+		options,
+	);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
 /**
  * Chat with AI on stable session
  */
@@ -1917,15 +2167,31 @@ export type getApiAiChatIdResponseError = (
 	headers: Headers;
 };
 
-export const getGetApiAiChatIdUrl = (id: string) => {
-	return `/api/ai/chat/${id}`;
+export const getGetApiAiChatIdUrl = (
+	id: string,
+	params?: GetApiAiChatIdParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/ai/chat/${id}?${stringifiedParams}`
+		: `/api/ai/chat/${id}`;
 };
 
 export const getApiAiChatId = async (
 	id: string,
+	params?: GetApiAiChatIdParams,
 	options?: RequestInit,
 ): Promise<getApiAiChatIdResponseSuccess> => {
-	const res = await fetch(getGetApiAiChatIdUrl(id), {
+	const res = await fetch(getGetApiAiChatIdUrl(id, params), {
 		...options,
 		method: "GET",
 	});
@@ -1953,8 +2219,11 @@ export const getApiAiChatId = async (
 	} as getApiAiChatIdResponseSuccess;
 };
 
-export const getGetApiAiChatIdQueryKey = (id: string) => {
-	return ["api", "ai", "chat", id] as const;
+export const getGetApiAiChatIdQueryKey = (
+	id: string,
+	params?: GetApiAiChatIdParams,
+) => {
+	return ["api", "ai", "chat", id, ...(params ? [params] : [])] as const;
 };
 
 export const getGetApiAiChatIdQueryOptions = <
@@ -1962,6 +2231,7 @@ export const getGetApiAiChatIdQueryOptions = <
 	TError = ErrorResponse,
 >(
 	id: string,
+	params?: GetApiAiChatIdParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<Awaited<ReturnType<typeof getApiAiChatId>>, TError, TData>
@@ -1971,11 +2241,12 @@ export const getGetApiAiChatIdQueryOptions = <
 ) => {
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetApiAiChatIdQueryKey(id);
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAiChatIdQueryKey(id, params);
 
 	const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiAiChatId>>> = ({
 		signal,
-	}) => getApiAiChatId(id, { signal, ...fetchOptions });
+	}) => getApiAiChatId(id, params, { signal, ...fetchOptions });
 
 	return {
 		queryKey,
@@ -1999,6 +2270,7 @@ export function useGetApiAiChatId<
 	TError = ErrorResponse,
 >(
 	id: string,
+	params: undefined | GetApiAiChatIdParams,
 	options: {
 		query: Partial<
 			UseQueryOptions<Awaited<ReturnType<typeof getApiAiChatId>>, TError, TData>
@@ -2022,6 +2294,7 @@ export function useGetApiAiChatId<
 	TError = ErrorResponse,
 >(
 	id: string,
+	params?: GetApiAiChatIdParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<Awaited<ReturnType<typeof getApiAiChatId>>, TError, TData>
@@ -2045,6 +2318,7 @@ export function useGetApiAiChatId<
 	TError = ErrorResponse,
 >(
 	id: string,
+	params?: GetApiAiChatIdParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<Awaited<ReturnType<typeof getApiAiChatId>>, TError, TData>
@@ -2061,6 +2335,7 @@ export function useGetApiAiChatId<
 	TError = ErrorResponse,
 >(
 	id: string,
+	params?: GetApiAiChatIdParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<Awaited<ReturnType<typeof getApiAiChatId>>, TError, TData>
@@ -2071,7 +2346,7 @@ export function useGetApiAiChatId<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetApiAiChatIdQueryOptions(id, options);
+	const queryOptions = getGetApiAiChatIdQueryOptions(id, params, options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,

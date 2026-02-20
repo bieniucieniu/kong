@@ -119,8 +119,6 @@ function useChatMutation(id: string) {
 				return fetchAiChatFree(
 					{
 						messages: chat.messages,
-						model: chat.model,
-						provider: chat.provider,
 					},
 					(d) => onMutate(d),
 				);

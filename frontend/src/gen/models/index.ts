@@ -5,6 +5,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export * from "./chatMessage";
+export * from "./chatMessageRole";
 export * from "./chatPrompt";
 export * from "./chatPromptsList";
 export * from "./chatPromptsListMessagesItem";
@@ -13,6 +15,8 @@ export * from "./chatSession";
 export * from "./chatSessionMessagesItem";
 export * from "./chatSessionMessagesItemRole";
 export * from "./errorResponse";
+export * from "./getApiAiChatIdMessagesParams";
+export * from "./getApiAiChatIdParams";
 export * from "./postApiAuthUsersLogoutDefaultOne";
 export * from "./postApiAuthUsersLogoutDefaultTwo";
 export * from "./serializableLLModel";

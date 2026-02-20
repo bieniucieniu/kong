@@ -8,8 +8,4 @@ import type { ChatPromptsListMessagesItem } from "./chatPromptsListMessagesItem"
 
 export interface ChatPromptsList {
 	messages: ChatPromptsListMessagesItem[];
-	/** @nullable */
-	model?: string | null;
-	/** @nullable */
-	provider?: string | null;
 }
