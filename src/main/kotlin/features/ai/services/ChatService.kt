@@ -35,13 +35,12 @@ class ChatService {
         session: UserSession,
         includeMessages: Boolean = false,
         forUpdate: Boolean = true
-    ) =
-        getUserChatSession(
-            id,
-            session.userId,
-            includeMessages = includeMessages,
-            forUpdate = forUpdate
-        )
+    ) = getUserChatSession(
+        id,
+        userId = session.userId,
+        includeMessages = includeMessages,
+        forUpdate = forUpdate
+    )
 
 
     fun getUserChatSession(

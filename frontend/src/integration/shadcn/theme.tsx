@@ -1,40 +1,48 @@
 import { useSyncExternalStore } from "react";
+import {
+	getStored as getStoredState,
+	updateStored as updateStoredState,
+} from "@/lib/hooks/state/storage";
 
 // inline impl
-function tryParseJson<S>(str: string): S | undefined {
-	try {
-		return JSON.parse(str);
-	} catch (_) {
-		return undefined;
-	}
-}
-function tryStringifyJson<S>(str: S): string | undefined {
-	try {
-		return JSON.stringify(str);
-	} catch (_) {
-		return undefined;
-	}
-}
-
-export function getStoredState<S>(
-	key: string,
-	storage: Storage = localStorage,
-): S | undefined {
-	const str = storage.getItem(key);
-	if (str == null) return undefined;
-	const v = tryParseJson<S>(str);
-	if (v != null) return v;
-	return undefined;
-}
-export function updateStoredState<T>(
-	key: string,
-	state: T,
-	storage: Storage = localStorage,
-) {
-	const v = tryStringifyJson(state);
-	if (v != null) storage.setItem(key, v);
-	else storage.removeItem(key);
-}
+// function tryParseJson<S>(str: string): S | undefined {
+// 	try {
+// 		return JSON.parse(str);
+// 	} catch (_) {
+// 		return undefined;
+// 	}
+// }
+// function tryStringifyJson<S>(str: S): string | undefined {
+// 	try {
+// 		return JSON.stringify(str);
+// 	} catch (_) {
+// 		return undefined;
+// 	}
+// }
+//
+// export function getStoredState<S>(
+// 	key: string,
+// 	defaultState: S | undefined = undefined,
+// 	storage: Storage = localStorage,
+// ): S | undefined {
+// 	const str = storage.getItem(key);
+// 	if (str == null) return undefined;
+// 	const v = tryParseJson<S>(str);
+// 	if (v != null) return v;
+// 	return defaultState
+// 		? updateStoredState(key, defaultState, storage)
+// 		: undefined;
+// }
+// export function updateStoredState<T>(
+// 	key: string,
+// 	state: T,
+// 	storage: Storage = localStorage,
+// ): T {
+// 	const v = tryStringifyJson(state);
+// 	if (v != null) storage.setItem(key, v);
+// 	else storage.removeItem(key);
+// 	return state;
+// }
 export type Theme = "dark" | "light" | "system";
 export const themes = ["dark", "light", "system"] as const satisfies Theme[];
 

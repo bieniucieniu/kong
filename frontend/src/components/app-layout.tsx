@@ -5,11 +5,10 @@ import {
 	MenubarMenu,
 	MenubarTrigger,
 } from "@/components/ui/menubar";
+import { useSession, useSessionLogout } from "@/features/session";
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
-	useGetApiAuthUsersSession,
-	usePostApiAuthUsersLogout,
 } from "@/gen/api/default/default";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
 import { FieldError } from "./ui/field";
@@ -29,21 +28,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 export function SessionMenu({ className }: { className?: string }) {
-	const q = useGetApiAuthUsersSession();
-	const m = usePostApiAuthUsersLogout({
-		mutation: {
-			onSuccess: (_, __, ___, { client }) => client.clear(),
-		},
-	});
+	const q = useSession();
+	const m = useSessionLogout();
 	return (
 		<MenubarMenu>
 			<MenubarTrigger className={className}>
-				{q.data?.data ? (q.data.data.username ?? "unknown") : "Login"}
+				{q.session ? (q.session?.username ?? "unknown") : "Login"}
 			</MenubarTrigger>
 			<MenubarContent>
-				{q.data?.data ? (
+				{q.session ? (
 					<>
-						<MenubarItem onClick={() => m.mutate()}>Logout</MenubarItem>
+						<MenubarItem onClick={() => m.logout()}>Logout</MenubarItem>
 						<FieldError errors={[m.error]} />
 					</>
 				) : (

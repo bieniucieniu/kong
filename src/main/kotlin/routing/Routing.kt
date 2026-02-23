@@ -33,6 +33,8 @@ fun Application.installRoutingPlugins() {
     val config = environment.config
     val dev: Boolean by lazy { config.propertyOrNull("ktor.development")?.getAs() ?: false }
     val proxy: Boolean by lazy { config.propertyOrNull("ktor.proxy")?.getAs() ?: false }
+    val enableSwagger: Boolean by lazy { config.propertyOrNull("ktor.swagger")?.getAs() ?: false }
+
     val jsonConfig: Json by inject()
     install(ContentNegotiation) {
         json(jsonConfig)
@@ -104,36 +106,23 @@ fun Application.installRoutingPlugins() {
             invalidateAt = 10.seconds
         }
     }
-
+    install(RateLimiting) {
+        rateLimiter {
+            capacity = 100
+            rate = 10.seconds
+        }
+    }
     routing {
-        if (dev) {
+        if (dev || enableSwagger) {
             swaggerUI(path = "swagger") {
                 info = OpenApiInfo(title = "My API", version = "1.0.0")
                 source = OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
-                    // filter out all wildcard matching to fix schema gen on frontend (orval)
+                    // filter out all wildcard matching to fix schema gen for frontend (orval)
                     routingRoot.descendants().filterNot { it.path.contains("...}") }
                 }
 
             }
         }
-
-        staticResources("/", "frontend").describe {
-            description = "static frontend resources"
-            responses {
-                HttpStatusCode.OK {
-                    ContentType.Text.Html()
-                }
-                HttpStatusCode.NotFound {
-                }
-            }
-        }
-
-
-        install(RateLimiting) {
-            rateLimiter {
-                capacity = 100
-                rate = 10.seconds
-            }
-        }
+        staticResources("/", "frontend")
     }
 }

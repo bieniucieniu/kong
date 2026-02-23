@@ -13,6 +13,7 @@ import io.ktor.server.sessions.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
 import org.koin.ktor.ext.inject
+import kotlin.time.Clock
 
 private const val USER_SESSION_KEY = "auth-session"
 private const val OAUTH_DISCORD_KEY = "auth-oauth-discord"
@@ -73,8 +74,11 @@ fun Application.installAuthPlugins() {
 
 fun RoutingContext.getUserSession(): UserSession = call.getUserSession()
 
-fun RoutingCall.getUserSession(): UserSession =
-    principal<UserSession>(USER_SESSION_KEY) ?: throw unauthorized("Unauthorized")
+fun RoutingCall.getUserSession(throwOnUnauthorized: Boolean = true): UserSession =
+    principal<UserSession>(USER_SESSION_KEY).takeIf {
+        val expiredIn = it?.expiredIn
+        expiredIn == null || expiredIn < Clock.System.now().epochSeconds
+    } ?: throw unauthorized("Unauthorized")
 
 fun Route.authenticateUserSession(build: Route.() -> Unit) = authenticate(USER_SESSION_KEY, build = build)
 

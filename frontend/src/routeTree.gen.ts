@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ChatFreeRouteImport } from './routes/chat/free'
 import { Route as ChatIdRouteImport } from './routes/chat/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatFreeRoute = ChatFreeRouteImport.update({
+  id: '/chat/free',
+  path: '/chat/free',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
@@ -26,27 +32,31 @@ const ChatIdRoute = ChatIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat/$id': typeof ChatIdRoute
+  '/chat/free': typeof ChatFreeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat/$id': typeof ChatIdRoute
+  '/chat/free': typeof ChatFreeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat/$id': typeof ChatIdRoute
+  '/chat/free': typeof ChatFreeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat/$id'
+  fullPaths: '/' | '/chat/$id' | '/chat/free'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat/$id'
-  id: '__root__' | '/' | '/chat/$id'
+  to: '/' | '/chat/$id' | '/chat/free'
+  id: '__root__' | '/' | '/chat/$id' | '/chat/free'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatIdRoute: typeof ChatIdRoute
+  ChatFreeRoute: typeof ChatFreeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/free': {
+      id: '/chat/free'
+      path: '/chat/free'
+      fullPath: '/chat/free'
+      preLoaderRoute: typeof ChatFreeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/$id': {
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatIdRoute: ChatIdRoute,
+  ChatFreeRoute: ChatFreeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

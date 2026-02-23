@@ -6,7 +6,7 @@ import {
 	useCreateChatPromptContext,
 } from "@/features/chat/state";
 
-export const Route = createFileRoute("/chat/$id")({
+export const Route = createFileRoute("/chat/free")({
 	component: RouteComponent,
 	validateSearch: (s: unknown) => s as { prompt?: string },
 });
