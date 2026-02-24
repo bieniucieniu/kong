@@ -1,29 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
 import { ChatInput } from "@/features/chat/components/prompt-input";
-import {
-	ChatPromptControllerProvider,
-	useCreateChatPromptContext,
-} from "@/features/chat/state";
+import { useCreateChatController } from "@/features/chat/state";
+import { ChatPromptControllerProvider } from "@/features/chat/state/prompt";
 
 export const Route = createFileRoute("/chat/$id")({
 	component: RouteComponent,
-	validateSearch: (s: unknown) => s as { prompt?: string },
 });
 
 function RouteComponent() {
-	const initial = Route.useSearch();
-	const state = useCreateChatPromptContext(
-		useMemo(
-			() => ({
-				prompt: initial.prompt ?? "",
-			}),
-			[initial],
-		),
-	);
+	const state = useCreateChatController();
 
 	return (
-		<ChatPromptControllerProvider value={state}>
+		<ChatPromptControllerProvider value={state.state.prompt}>
 			<div className="h-full flex flex-col relative items-center justify-end gap-4 p-4">
 				<div className="flex-1 w-full">
 					{/* <ChatList className="h-[calc(100svh-11rem)]" /> */}

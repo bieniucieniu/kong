@@ -16,6 +16,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
+import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
 import kotlin.uuid.Uuid
@@ -26,12 +27,13 @@ fun Route.chatRoutes() {
     route("chat") {
         post("new") {
             suspendTransaction {
-                val session = c.createChatSession(
-                    call.queryParameters["name"],
-                    call.queryParameters["system_prompt"],
-                    getUserSession()
-                )
-                call.respond(session)
+                this.addLogger(StdOutSqlLogger)
+                val name = call.queryParameters["name"]
+                val systemPrompt = call.queryParameters["system_prompt"]
+                val uSession = getUserSession()
+                val session = c.findEmptyChatSession(name, systemPrompt, uSession)
+                    ?: c.createChatSession(name, systemPrompt, uSession)
+                call.respondNullable(session)
             }
         }.describe {
             description = "Create new chat session"

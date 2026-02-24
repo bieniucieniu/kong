@@ -3,7 +3,7 @@ import { defineConfig } from "orval";
 export default defineConfig({
 	kong: {
 		output: {
-			mode: "tags-split",
+			mode: "split",
 			target: "src/gen/api",
 			schemas: "src/gen/models",
 			client: "react-query",

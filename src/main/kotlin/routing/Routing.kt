@@ -34,8 +34,8 @@ fun Application.installRoutingPlugins() {
     val dev: Boolean by lazy { config.propertyOrNull("ktor.development")?.getAs() ?: false }
     val proxy: Boolean by lazy { config.propertyOrNull("ktor.proxy")?.getAs() ?: false }
     val enableSwagger: Boolean by lazy { config.propertyOrNull("ktor.swagger")?.getAs() ?: false }
-
     val jsonConfig: Json by inject()
+
     install(ContentNegotiation) {
         json(jsonConfig)
         json(jsonConfig, ContentType.Application.FormUrlEncoded)
@@ -65,27 +65,21 @@ fun Application.installRoutingPlugins() {
             print(cause)
             cause.printStackTrace()
             when (cause) {
-                is UnauthorizedException -> {
-                    call.respond(
-                        HttpStatusCode.Unauthorized,
-                        ErrorResponse(cause.message ?: "Unauthorized", reason = collectInnerCauses(cause))
-                    )
-                }
+                is UnauthorizedException -> call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(cause.message ?: "Unauthorized", reason = collectInnerCauses(cause))
+                )
 
-                is ResponsesException -> {
-                    call.respond(
-                        cause.status,
-                        ErrorResponse(cause.message ?: "Unknown error", reason = collectInnerCauses(cause))
-                    )
-                }
+                is ResponsesException -> call.respond(
+                    cause.status,
+                    ErrorResponse(cause.message ?: "Unknown error", reason = collectInnerCauses(cause))
+                )
 
-                is ResponsesExceptionWithContent -> {
-                    call.respond(
-                        cause.status,
-                        cause.content,
-                        cause.typeInfo,
-                    )
-                }
+                is ResponsesExceptionWithContent -> call.respond(
+                    cause.status,
+                    cause.content,
+                    cause.typeInfo,
+                )
 
                 else -> call.respond(
                     HttpStatusCode.InternalServerError,

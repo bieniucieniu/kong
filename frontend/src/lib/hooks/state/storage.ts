@@ -1,10 +1,27 @@
+export function tryParseJson<S>(str: string | null | undefined): S | undefined {
+	try {
+		if (str == null) return undefined;
+		return JSON.parse(str);
+	} catch (_) {
+		return undefined;
+	}
+}
+export function tryStringifyJson<S>(str: S): string | undefined {
+	try {
+		return JSON.stringify(str);
+	} catch (_) {
+		return undefined;
+	}
+}
+
 export function updateStored<T>(
 	key: string,
 	value: T,
 	storage: Storage = localStorage,
 ): T {
-	if (value == null) storage.removeItem(key);
-	else storage.setItem(key, JSON.stringify(value));
+	const str = value == null ? null : tryStringifyJson(value);
+	if (str == null) storage.removeItem(key);
+	else storage.setItem(key, str);
 	return value;
 }
 export function getStored<T>(
@@ -23,9 +40,5 @@ export function getStored<T>(
 	storage: Storage = localStorage,
 ): any {
 	const value = storage.getItem(key);
-	if (value != null)
-		try {
-			return JSON.parse(value);
-		} catch (_) {}
-	return updateStored(key, defaultValue, storage);
+	return tryParseJson(value) ?? updateStored(key, defaultValue, storage);
 }

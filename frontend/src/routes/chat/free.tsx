@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { ChatInput } from "@/features/chat/components/prompt-input";
 import {
 	ChatPromptControllerProvider,
-	useCreateChatPromptContext,
-} from "@/features/chat/state";
+	useCreateChatPromptController,
+} from "@/features/chat/state/prompt";
 
 export const Route = createFileRoute("/chat/free")({
 	component: RouteComponent,
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/chat/free")({
 
 function RouteComponent() {
 	const initial = Route.useSearch();
-	const state = useCreateChatPromptContext(
+	const state = useCreateChatPromptController(
 		useMemo(
 			() => ({
 				prompt: initial.prompt ?? "",

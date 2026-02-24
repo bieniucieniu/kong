@@ -1,18 +1,16 @@
 import { useSyncExternalStore } from "react";
-import {
-	getStored as getStoredState,
-	updateStored as updateStoredState,
-} from "@/lib/hooks/state/storage";
+import { getStored, updateStored } from "@/lib/hooks/state/storage";
 
 // inline impl
-// function tryParseJson<S>(str: string): S | undefined {
+// export function tryParseJson<S>(str: string | null | undefined): S | undefined {
 // 	try {
+// 		if (str == null) return undefined;
 // 		return JSON.parse(str);
 // 	} catch (_) {
 // 		return undefined;
 // 	}
 // }
-// function tryStringifyJson<S>(str: S): string | undefined {
+// export function tryStringifyJson<S>(str: S): string | undefined {
 // 	try {
 // 		return JSON.stringify(str);
 // 	} catch (_) {
@@ -20,29 +18,35 @@ import {
 // 	}
 // }
 //
-// export function getStoredState<S>(
+// export function updateStored<T>(
 // 	key: string,
-// 	defaultState: S | undefined = undefined,
-// 	storage: Storage = localStorage,
-// ): S | undefined {
-// 	const str = storage.getItem(key);
-// 	if (str == null) return undefined;
-// 	const v = tryParseJson<S>(str);
-// 	if (v != null) return v;
-// 	return defaultState
-// 		? updateStoredState(key, defaultState, storage)
-// 		: undefined;
-// }
-// export function updateStoredState<T>(
-// 	key: string,
-// 	state: T,
+// 	value: T,
 // 	storage: Storage = localStorage,
 // ): T {
-// 	const v = tryStringifyJson(state);
-// 	if (v != null) storage.setItem(key, v);
-// 	else storage.removeItem(key);
-// 	return state;
+// 	const str = value == null ? null : tryStringifyJson(value);
+// 	if (str == null) storage.removeItem(key);
+// 	else storage.setItem(key, str);
+// 	return value;
 // }
+// export function getStored<T>(
+// 	gkey: string,
+// 	defaultValue: T,
+// 	storage?: Storage,
+// ): T;
+// export function getStored<T>(
+// 	key: string,
+// 	defaultValue?: undefined,
+// 	storage?: Storage,
+// ): T | undefined;
+// export function getStored<T>(
+// 	key: string,
+// 	defaultValue: T | undefined,
+// 	storage: Storage = localStorage,
+// ): any {
+// 	const value = storage.getItem(key);
+// 	return tryParseJson(value) ?? updateStored(key, defaultValue, storage);
+// }
+
 export type Theme = "dark" | "light" | "system";
 export const themes = ["dark", "light", "system"] as const satisfies Theme[];
 
@@ -63,25 +67,39 @@ export const syncClientTheme = (theme: Theme) => {
 	root.classList.add(theme);
 };
 
-let theme_state = getStoredState<Theme>(STORAGE_KEY) ?? DEFAULT_THEME;
-syncClientTheme(theme_state);
-const listeners = new Set<() => void>();
-const subscribe = (listener: () => void) => {
-	listeners.add(listener);
-	return () => void listeners.delete(listener);
-};
-const setTheme = (theme: Theme | null | undefined) => {
-	theme ??= DEFAULT_THEME;
-	theme_state = theme;
-	updateStoredState(STORAGE_KEY, theme);
-	syncClientTheme(theme);
-	for (const listener of listeners) {
-		listener();
-	}
-};
+function createThemeState(
+	key: string = STORAGE_KEY,
+	defaultState: Theme = DEFAULT_THEME,
+	storage: Storage = localStorage,
+) {
+	let theme_state = getStored<Theme>(key, defaultState, storage);
+	syncClientTheme(theme_state);
+	const listeners = new Set<() => void>();
+	const subscribe = (listener: () => void) => {
+		listeners.add(listener);
+		return () => void listeners.delete(listener);
+	};
+	const setTheme = (theme: Theme | null | undefined) => {
+		theme ??= defaultState;
+		theme_state = theme;
+		updateStored(key, theme, storage);
+		syncClientTheme(theme);
+		for (const listener of listeners) {
+			listener();
+		}
+	};
+
+	return {
+		subscribe,
+		setTheme,
+		getTheme: () => theme_state,
+	};
+}
+
+const { subscribe, setTheme, getTheme } = createThemeState();
 
 export const useTheme = () => {
 	"use no memo";
-	const s = useSyncExternalStore(subscribe, () => theme_state);
+	const s = useSyncExternalStore(subscribe, getTheme);
 	return [s, setTheme] as const;
 };

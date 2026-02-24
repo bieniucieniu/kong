@@ -17,10 +17,12 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.notExists
+import org.jetbrains.exposed.v1.jdbc.select
 import kotlin.uuid.Uuid
 
 class ChatService {
-    fun createChatSession(name: String?, systemPrompt: String?, session: UserSession) =
+    fun createChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSession =
         createChatSession(name, systemPrompt, session.userId)
 
     fun createChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSession = ChatSessionDao.new {
@@ -28,6 +30,18 @@ class ChatService {
         this.name = name
         this.systemPrompt = systemPrompt
     }.toChatSession()
+
+    fun findEmptyChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSession? =
+        findEmptyChatSession(name, systemPrompt, session.userId)
+
+    fun findEmptyChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSession? = ChatSessionDao.find {
+        var conn = ChatSessionTable.ownerId eq userId and notExists(
+            ChatMessageTable.select(ChatMessageTable.sessionId eq ChatSessionTable.id)
+        )
+        systemPrompt?.let { conn = conn and (ChatSessionTable.systemPrompt eq it) }
+        name?.also { conn = conn and (ChatSessionTable.name eq it) }
+        conn
+    }.limit(1).firstOrNull()?.toChatSession()
 
 
     fun getUserChatSession(

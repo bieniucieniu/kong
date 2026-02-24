@@ -1,61 +1,49 @@
-import { createContext, createElement, use, useEffect, useMemo } from "react";
+import { createContext, createElement, use, useMemo } from "react";
 import { proxy } from "valtio";
 import { useProxy } from "valtio/utils";
-import { effect } from "valtio-reactive";
-import { getStored, updateStored } from "@/lib/hooks/state/storage";
+import {
+  type ChatPromptController,
+  globalChatPromptController,
+  useChatPromptController,
+} from "./prompt";
 
-interface ChatPromptState {
-	provider: string | undefined;
-	model: string | undefined;
-	prompt: string;
-}
-export class ChatPromptController {
-	private state: ChatPromptState;
-	key: string;
-	constructor(init?: Partial<ChatPromptState>, key: string = "global") {
-		this.key = key;
-		this.state = proxy<ChatPromptState>({
-			prompt: init?.prompt ?? "",
-			provider: getStored(`${key}-provider`, init?.provider),
-			model: getStored(`${key}-model`, init?.model),
-		});
-	}
-
-	syncWithStorage(store: Storage = localStorage) {
-		return effect(() => {
-			updateStored(`${this.key}-provider`, this.state.provider, store);
-			updateStored(`${this.key}-model`, this.state.model, store);
-		});
-	}
-
-	getState() {
-		return this.state;
-	}
+export interface ChatState {
+  messages: string[];
+  prompt: ChatPromptController;
 }
 
-export const globalChatPromptController = new ChatPromptController();
+export class ChatController {
+  state: ChatState;
 
-effect(() => globalChatPromptController.syncWithStorage());
-
-const context = createContext<ChatPromptController>(globalChatPromptController);
-
-export function useChatPromptController() {
-	return use(context);
+  constructor(init?: Partial<ChatState>) {
+    this.state = proxy<ChatState>({
+      messages: init?.messages ?? [],
+      prompt: init?.prompt ?? globalChatPromptController,
+    });
+  }
 }
-export function useChatPrompt(
-	c: ChatPromptController = useChatPromptController(),
-) {
-	return useProxy(c.getState());
+
+export const globalChatController = new ChatController();
+
+//effect(() => globalChatController.syncWithStorage());
+
+const context = createContext<ChatController>(globalChatController);
+
+export function useChatController() {
+  return use(context);
+}
+export function useChatState(c: ChatController = useChatController()) {
+  return useProxy(c.state);
 }
 
 export function ChatPromptControllerProvider({
-	children,
-	...props
+  children,
+  ...props
 }: {
-	value: ChatPromptController;
-	children: React.ReactNode;
+  value: ChatController;
+  children: React.ReactNode;
 }) {
-	return createElement(context.Provider, props, children);
+  return createElement(context.Provider, props, children);
 }
 
 /**
@@ -65,19 +53,20 @@ export function ChatPromptControllerProvider({
  * @param deps - Dependencies of the new ChatController by default set to [fork]
  * @returns A new ChatController instance.
  */
-export function useCreateChatPromptContext(
-	fork: boolean | ChatPromptController | Partial<ChatPromptState> = false,
-	deps: React.DependencyList = [fork],
+export function useCreateChatController(
+  fork: boolean | ChatController | Partial<ChatState> = false,
+  deps: React.DependencyList = [fork],
 ) {
-	const prev = fork
-		? fork instanceof ChatPromptController
-			? fork.getState()
-			: typeof fork === "object"
-				? fork
-				: use(context)?.getState()
-		: undefined;
+  const prev = fork
+    ? fork instanceof ChatController
+      ? fork.state
+      : typeof fork === "object"
+        ? fork
+        : use(context)?.state
+    : {};
 
-	const p = useMemo(() => new ChatPromptController(prev), deps);
-	useEffect(() => p.syncWithStorage(), [p]);
-	return p;
+  prev.prompt ||= useChatPromptController();
+
+  const p = useMemo(() => new ChatController(prev), deps);
+  return p;
 }
