@@ -1,26 +1,32 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getPostApiAiChatIdWithJsonUrl } from "@/gen/api/default/default";
-import type { ChatPrompt } from "@/gen/models";
-import { collect } from "../shared/collect";
+import {
+	mutationOptions,
+	type QueryClient,
+	useMutation,
+	useQueryClient,
+} from "@tanstack/react-query";
+import {
+	type getApiAiChatIdMessagesResponseSuccess,
+	getGetApiAiChatIdMessagesQueryKey,
+	getPostApiAiChatFreeWithJsonUrl,
+	getPostApiAiChatIdWithJsonUrl,
+	useGetApiAiChatIdMessages,
+} from "@/gen/api/kong";
+import type { ChatMessage, ChatPrompt, ChatPromptsList } from "@/gen/models";
 
 export function useChatPrompt(id: string) {
 	const qc = useQueryClient();
 	const m = useMutation({
 		async mutationFn(p: ChatPrompt) {
-			fetchAiChat(id, p, (d) => {
-				qc.setQueryData(["chat", id], d);
-			});
+			for await (const chunk of fetchAiChat(id, p)) {
+				qc.setQueryData(["chat", id], chunk);
+			}
 		},
 	});
 
 	return m;
 }
 
-export async function fetchAiChat(
-	id: string,
-	chat: ChatPrompt,
-	onCollect: (d: string) => void,
-) {
+export async function* fetchAiChat(id: string, chat: ChatPrompt) {
 	const res = await fetch(getPostApiAiChatIdWithJsonUrl(id), {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -32,8 +38,129 @@ export async function fetchAiChat(
 	const contentType = res.headers.get("Content-Type");
 	if (contentType?.includes("text/event-stream")) {
 		const reader = body?.getReader();
-		await collect(reader, onCollect);
+		if (!reader) return;
+		const decoder = new TextDecoder();
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			const chunk = decoder.decode(value, { stream: true });
+
+			yield chunk;
+		}
 	} else {
-		onCollect(await res.text());
+		yield await res.text();
 	}
+}
+export async function* fetchFreeAiChat(chat: ChatPromptsList) {
+	const res = await fetch(getPostApiAiChatFreeWithJsonUrl(), {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(chat),
+	});
+	if (res.status >= 400) throw new Error(res.statusText);
+	const body = [204, 205, 304].includes(res.status) ? null : res.body;
+
+	const contentType = res.headers.get("Content-Type");
+	if (contentType?.includes("text/event-stream")) {
+		const reader = body?.getReader();
+		if (!reader) return;
+		const decoder = new TextDecoder();
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			const chunk = decoder.decode(value, { stream: true });
+
+			yield chunk;
+		}
+	} else {
+		yield await res.text();
+	}
+}
+
+export function getChatMutationOptions(id: "free" | (string & {})) {
+	return mutationOptions({
+		mutationKey: ["chat", id],
+		mutationFn: async (p: ChatPrompt, ctx) => {
+			const a = ctx.client
+				.getQueryCache()
+				.find<getApiAiChatIdMessagesResponseSuccess>({
+					queryKey: getGetApiAiChatIdMessagesQueryKey(id),
+					exact: true,
+				});
+			const last: ChatMessage = {
+				content: "",
+				role: "agent",
+				createAt: new Date().toISOString(),
+			};
+
+			if (a?.isActive()) await a?.promise;
+
+			if (a?.state.data) {
+				a.state.data.data.push(
+					{
+						content: p.message,
+						role: "user",
+						createAt: new Date().toISOString(),
+					},
+					last,
+				);
+
+				a.setState({
+					status: "pending",
+					error: null,
+					fetchStatus: "fetching",
+					data: { ...a.state.data },
+				});
+			}
+			const gen =
+				id === "free"
+					? fetchFreeAiChat({
+							messages: a?.state.data
+								? a?.state.data.data.slice(0, -1)
+								: [
+										{
+											content: p.message,
+											role: "user",
+											createAt: new Date().toISOString(),
+										},
+									],
+						})
+					: fetchAiChat(id, p);
+
+			let acc = "";
+			for await (const chunk of gen) {
+				acc += chunk;
+				last.content = acc;
+				if (a?.state.data) a.setData(a.state.data);
+			}
+			return last;
+		},
+	});
+}
+
+export function initChatQuery(qc: QueryClient, id: string) {
+	const a =
+		qc.getQueryCache().find<getApiAiChatIdMessagesResponseSuccess>({
+			queryKey: getGetApiAiChatIdMessagesQueryKey(id),
+			exact: true,
+		})?.state.data ??
+		qc.setQueryData<getApiAiChatIdMessagesResponseSuccess>(
+			getGetApiAiChatIdMessagesQueryKey(id),
+			{
+				data: [],
+				status: 200,
+				headers: new Headers(),
+			} satisfies getApiAiChatIdMessagesResponseSuccess,
+		);
+
+	return a;
+}
+export const useChatQuery = useGetApiAiChatIdMessages;
+export function useChatMutation(id: string) {
+	return useMutation(getChatMutationOptions(id));
+}
+export function useFreeChatMutation() {
+	return useMutation(getChatMutationOptions("free"));
 }

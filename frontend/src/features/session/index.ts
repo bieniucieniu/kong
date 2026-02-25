@@ -1,7 +1,7 @@
 import {
 	useGetApiAuthUsersSession,
 	usePostApiAuthUsersLogout,
-} from "@/gen/api/default/default";
+} from "@/gen/api/kong";
 
 export function useSession() {
 	const q = useGetApiAuthUsersSession();

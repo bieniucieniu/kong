@@ -1,20 +1,30 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
-import { type ChatController, useChatState } from "../state";
+import { cn } from "@/lib/utils";
+import { useChatQuery } from "..";
+import type { ChatController } from "../state";
+import { MessageCard } from "./message-card";
 
-export function MessageList({ controller }: { controller?: ChatController }) {
-	const s = useChatState(controller);
+export function MessageList({
+	id,
+	className,
+}: {
+	controller?: ChatController;
+	id: string;
+	className?: string;
+}) {
+	const q = useChatQuery(id);
 	const parentRef = useRef<HTMLDivElement>(null);
 	const v = useVirtualizer({
-		count: s.messages.length,
+		count: q.data?.data.length ?? 0,
 		getScrollElement: () => parentRef.current,
 		estimateSize: () => 35,
 	});
 	return (
 		<div
 			ref={parentRef}
+			className={className}
 			style={{
-				height: `400px`,
 				overflow: "auto",
 			}}
 		>
@@ -26,21 +36,25 @@ export function MessageList({ controller }: { controller?: ChatController }) {
 				}}
 			>
 				{/* Only the visible items in the virtualizer, manually positioned to be in view */}
-				{v.getVirtualItems().map((virtualItem) => (
-					<div
-						key={virtualItem.key}
-						style={{
-							position: "absolute",
-							top: 0,
-							left: 0,
-							width: "100%",
-							height: `${virtualItem.size}px`,
-							transform: `translateY(${virtualItem.start}px)`,
-						}}
-					>
-						Row {virtualItem.index}
-					</div>
-				))}
+				{v.getVirtualItems().map(({ index, key, start }) => {
+					const d = q.data?.data[index];
+					if (!d) return null;
+					return (
+						<MessageCard
+							ref={v.measureElement}
+							data-index={index}
+							className={cn("absolute top-0 w-[90%]", {
+								"right-0": d.role === "user",
+								"left-0": d.role === "agent",
+							})}
+							style={{
+								transform: `translateY(${start}px)`,
+							}}
+							key={key}
+							message={d}
+						/>
+					);
+				})}
 			</div>
 		</div>
 	);

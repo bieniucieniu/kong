@@ -2,25 +2,24 @@ import { createContext, createElement, use, useMemo } from "react";
 import { proxy } from "valtio";
 import { useProxy } from "valtio/utils";
 import {
-  type ChatPromptController,
-  globalChatPromptController,
-  useChatPromptController,
+	type ChatPromptController,
+	ChatPromptControllerProvider,
+	globalChatPromptController,
+	useChatPromptController,
 } from "./prompt";
 
 export interface ChatState {
-  messages: string[];
-  prompt: ChatPromptController;
+	prompt: ChatPromptController;
 }
 
 export class ChatController {
-  state: ChatState;
+	state: ChatState;
 
-  constructor(init?: Partial<ChatState>) {
-    this.state = proxy<ChatState>({
-      messages: init?.messages ?? [],
-      prompt: init?.prompt ?? globalChatPromptController,
-    });
-  }
+	constructor(init?: Partial<ChatState>) {
+		this.state = proxy<ChatState>({
+			prompt: init?.prompt ?? globalChatPromptController,
+		});
+	}
 }
 
 export const globalChatController = new ChatController();
@@ -30,20 +29,29 @@ export const globalChatController = new ChatController();
 const context = createContext<ChatController>(globalChatController);
 
 export function useChatController() {
-  return use(context);
+	return use(context);
 }
 export function useChatState(c: ChatController = useChatController()) {
-  return useProxy(c.state);
+	return useProxy(c.state);
 }
 
-export function ChatPromptControllerProvider({
-  children,
-  ...props
+export function ChatControllerProvider({
+	children,
+	...props
 }: {
-  value: ChatController;
-  children: React.ReactNode;
+	value: ChatController;
+	children: React.ReactNode;
 }) {
-  return createElement(context.Provider, props, children);
+	return createElement(
+		context.Provider,
+		props,
+		createElement(
+			ChatPromptControllerProvider,
+			//@ts-expect-error
+			{ value: props.value.state.prompt },
+			children,
+		),
+	);
 }
 
 /**
@@ -54,19 +62,19 @@ export function ChatPromptControllerProvider({
  * @returns A new ChatController instance.
  */
 export function useCreateChatController(
-  fork: boolean | ChatController | Partial<ChatState> = false,
-  deps: React.DependencyList = [fork],
+	fork: boolean | ChatController | Partial<ChatState> = false,
+	deps: React.DependencyList = [fork],
 ) {
-  const prev = fork
-    ? fork instanceof ChatController
-      ? fork.state
-      : typeof fork === "object"
-        ? fork
-        : use(context)?.state
-    : {};
+	const prev = fork
+		? fork instanceof ChatController
+			? fork.state
+			: typeof fork === "object"
+				? fork
+				: use(context)?.state
+		: {};
 
-  prev.prompt ||= useChatPromptController();
+	prev.prompt ||= useChatPromptController();
 
-  const p = useMemo(() => new ChatController(prev), deps);
-  return p;
+	const p = useMemo(() => new ChatController(prev), deps);
+	return p;
 }

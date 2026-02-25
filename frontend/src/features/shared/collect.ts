@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function useCollect(
 	reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined,
@@ -7,11 +7,16 @@ export function useCollect(
 	const onDataRef = useRef(onData);
 	onDataRef.current = onData;
 
-	useMemo(() => collect(reader, onDataRef.current), [reader]);
+	useEffect(() => {
+		(async () => {
+			for await (const chunk of collect(reader)) {
+				onDataRef.current(chunk);
+			}
+		})();
+	}, [reader]);
 }
-export async function collect(
+export async function* collect(
 	reader: ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> | undefined,
-	onData: (data: string) => void,
 ) {
 	if (!reader) return;
 	const decoder = new TextDecoder();
@@ -21,6 +26,6 @@ export async function collect(
 
 		const chunk = decoder.decode(value, { stream: true });
 
-		onData(chunk);
+		yield chunk;
 	}
 }

@@ -9,7 +9,7 @@ import { useSession, useSessionLogout } from "@/features/session";
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
-} from "@/gen/api/default/default";
+} from "@/gen/api/kong";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
 import { FieldError } from "./ui/field";
 

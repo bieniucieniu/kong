@@ -7,15 +7,17 @@ import {
 	InputGroupTextarea,
 } from "@/components/ui/input-group";
 import type { Maybe, MaybePromise } from "@/lib/helper-types";
+import { useChatMutation } from "..";
 import {
 	type ChatPromptController,
-	useChatPromptState,
 	useChatPromptController,
+	useChatPromptState,
 } from "../state/prompt";
 import { ModelSelect, type ModelSelectProps } from "./model-select";
 
 export interface ChatInputProps extends ModelSelectProps {
 	onSubmit?: (p: string) => MaybePromise<Maybe<unknown>>;
+	id: string;
 	onFocus?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
 	controller?: ChatPromptController;
 	autoFocus?: boolean;
@@ -24,6 +26,7 @@ export interface ChatInputProps extends ModelSelectProps {
 }
 
 export function ChatInput({
+	id,
 	className,
 	onSubmit,
 	onFocus,
@@ -33,11 +36,18 @@ export function ChatInput({
 }: ChatInputProps) {
 	const s = useChatPromptState(state);
 
+	const m = useChatMutation(id);
+
 	const [isPending, startTransition] = useTransition();
 
 	const submit = (p = s.prompt) =>
 		startTransition(() => {
 			p = p?.trim();
+			m.mutate({
+				message: p,
+				provider: s.provider,
+				model: s.model,
+			});
 			const clean = (p && onSubmit?.(p)) ?? true;
 			if (clean) s.prompt = "";
 		});

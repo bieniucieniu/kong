@@ -16,7 +16,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
-import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
 import kotlin.uuid.Uuid
@@ -26,15 +25,14 @@ fun Route.chatRoutes() {
     val s: AiService by inject()
     route("chat") {
         post("new") {
-            suspendTransaction {
-                this.addLogger(StdOutSqlLogger)
-                val name = call.queryParameters["name"]
-                val systemPrompt = call.queryParameters["system_prompt"]
-                val uSession = getUserSession()
-                val session = c.findEmptyChatSession(name, systemPrompt, uSession)
-                    ?: c.createChatSession(name, systemPrompt, uSession)
-                call.respondNullable(session)
+            val n = call.queryParameters["name"]
+            val sp = call.queryParameters["system_prompt"]
+            val us = getUserSession()
+            val session = suspendTransaction {
+                c.findEmptyChatSession(n, sp, us)
+                    ?: c.createChatSession(n, sp, us)
             }
+            call.respondNullable(session)
         }.describe {
             description = "Create new chat session"
 
@@ -167,28 +165,6 @@ fun Route.chatRoutes() {
                 HttpStatusCode.Unauthorized {
                     description = "Unauthorized"
                     schema = jsonSchema<ErrorResponse>()
-                }
-                HttpStatusCode.ServiceUnavailable {
-                    description = "No active services"
-                    schema = jsonSchema<ErrorResponse>()
-                }
-            }
-        }
-        post {
-            val p = call.receive<ChatPromptsList>()
-            val m = s.getModel() ?: throw badRequest("Model not found")
-            val f = llm().executeStreaming(p.buildPrompt(), m)
-            var acc = ""
-            call.streamFlow(f) { acc += it }
-        }.describe {
-            description = "Chat with AI"
-            requestBody {
-                schema = jsonSchema<ChatPromptsList>()
-            }
-
-            responses {
-                HttpStatusCode.OK {
-                    ContentType.Text.EventStream()
                 }
                 HttpStatusCode.ServiceUnavailable {
                     description = "No active services"

@@ -109,7 +109,7 @@ fun Application.installRoutingPlugins() {
     routing {
         if (dev || enableSwagger) {
             swaggerUI(path = "swagger") {
-                info = OpenApiInfo(title = "My API", version = "1.0.0")
+                info = OpenApiInfo(title = "kong", version = "1.0.0")
                 source = OpenApiDocSource.Routing(contentType = ContentType.Application.Yaml) {
                     // filter out all wildcard matching to fix schema gen for frontend (orval)
                     routingRoot.descendants().filterNot { it.path.contains("...}") }

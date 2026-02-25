@@ -4,6 +4,7 @@ import ai.koog.ktor.Koog
 import com.bieniucieniu.auth.authenticateUserSession
 import com.bieniucieniu.features.ai.providers.ollama.OllamaService
 import com.bieniucieniu.features.ai.routes.chatRoutes
+import com.bieniucieniu.features.ai.routes.freeChatRoutes
 import com.bieniucieniu.features.ai.routes.modelProviderRoutes
 import com.bieniucieniu.features.ai.routes.modelRoutes
 import com.ucasoft.ktor.simpleCache.cacheOutput
@@ -43,6 +44,8 @@ fun Application.configureAi() {
 
     routing {
         route("/api/ai") {
+            freeChatRoutes()
+
             authenticateUserSession {
                 chatRoutes()
             }
