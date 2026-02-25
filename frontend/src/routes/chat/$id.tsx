@@ -29,10 +29,10 @@ function RouteComponent() {
 				<div className="flex-1 w-full">
 					<MessageList
 						id={id}
-						className="h-[calc(100svh-11rem)] mx-auto w-full max-w-180 bg-red-500"
+						className="h-[calc(100svh-13rem)] mx-auto w-full flex justify-center"
 					/>
 				</div>
-				<div className="bg-background absolute bottom-4 w-full max-w-180">
+				<div className="bg-background absolute bottom-4 px-4 w-full max-w-180">
 					<ChatInput
 						id={id}
 						autoFocus

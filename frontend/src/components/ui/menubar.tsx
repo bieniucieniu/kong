@@ -1,10 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { Menubar as MenubarPrimitive } from "@base-ui/react/menubar";
-
-import { cn } from "@/lib/utils";
+import { CheckIcon } from "lucide-react";
+import type * as React from "react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -20,14 +19,14 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CheckIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function Menubar({ className, ...props }: MenubarPrimitive.Props) {
 	return (
 		<MenubarPrimitive
 			data-slot="menubar"
 			className={cn(
-				"bg-background h-8 gap-0.5 rounded-none border p-1 flex items-center",
+				"bg-background gap-0.5 rounded-none border p-1 flex items-center",
 				className,
 			)}
 			{...props}

@@ -1,5 +1,5 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useChatQuery } from "..";
 import type { ChatController } from "../state";
@@ -20,6 +20,13 @@ export function MessageList({
 		getScrollElement: () => parentRef.current,
 		estimateSize: () => 35,
 	});
+
+	const last = q.data?.data[q.data?.data.length - 1];
+	useEffect(() => {
+		if (q.data?.data)
+			v.scrollToIndex(q.data?.data.length - 1, { behavior: "smooth" });
+	}, [last]);
+
 	return (
 		<div
 			ref={parentRef}
@@ -29,10 +36,9 @@ export function MessageList({
 			}}
 		>
 			<div
+				className="max-w-240 w-full relative"
 				style={{
 					height: `${v.getTotalSize()}px`,
-					width: "100%",
-					position: "relative",
 				}}
 			>
 				{/* Only the visible items in the virtualizer, manually positioned to be in view */}

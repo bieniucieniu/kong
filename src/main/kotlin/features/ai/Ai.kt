@@ -28,8 +28,11 @@ fun Application.configureAi() {
                     httpClient = get(named("ollama-http-client"))
                 }.also {
                     config.propertyOrNull("ai.ollama.models")?.getList()
-                        .takeIf { it.isNullOrEmpty() }
-                        ?.also { launch { ollamaService.ensureInstalledModels(it) } }
+                        .takeIf { !it.isNullOrEmpty() }
+                        ?.let {
+                            print("Installing models ${it.joinToString()}")
+                            launch { ollamaService.ensureInstalledModels(it) }
+                        }
                 }
             }
 

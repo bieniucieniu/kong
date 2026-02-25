@@ -67,8 +67,10 @@ export function ChatInput({
 				}}
 				value={s.prompt}
 			/>
-			<InputGroupAddon align="block-end">
+			<InputGroupAddon align="block-start">
 				<ModelSelect controller={state} className="ml-auto" />
+			</InputGroupAddon>
+			<InputGroupAddon align="block-end">
 				<InputGroupButton
 					className="ml-auto"
 					onClick={() => disabled || submit()}

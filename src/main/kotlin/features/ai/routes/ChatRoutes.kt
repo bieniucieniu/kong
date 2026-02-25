@@ -139,7 +139,6 @@ fun Route.chatRoutes() {
                 val p = call.receive<ChatPrompt>()
                 val m = s.getModel(p.model, p.provider) ?: throw badRequest("Model not found")
 
-                print("messages: ${cs.messages}")
                 val f = llm().executeStreaming(cs.buildPrompt { user(p.message) }, m)
 
                 c.saveMessage(cs.id, ChatMessageAuthor.User, p.message)

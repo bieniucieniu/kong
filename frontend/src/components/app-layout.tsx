@@ -11,19 +11,22 @@ import {
 	getGetApiAuthGoogleLoginUrl,
 } from "@/gen/api/kong";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
+import { AppSidebar } from "./app-sidebar";
 import { FieldError } from "./ui/field";
+import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="h-svh flex flex-col">
-			<nav className="w-svw flex items-end">
-				<Menubar className="ml-auto">
-					<SessionMenu />
-					<ThemeModeChangeMenubarMenu />
-				</Menubar>
-			</nav>
-			<div className="flex-1">{children}</div>
-		</div>
+		<SidebarProvider defaultOpen={false} className="h-svh flex flex-col">
+			<AppSidebar />
+			<Menubar>
+				<SidebarTrigger />
+				<SessionMenu className="ml-auto" />
+				<ThemeModeChangeMenubarMenu />
+			</Menubar>
+
+			{children}
+		</SidebarProvider>
 	);
 }
 

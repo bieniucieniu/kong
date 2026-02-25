@@ -12,6 +12,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.util.*
+import io.ktor.util.logging.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -62,19 +63,27 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
             path("api", "pull")
 
         }) {
+            contentType(ContentType.Application.Json)
             setBody(OllamaModelArgs(model))
         }.body()
     } ?: OllamaStatusResponse("inactive")
 
 
-    suspend fun ensureInstalledModels(tags: List<String>) =
+    suspend fun ensureInstalledModels(tags: List<String>, logger: Logger = application.log) =
         getAvailableModels()
             .models.let { model ->
                 tags.filter { tag -> model.find { it.name == tag } == null }
             }
             .let {
                 coroutineScope {
-                    it.forEach { model -> launch { pullModel(model) } }
+                    it.forEach { model ->
+                        launch {
+                            logger.info("Pulling model: $model")
+                            val res = pullModel(model)
+                            logger.info("Pulled model: $model with status ${res.status}")
+                        }
+
+                    }
                 }
             }
 
