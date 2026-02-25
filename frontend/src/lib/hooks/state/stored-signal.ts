@@ -4,20 +4,19 @@ import { getStored, updateStored } from "./storage";
 export function createStoredSignal<T>(
 	key: string,
 	state?: T,
-	onSet?: (n: T) => void,
+	storage?: Storage,
 ): SignalState<T | undefined>;
 export function createStoredSignal<T>(
 	key: string,
 	state: T,
-	onSet?: (n: T) => void,
+	storage?: Storage,
 ): SignalState<T>;
 export function createStoredSignal<T>(
 	key: string,
 	state: T,
-	onSet?: (n: T) => void,
+	storage: Storage = localStorage,
 ): SignalState<any> {
-	return createSignal(getStored(key, state), (s) => {
-		updateStored(key, s);
-		onSet?.(s);
-	});
+	return createSignal(getStored(key, state), (s) =>
+		updateStored(key, s, storage),
+	);
 }

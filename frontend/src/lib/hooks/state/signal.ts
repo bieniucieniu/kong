@@ -14,7 +14,7 @@ class SignalState<T> {
 		this.listeners.add(fn);
 		return () => this.listeners.delete(fn);
 	}
-	register(fn: () => void): () => boolean {
+	listen(fn: () => void): () => boolean {
 		this.onSet.add(fn);
 		return () => this.onSet.delete(fn);
 	}
