@@ -51,7 +51,7 @@ export function MessageList({
 							data-index={index}
 							className={cn("absolute top-0 w-[90%]", {
 								"right-0": d.role === "user",
-								"left-0": d.role === "agent",
+								"left-0": d.role !== "user",
 							})}
 							style={{
 								transform: `translateY(${start}px)`,

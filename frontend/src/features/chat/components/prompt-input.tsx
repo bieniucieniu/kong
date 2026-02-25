@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 import { useTransition } from "react";
 import {
 	InputGroup,
@@ -75,7 +75,7 @@ export function ChatInput({
 					className="ml-auto"
 					onClick={() => disabled || submit()}
 				>
-					{disabled ? "type something first" : <ArrowRight />}
+					{disabled ? "type something first" : <ArrowRightIcon />}
 				</InputGroupButton>
 			</InputGroupAddon>
 		</InputGroup>
@@ -127,7 +127,7 @@ export function ChatStateInput({
 					className="ml-auto"
 					onClick={() => disabled || submit()}
 				>
-					{disabled ? "type something first" : <ArrowRight />}
+					{disabled ? "type something first" : <ArrowRightIcon />}
 				</InputGroupButton>
 			</InputGroupAddon>
 		</InputGroup>

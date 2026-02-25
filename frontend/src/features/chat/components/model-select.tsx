@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { CaretDownIcon } from "@phosphor-icons/react";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { FieldError } from "@/components/ui/field";
 import { InputGroupButton } from "@/components/ui/input-group";
@@ -73,7 +73,7 @@ export function ModelSelect({
 									"default"
 								}
 							/>
-							<ChevronDown />
+							<CaretDownIcon />
 						</InputGroupButton>
 					}
 				/>
@@ -98,7 +98,7 @@ export function ModelSelect({
 					render={
 						<InputGroupButton className={className} variant="ghost">
 							<SelectValue placeholder={s.model ?? "default"} />
-							<ChevronDown />
+							<CaretDownIcon />
 						</InputGroupButton>
 					}
 				/>

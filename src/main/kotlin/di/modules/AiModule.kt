@@ -10,6 +10,6 @@ import org.koin.dsl.module
 val aiModules = module {
     single { GoogleService(get()) }
     single { OllamaService(get(named("ollama-http-client")), get()) }
-    single { AiService(listOf(get<OllamaService>(), get<GoogleService>())) }
+    single { AiService(listOf(get<OllamaService>(), get<GoogleService>()).filter { it.isActive() }) }
     single { ChatService() }
 }

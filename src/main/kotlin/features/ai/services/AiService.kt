@@ -5,13 +5,6 @@ import ai.koog.prompt.llm.LLModel
 import com.bieniucieniu.features.ai.providers.shared.AiProviderService
 
 class AiService(val services: List<AiProviderService>) {
-//    constructor(
-//        services: List<AiProviderService>
-//    ) : this(
-//        services
-//            .filter { it.isActive() }
-//            .associateBy { it.provider.id }
-//    )
 
     fun isActive(): Boolean = services.any { it.isActive() }
     suspend fun getAvailableLLModels(provider: String? = null): List<LLModel> =

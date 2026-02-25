@@ -1,4 +1,10 @@
-import { Check, Computer, type LucideProps, Moon, Sun } from "lucide-react";
+import {
+	CheckIcon,
+	ComputerTowerIcon,
+	type IconProps,
+	MoonIcon,
+	SunIcon,
+} from "@phosphor-icons/react";
 import { createElement } from "react";
 import {
 	DropdownMenuItem,
@@ -24,10 +30,10 @@ import {
 import { cn } from "@/lib/utils";
 import { type Theme, themes, useTheme } from "../theme";
 
-const themeIcons: Record<Theme, (props: LucideProps) => React.ReactNode> = {
-	dark: Moon,
-	light: Sun,
-	system: Computer,
+const themeIcons: Record<Theme, (props: IconProps) => React.ReactNode> = {
+	dark: MoonIcon,
+	light: SunIcon,
+	system: ComputerTowerIcon,
 };
 
 function ThemeIcon(props: { className?: string }) {
@@ -113,8 +119,7 @@ export function ThemeModeToggleDropdownSubItem(props: {
 						>
 							<Icon className="h-3.5 w-3.5" />
 							<span>{`theme.${it}`}</span>
-							<div className="flex-1" />
-							<Check
+							<CheckIcon
 								className={cn("opacity-0", {
 									"opacity-100": theme === it,
 								})}
