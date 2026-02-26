@@ -4,7 +4,11 @@ import {
 } from "@/gen/api/kong";
 
 export function useSession() {
-	const q = useGetApiAuthUsersSession();
+	const q = useGetApiAuthUsersSession({
+		query: {
+			placeholderData: undefined,
+		},
+	});
 
 	return {
 		session: q.data?.data,

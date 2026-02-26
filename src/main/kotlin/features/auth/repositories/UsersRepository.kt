@@ -21,7 +21,19 @@ class UserDao(id: EntityID<Uuid>) : UuidEntity(id) {
 
     companion object : UuidEntityClass<UserDao>(UsersTable)
 
-    fun toUser() = User(id.value, username, googleId, discordId)
+    fun toUser(
+        id: Uuid? = null,
+        username: String? = null,
+        googleId: String? = null,
+        discordId: ULong? = null,
+        avatar: String? = null
+    ) = User(
+        id = id ?: this.id.value,
+        username = username ?: this.username,
+        googleId = googleId ?: this.googleId,
+        discordId = discordId ?: this.discordId,
+        avatar = avatar
+    )
 
     var username by UsersTable.username
     var googleId by UsersTable.googleId

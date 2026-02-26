@@ -12,16 +12,22 @@ import io.ktor.server.application.*
 
 
 class DiscordService(val client: HttpClient, application: Application) {
+
     val clientId = application.environment.config.propertyOrNull("oauth2.discord.clientId")?.getString()!!
     val clientSecret = application.environment.config.propertyOrNull("oauth2.discord.clientSecret")
         ?.getString()!!
 
     suspend fun getUser(accessToken: String): DiscordUser =
-        client.get("https://discord.com/api/users/@me") {
+        client.get("$API_URL/users/@me") {
             header("Authorization", "Bearer $accessToken")
         }.body()
 
     suspend fun getUser(session: UserSession): DiscordUser = getUser(session.accessToken)
+
+    suspend fun getAvatarUrl(session: UserSession) = getAvatarUrl(getUser(session))
+    fun getAvatarUrl(u: DiscordUser): String =
+        "$CDN_URL/avatars/${u.id}/${u.avatar}.png"
+
 
     suspend fun revokeUser(session: UserSession): HttpResponse {
         if (session.refreshToken != null) {
@@ -48,5 +54,10 @@ class DiscordService(val client: HttpClient, application: Application) {
             }))
         }
         return res
+    }
+
+    companion object {
+        const val API_URL = "https://discord.com/api"
+        const val CDN_URL = "https://cdn.discordapp.com"
     }
 }

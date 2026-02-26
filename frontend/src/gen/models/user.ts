@@ -12,4 +12,6 @@ export interface User {
 	/** @nullable */
 	googleId?: string | null;
 	discordId?: UserDiscordId;
+	/** @nullable */
+	avatar?: string | null;
 }

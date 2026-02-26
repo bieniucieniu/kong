@@ -3,7 +3,6 @@ package com.bieniucieniu.features.ai.services
 import ai.koog.prompt.dsl.PromptBuilder
 import ai.koog.prompt.dsl.prompt
 import ai.koog.prompt.params.LLMParams
-import com.bieniucieniu.auth.getUserSession
 import com.bieniucieniu.features.ai.models.ChatMessage
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
 import com.bieniucieniu.features.ai.models.ChatPromptsList
@@ -13,11 +12,7 @@ import com.bieniucieniu.features.ai.repositories.ChatMessageTable
 import com.bieniucieniu.features.ai.repositories.ChatSessionDao
 import com.bieniucieniu.features.ai.repositories.ChatSessionTable
 import com.bieniucieniu.features.auth.models.UserSession
-import io.ktor.server.routing.*
-import org.jetbrains.exposed.v1.core.SortOrder
-import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.notExists
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
 import kotlin.uuid.Uuid
 
@@ -68,25 +63,39 @@ class ChatService {
 
     fun getUserChatSessionMessages(
         id: Uuid,
-        from: Long,
+        offset: Long,
         count: Int,
         forUpdate: Boolean = true,
     ) = ChatMessageDao
         .find(ChatMessageTable.sessionId eq id)
         .orderBy(ChatMessageTable.createdAt to SortOrder.ASC)
-        .offset(from).limit(count).let {
+        .offset(offset).limit(count).let {
             if (forUpdate) it.forUpdate() else it
         }
 
 
     fun getUserChatSessionsList(
-        call: RoutingContext
-    ) = getUserChatSessionsList(call.getUserSession().userId)
+        session: UserSession,
+        offset: Long = 0,
+        count: Int = 20,
+        search: String? = null
+    ) = getUserChatSessionsList(session.userId, offset, count, search)
 
 
     fun getUserChatSessionsList(
-        userId: Uuid
-    ) = ChatSessionDao.find(ChatSessionTable.ownerId eq userId).map { it.toChatSession() }
+        userId: Uuid,
+        offset: Long = 0,
+        count: Int = 20,
+        search: String? = null
+    ) = ChatSessionDao
+        .find {
+            var conn = ChatSessionTable.ownerId eq userId
+            if (search != null) conn = conn and (ChatSessionTable.name like "%$search%")
+            conn
+        }
+        .offset(offset)
+        .limit(count)
+        .map { it.toChatSession() }
 
 
     fun saveMessage(

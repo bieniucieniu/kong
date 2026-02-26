@@ -7,41 +7,6 @@ import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.flow.Flow
 
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend fun RoutingCall.notFound(message: String = "Not found") = respond(
-//    HttpStatusCode.NotFound,
-//    ErrorResponse(message)
-//)
-//
-//
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend fun RoutingCall.unauthorized(message: String = "Not authorized") = respond(
-//    HttpStatusCode.Unauthorized,
-//    ErrorResponse(message)
-//)
-//
-//
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend fun RoutingCall.badRequest(message: String = "Bad request") = respond(
-//    HttpStatusCode.BadRequest,
-//    ErrorResponse(message)
-//)
-//
-//
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend fun RoutingCall.serviceUnavailable(message: String = "service unavailable") = respond(
-//    HttpStatusCode.ServiceUnavailable,
-//    ErrorResponse(message)
-//)
-//
-//
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend fun RoutingCall.noContent(message: String) = respond(HttpStatusCode.NoContent, ErrorResponse(message))
-//
-//@Deprecated("use ones from [com.bieniucieniu.errors.responses.*] and throw it")
-//suspend inline fun <reified T : Any> RoutingCall.noContent(body: T) = respond(HttpStatusCode.NoContent, body)
-//
-
 suspend fun RoutingCall.streamFlow(
     f: Flow<StreamFrame>,
     contentType: ContentType = ContentType.Text.EventStream,
@@ -51,7 +16,7 @@ suspend fun RoutingCall.streamFlow(
 ) {
     respondBytesWriter(contentType = contentType) {
         try {
-            var acc = " "
+            var acc = ""
             val writeAcc = suspend {
                 writeByteArray(acc.toByteArray())
                 onFlush(acc)

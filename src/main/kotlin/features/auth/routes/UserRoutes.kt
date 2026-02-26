@@ -14,11 +14,10 @@ import io.ktor.server.sessions.*
 import org.koin.ktor.ext.inject
 
 fun Route.userRoutes() {
-    val userService: UserService by inject()
+    val us: UserService by inject()
     route("users") {
         get("session") {
-            val s = getUserSession()
-            val u = s.let { userService.getUserBySession(it) }
+            val u = us.getUserBySession(getUserSession())
             if (u != null) call.respond(u)
             else call.respond(HttpStatusCode.Unauthorized, ErrorResponse("User does not exist"))
         }.describe {
@@ -32,9 +31,10 @@ fun Route.userRoutes() {
             }
         }
 
+
         post("logout") {
             val s = getUserSession()
-            val res = userService.callRevokeUser(s)
+            val res = us.callRevokeUser(s)
             when (res?.status?.value) {
                 in 200..299 -> {
                     call.sessions.clear<UserSession>()

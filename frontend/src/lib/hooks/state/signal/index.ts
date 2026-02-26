@@ -1,5 +1,8 @@
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
-
+/**
+ * A simple signal is a state that can be updated and listened to.
+ * It is similar to a React state, but it is not tied to a component lifecycle.
+ * It can be used to create a state that is shared across components.
+ */
 class SignalState<T> {
 	private listeners: Set<() => void>;
 	state: T;
@@ -42,35 +45,6 @@ export function createSignal<T>(
 	return new SignalState(state, onSet);
 }
 
-export function useSignal<T>(p: SignalState<T>): [state: T, setter: Setter<T>] {
-	return [useSignalState(p), useCallback((v) => p.update(v), [p])];
-}
-
-export function useCreateSignal<T>(
-	state: T,
-	onSet?: (n: T) => void,
-): SignalState<T> {
-	const ref = useRef(onSet);
-	ref.current = onSet;
-	return useState(() => createSignal(state, (s) => ref.current?.(s)))[0];
-}
-
-export function useSignalState<T, U>(
-	o: SignalState<T>,
-	selector: (v: T) => U,
-): U;
-export function useSignalState<T>(o: SignalState<T>): T;
-export function useSignalState(
-	o: SignalState<any>,
-	selector?: (v: any) => any,
-): any {
-	return useSyncExternalStore(
-		(fn) => o.subscribe(fn),
-		() => (typeof selector === "function" ? selector(o.state) : o.state),
-		() => (typeof selector === "function" ? selector(o.state) : o.state),
-	);
-}
-
 function dispatch<Fn extends (...arg: any[]) => any>(
 	entries: Iterable<Fn>,
 	...args: Parameters<Fn>
@@ -82,3 +56,23 @@ function dispatch<Fn extends (...arg: any[]) => any>(
 			console.error(e);
 		}
 }
+
+/**
+ * Effect is a function that can be used to create a side effect.
+ * It will only run when any of the signals change.
+ * @param signals The signals to listen to.
+ * @param fn The function to run when any of the signals change.
+ * @returns A function that can be used to unsubscribe from the signals.
+ */
+export function effect<const T extends SignalState<any>[]>(
+	signals: T,
+	fn: (args: { [K in keyof T]: T[K]["state"] }) => void,
+	options?: { initial?: boolean },
+): () => void {
+	const exec = () => fn(signals.map((signal) => signal.state) as any);
+	if (options?.initial) exec();
+	const l = signals.map((signal) => signal.listen(exec));
+	return () => l.map((unwatch) => unwatch());
+}
+
+effect([createSignal(0), createSignal("")], () => {});

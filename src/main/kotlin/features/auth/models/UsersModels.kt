@@ -10,4 +10,5 @@ data class User(
     val username: String,
     val googleId: String?,
     val discordId: ULong?,
+    val avatar: String? = null
 )

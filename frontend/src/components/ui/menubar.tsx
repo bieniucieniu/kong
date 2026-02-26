@@ -26,7 +26,7 @@ function Menubar({ className, ...props }: MenubarPrimitive.Props) {
 		<MenubarPrimitive
 			data-slot="menubar"
 			className={cn(
-				"bg-background gap-0.5 rounded-none border p-1 flex items-center",
+				"bg-background gap-0.5 rounded-none p-1 flex items-center",
 				className,
 			)}
 			{...props}

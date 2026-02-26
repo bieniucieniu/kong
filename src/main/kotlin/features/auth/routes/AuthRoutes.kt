@@ -16,6 +16,7 @@ fun Route.authRoutes() {
             expiredIn = it.expiresIn,
             provider = OAuth2Provider.Google,
             userId = Uuid.NIL,
+            avatar = null
         )
         val u = s.ensureUserBySession(us)
         us.copy(
@@ -29,7 +30,9 @@ fun Route.authRoutes() {
             refreshToken = it.refreshToken,
             expiredIn = it.expiresIn,
             provider = OAuth2Provider.Discord,
-            userId = Uuid.NIL
+            userId = Uuid.NIL,
+            avatar = null
+
         )
         val u = s.ensureUserBySession(us)
         us.copy(

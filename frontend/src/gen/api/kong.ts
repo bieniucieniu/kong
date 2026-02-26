@@ -29,6 +29,7 @@ import type {
 	ErrorResponse,
 	GetApiAiChatIdMessagesParams,
 	GetApiAiChatIdParams,
+	GetApiAiSessionsParams,
 	PostApiAuthUsersLogoutDefaultOne,
 	PostApiAuthUsersLogoutDefaultTwo,
 	SerializableLLModel,
@@ -2592,6 +2593,217 @@ export function useGetApiAiChatId<
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
 	const queryOptions = getGetApiAiChatIdQueryOptions(id, params, options);
+
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export type getApiAiSessionsResponse200 = {
+	data: ChatSession[];
+	status: 200;
+};
+
+export type getApiAiSessionsResponse401 = {
+	data: ErrorResponse;
+	status: 401;
+};
+
+export type getApiAiSessionsResponseSuccess = getApiAiSessionsResponse200 & {
+	headers: Headers;
+};
+export type getApiAiSessionsResponseError = getApiAiSessionsResponse401 & {
+	headers: Headers;
+};
+
+export const getGetApiAiSessionsUrl = (params?: GetApiAiSessionsParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/ai/sessions?${stringifiedParams}`
+		: `/api/ai/sessions`;
+};
+
+export const getApiAiSessions = async (
+	params?: GetApiAiSessionsParams,
+	options?: RequestInit,
+): Promise<getApiAiSessionsResponseSuccess> => {
+	const res = await fetch(getGetApiAiSessionsUrl(params), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+	if (!res.ok) {
+		const err: globalThis.Error & {
+			info?: getApiAiSessionsResponseError["data"];
+			status?: number;
+		} = new globalThis.Error();
+		const data: getApiAiSessionsResponseError["data"] = body
+			? JSON.parse(body)
+			: {};
+		err.info = data;
+		err.status = res.status;
+		throw err;
+	}
+	const data: getApiAiSessionsResponseSuccess["data"] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as getApiAiSessionsResponseSuccess;
+};
+
+export const getGetApiAiSessionsQueryKey = (
+	params?: GetApiAiSessionsParams,
+) => {
+	return ["api", "ai", "sessions", ...(params ? [params] : [])] as const;
+};
+
+export const getGetApiAiSessionsQueryOptions = <
+	TData = Awaited<ReturnType<typeof getApiAiSessions>>,
+	TError = ErrorResponse,
+>(
+	params?: GetApiAiSessionsParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiSessions>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+) => {
+	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getGetApiAiSessionsQueryKey(params);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getApiAiSessions>>
+	> = ({ signal }) => getApiAiSessions(params, { signal, ...fetchOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getApiAiSessions>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetApiAiSessionsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getApiAiSessions>>
+>;
+export type GetApiAiSessionsQueryError = ErrorResponse;
+
+export function useGetApiAiSessions<
+	TData = Awaited<ReturnType<typeof getApiAiSessions>>,
+	TError = ErrorResponse,
+>(
+	params: undefined | GetApiAiSessionsParams,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiSessions>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiSessions>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiSessions>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiSessions<
+	TData = Awaited<ReturnType<typeof getApiAiSessions>>,
+	TError = ErrorResponse,
+>(
+	params?: GetApiAiSessionsParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiSessions>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getApiAiSessions>>,
+					TError,
+					Awaited<ReturnType<typeof getApiAiSessions>>
+				>,
+				"initialData"
+			>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetApiAiSessions<
+	TData = Awaited<ReturnType<typeof getApiAiSessions>>,
+	TError = ErrorResponse,
+>(
+	params?: GetApiAiSessionsParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiSessions>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetApiAiSessions<
+	TData = Awaited<ReturnType<typeof getApiAiSessions>>,
+	TError = ErrorResponse,
+>(
+	params?: GetApiAiSessionsParams,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getApiAiSessions>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetApiAiSessionsQueryOptions(params, options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,

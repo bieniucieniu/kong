@@ -3,10 +3,7 @@ package com.bieniucieniu.features.ai
 import ai.koog.ktor.Koog
 import com.bieniucieniu.auth.authenticateUserSession
 import com.bieniucieniu.features.ai.providers.ollama.OllamaService
-import com.bieniucieniu.features.ai.routes.chatRoutes
-import com.bieniucieniu.features.ai.routes.freeChatRoutes
-import com.bieniucieniu.features.ai.routes.modelProviderRoutes
-import com.bieniucieniu.features.ai.routes.modelRoutes
+import com.bieniucieniu.features.ai.routes.*
 import com.ucasoft.ktor.simpleCache.cacheOutput
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -51,6 +48,7 @@ fun Application.configureAi() {
 
             authenticateUserSession {
                 chatRoutes()
+                sessionRoutes()
             }
             cacheOutput(30.minutes) {
                 modelProviderRoutes()

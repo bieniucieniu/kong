@@ -14,6 +14,7 @@ data class UserSession(
     val refreshToken: String?,
     val username: String? = null,
     val userId: Uuid,
+    val avatar: String? = null,
     val expiredIn: Long? = null,
     val provider: OAuth2Provider? = null,
     val params: Map<String, List<String>?>? = null

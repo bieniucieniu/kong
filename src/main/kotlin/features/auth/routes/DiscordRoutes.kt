@@ -41,7 +41,6 @@ fun Route.authDiscordRoutes(
                         call.sessions.set(onAuth(principal))
                         call.respondRedirect("/")
                     } else call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid/no credentials"))
-
                 }
                 get("revoke") {
                     val session = call.sessions.get<UserSession>()

@@ -100,6 +100,5 @@ const { subscribe, setTheme, getTheme } = createThemeState();
 
 export const useTheme = () => {
 	"use no memo";
-	const s = useSyncExternalStore(subscribe, getTheme);
-	return [s, setTheme] as const;
+	return [useSyncExternalStore(subscribe, getTheme), setTheme] as const;
 };

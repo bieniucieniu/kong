@@ -17,6 +17,7 @@ export * from "./chatSessionMessagesItemRole";
 export * from "./errorResponse";
 export * from "./getApiAiChatIdMessagesParams";
 export * from "./getApiAiChatIdParams";
+export * from "./getApiAiSessionsParams";
 export * from "./postApiAuthUsersLogoutDefaultOne";
 export * from "./postApiAuthUsersLogoutDefaultTwo";
 export * from "./serializableLLModel";

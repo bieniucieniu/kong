@@ -5,12 +5,12 @@ import {
 	MoonIcon,
 	SunIcon,
 } from "@phosphor-icons/react";
-import { createElement } from "react";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/ssr";
 import {
+	DropdownMenu,
+	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
 	MenubarContent,
@@ -19,14 +19,7 @@ import {
 	MenubarRadioItem,
 	MenubarTrigger,
 } from "@/components/ui/menubar";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { type Theme, themes, useTheme } from "../theme";
 
@@ -36,89 +29,76 @@ const themeIcons: Record<Theme, (props: IconProps) => React.ReactNode> = {
 	system: ComputerTowerIcon,
 };
 
-function ThemeIcon(props: { className?: string }) {
+function ThemeIcon({ className }: { className?: string }) {
 	const [theme] = useTheme();
 	return themes.map((it, i) => {
 		const Icon = themeIcons[it];
-		const className = i
-			? cn(
-					`absolute top-0 left-0 h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all`,
-					{
-						"scale-100 rotate-0": theme === it,
-					},
-				)
-			: cn(`h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all`, {
+		const localClassName = i
+			? cn(`absolute top-0 left-0 scale-0 rotate-90 transition-all`, {
+					"scale-100 rotate-0": theme === it,
+				})
+			: cn(`scale-100 rotate-0 transition-all`, {
 					"scale-0 -rotate-90": theme !== it,
 				});
 		return (
 			<Icon
 				data-theme={theme}
-				className={cn(className, props.className)}
+				className={cn(localClassName, className)}
 				key={it}
 			/>
 		);
 	});
 }
 
-export function ThemeModeToggleDropdown(props: {
-	className?: string;
-	children?: React.ReactNode | ((props: { theme: Theme }) => React.ReactNode);
-}) {
+export function SidebarThemeModeToggle({ className }: { className?: string }) {
 	const [theme, setTheme] = useTheme();
+	const { isMobile } = useSidebar();
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger
+				className={className}
+				render={
+					<SidebarMenuButton
+						size="lg"
+						className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground md:h-8 md:p-0"
+					>
+						<div className="relative flex ml-1.5">
+							<ThemeIcon className="w-5! h-5!" />
+						</div>
+						<div className="grid flex-1 text-left text-sm leading-tight">
+							<span className="truncate font-medium">{theme}</span>
+						</div>
 
-	return (
-		<Select value={theme} onValueChange={setTheme}>
-			<SelectTrigger className={props.className}>
-				<SelectValue>
-					<div className="relative flex gap-2">
-						<ThemeIcon />
-						{typeof props.children === "function"
-							? createElement(props.children, { theme })
-							: props.children}
-						<span className="sr-only">Toggle theme</span>
-					</div>
-				</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				<SelectGroup>
-					{themes.map((it) => {
-						const Icon = themeIcons[it];
-						return (
-							<SelectItem value={it} key={it} onClick={() => setTheme(it)}>
-								<Icon /> {`theme.${it}`}
-							</SelectItem>
-						);
-					})}
-				</SelectGroup>
-			</SelectContent>
-		</Select>
-	);
-}
-export function ThemeModeToggleDropdownSubItem(props: {
-	className?: string;
-	children?: React.ReactNode | ((theme: Theme) => React.ReactNode);
-}) {
-	const [theme, setTheme] = useTheme();
-	return (
-		<DropdownMenuSub>
-			<DropdownMenuSubTrigger className={props.className}>
-				<div className="flex gap-2 items-center">
-					<div className="relative">
-						<ThemeIcon className="h-3.5 w-3.5" />
-					</div>
-				</div>
-			</DropdownMenuSubTrigger>
-			<DropdownMenuSubContent className="min-w-30">
+						<CaretDownIcon className="ml-auto size-4" />
+						{/* <div className="h-8 w-8 relative bg-red-500"> */}
+						{/* 	<ThemeIcon className="h-8 w-8" /> */}
+						{/* </div> */}
+						{/* <div className="grid flex-1 text-left text-sm leading-tight"> */}
+						{/* 	<span className="truncate font-medium">theme</span> */}
+						{/* </div> */}
+					</SidebarMenuButton>
+				}
+			/>
+
+			<DropdownMenuContent
+				className="min-w-56 rounded-lg"
+				side={isMobile ? "bottom" : "right"}
+				align="end"
+				sideOffset={4}
+			>
 				{themes.map((it) => {
 					const Icon = themeIcons[it];
 					return (
 						<DropdownMenuItem
 							key={it}
-							onSelect={() => setTheme(it)}
+							onClick={(e) => {
+								e.preventDefault();
+								setTheme(it);
+							}}
 							className="cursor-pointer flex gap-3"
 						>
 							<Icon className="h-3.5 w-3.5" />
-							<span>{`theme.${it}`}</span>
+							<span>{it}</span>
 							<CheckIcon
 								className={cn("opacity-0", {
 									"opacity-100": theme === it,
@@ -127,8 +107,8 @@ export function ThemeModeToggleDropdownSubItem(props: {
 						</DropdownMenuItem>
 					);
 				})}
-			</DropdownMenuSubContent>
-		</DropdownMenuSub>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 

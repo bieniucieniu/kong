@@ -10,30 +10,31 @@ import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
 } from "@/gen/api/kong";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
-import { useSignal } from "@/lib/hooks/state/signal";
-import { createStoredSignal } from "@/lib/hooks/state/stored-signal";
 import { AppSidebar } from "./app-sidebar";
 import { FieldError } from "./ui/field";
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 
-const sidebarOpen = createStoredSignal("--sidebar-open", false);
+//const sidebarOpen = createStoredSignal("--sidebar-open", false);
 export function AppLayout({ children }: { children: React.ReactNode }) {
-	const [open, setOpen] = useSignal(sidebarOpen);
 	return (
 		<SidebarProvider
-			open={open}
-			onOpenChange={setOpen}
-			className="h-svh flex flex-col"
+			open
+			style={
+				{
+					"--sidebar-width": "350px",
+				} as React.CSSProperties
+			}
 		>
 			<AppSidebar />
-			<Menubar>
-				<SidebarTrigger />
-				<SessionMenu className="ml-auto" />
-				<ThemeModeChangeMenubarMenu />
-			</Menubar>
-
-			{children}
+			<SidebarInset>
+				<Menubar>
+					{useIsMobile() && <SidebarTrigger />}
+					<ThemeModeChangeMenubarMenu className="ml-auto" />
+				</Menubar>
+				{children}
+			</SidebarInset>
 		</SidebarProvider>
 	);
 }
