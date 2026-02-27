@@ -12,11 +12,11 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import { SidebarUser } from "@/features/session/components/sidebar-user";
 import { SidebarThemeModeToggle } from "@/integration/shadcn/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import icon from "/icon.svg?url";
 import { DropdownMenuGroup } from "../ui/dropdown-menu";
-import { SidebarUser } from "./app-user";
 import { data, type NavEntry } from "./data";
 
 export default function AppDesktopSidebar({

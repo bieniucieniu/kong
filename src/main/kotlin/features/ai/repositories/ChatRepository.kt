@@ -2,7 +2,7 @@ package com.bieniucieniu.features.ai.repositories
 
 import com.bieniucieniu.features.ai.models.ChatMessage
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
-import com.bieniucieniu.features.ai.models.ChatSession
+import com.bieniucieniu.features.ai.models.ChatSessionWithMessages
 import com.bieniucieniu.features.auth.repositories.UsersTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.UuidTable
@@ -40,7 +40,7 @@ class ChatSessionDao(id: EntityID<Uuid>) : UuidEntity(id) {
     val messages by ChatMessageDao referrersOn ChatMessageTable.sessionId
 
 
-    fun toChatSession(includeMessages: Boolean = false) = ChatSession(
+    fun toChatSession(includeMessages: Boolean = false) = ChatSessionWithMessages(
         id = id.value,
         name = name,
         systemPrompt = systemPrompt,

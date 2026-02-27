@@ -9,9 +9,9 @@ export type GetApiAiChatIdMessagesParams = {
 	/**
 	 * Offset
 	 */
-	from?: string;
+	offset?: number;
 	/**
 	 * Count
 	 */
-	count?: string;
+	count?: number;
 };

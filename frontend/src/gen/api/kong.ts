@@ -25,10 +25,12 @@ import type {
 	ChatMessage,
 	ChatPrompt,
 	ChatPromptsList,
-	ChatSession,
+	ChatSessionWithMessages,
 	ErrorResponse,
 	GetApiAiChatIdMessagesParams,
 	GetApiAiChatIdParams,
+	GetApiAiSessions200One,
+	GetApiAiSessions200Two,
 	GetApiAiSessionsParams,
 	PostApiAuthUsersLogoutDefaultOne,
 	PostApiAuthUsersLogoutDefaultTwo,
@@ -1763,7 +1765,7 @@ export const usePostApiAiChatFreeWithUrlEncoded = <
  * Create new chat session
  */
 export type postApiAiChatNewResponse200 = {
-	data: ChatSession;
+	data: ChatSessionWithMessages;
 	status: 200;
 };
 
@@ -2602,8 +2604,13 @@ export function useGetApiAiChatId<
 	return { ...query, queryKey: queryOptions.queryKey };
 }
 
-export type getApiAiSessionsResponse200 = {
-	data: ChatSession[];
+export type getApiAiSessionsResponse200ApplicationJson = {
+	data: GetApiAiSessions200One;
+	status: 200;
+};
+
+export type getApiAiSessionsResponse200ApplicationXWwwFormUrlencoded = {
+	data: GetApiAiSessions200Two;
 	status: 200;
 };
 
@@ -2612,7 +2619,10 @@ export type getApiAiSessionsResponse401 = {
 	status: 401;
 };
 
-export type getApiAiSessionsResponseSuccess = getApiAiSessionsResponse200 & {
+export type getApiAiSessionsResponseSuccess = (
+	| getApiAiSessionsResponse200ApplicationJson
+	| getApiAiSessionsResponse200ApplicationXWwwFormUrlencoded
+) & {
 	headers: Headers;
 };
 export type getApiAiSessionsResponseError = getApiAiSessionsResponse401 & {

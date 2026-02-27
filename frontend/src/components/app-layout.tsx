@@ -10,8 +10,8 @@ import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
 } from "@/gen/api/kong";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
+import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { AppSidebar } from "./app-sidebar";
 import { FieldError } from "./ui/field";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";

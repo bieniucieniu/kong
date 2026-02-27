@@ -9,6 +9,7 @@ import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.ai.services.ChatService
 import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
+import com.bieniucieniu.features.shared.models.Paginated
 import com.bieniucieniu.features.shared.responses.streamFlow
 import io.ktor.http.*
 import io.ktor.openapi.*
@@ -18,6 +19,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
+import paginationQueryParams
 import kotlin.uuid.Uuid
 
 fun Route.chatRoutes() {
@@ -38,7 +40,7 @@ fun Route.chatRoutes() {
 
             responses {
                 HttpStatusCode.OK {
-                    schema = jsonSchema<ChatSession>()
+                    schema = jsonSchema<ChatSessionWithMessages>()
                 }
                 HttpStatusCode.Unauthorized {
                     description = "Unauthorized"
@@ -47,7 +49,7 @@ fun Route.chatRoutes() {
             }
         }
         get("{id}/messages") {
-            val offset = call.queryParameters["from"]?.toLongOrNull() ?: 0
+            val offset = call.queryParameters["offset"]?.toLongOrNull() ?: 0
             val count = call.queryParameters["count"]?.toIntOrNull() ?: 20
             val id = call.parameters["id"]?.let { Uuid.parseHexDash(it) }
                 ?: throw badRequest("Missing id")
@@ -57,21 +59,15 @@ fun Route.chatRoutes() {
                 }
             } ?: throw notFound("chat session not found")
 
-            call.respond(o)
+
+            call.respond(Paginated(o, offset, count, o.size < count))
         }.describe {
             parameters {
                 path("id") {
                     description = "Chat session id [Uuid]"
                     required = true
                 }
-                query("from") {
-                    description = "Offset"
-                    required = false
-                }
-                query("count") {
-                    description = "Count"
-                    required = false
-                }
+                paginationQueryParams()
             }
             responses {
                 HttpStatusCode.OK {

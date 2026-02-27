@@ -33,12 +33,20 @@ enum class ChatMessageAuthor {
 }
 
 @Serializable
-data class ChatSession(
+data class ChatSessionWithMessages(
     val id: Uuid,
     val name: String? = null,
     val systemPrompt: String? = null,
     val updatedAt: Instant? = null,
     val messages: List<ChatMessage> = emptyList()
+)
+
+@Serializable
+data class ChatSession(
+    val id: Uuid,
+    val name: String? = null,
+    val systemPrompt: String? = null,
+    val updatedAt: Instant? = null,
 )
 
 @Serializable

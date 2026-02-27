@@ -1,12 +1,6 @@
 import { ListIcon } from "@phosphor-icons/react/dist/ssr";
 import type { LinkProps } from "@tanstack/react-router";
-import {
-	SidebarContent,
-	SidebarGroup,
-	SidebarGroupContent,
-	SidebarHeader,
-	SidebarInput,
-} from "../ui/sidebar";
+import { SidebarSessionList } from "@/features/chat/components/sidebar/session-list";
 
 export type NavEntry = {
 	id: string;
@@ -21,25 +15,7 @@ export const data: NavEntry[] = [
 		id: "sessions",
 		title: "sessions",
 		icon: ListIcon,
-		content: (entry) => {
-			return (
-				<>
-					<SidebarHeader className="gap-3.5 border-b p-4">
-						<div className="flex w-full items-center justify-between">
-							<div className="text-foreground text-base font-medium">
-								{entry.title}
-							</div>
-						</div>
-						<SidebarInput placeholder="Type to search..." />
-					</SidebarHeader>
-					<SidebarContent>
-						<SidebarGroup className="px-0">
-							<SidebarGroupContent></SidebarGroupContent>
-						</SidebarGroup>
-					</SidebarContent>
-				</>
-			);
-		},
+		content: SidebarSessionList,
 		mobileLink: "/sessions",
 	},
 ];

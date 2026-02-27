@@ -72,9 +72,16 @@ fun Application.installAuthPlugins() {
 
 }
 
-fun RoutingContext.getUserSession(): UserSession = call.getUserSession()
 
-fun RoutingCall.getUserSession(throwOnUnauthorized: Boolean = true): UserSession =
+fun RoutingContext.tryGetUserSession(): UserSession? = call.tryGetUserSession()
+fun RoutingCall.tryGetUserSession(): UserSession? =
+    principal<UserSession>(USER_SESSION_KEY).takeIf {
+        val expiredIn = it?.expiredIn
+        expiredIn == null || expiredIn < Clock.System.now().epochSeconds
+    }
+
+fun RoutingContext.getUserSession(): UserSession = call.getUserSession()
+fun RoutingCall.getUserSession(): UserSession =
     principal<UserSession>(USER_SESSION_KEY).takeIf {
         val expiredIn = it?.expiredIn
         expiredIn == null || expiredIn < Clock.System.now().epochSeconds

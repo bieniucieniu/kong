@@ -13,9 +13,9 @@ export type GetApiAiSessionsParams = {
 	/**
 	 * Offset
 	 */
-	offset?: string;
+	offset?: number;
 	/**
 	 * Count
 	 */
-	count?: string;
+	count?: number;
 };

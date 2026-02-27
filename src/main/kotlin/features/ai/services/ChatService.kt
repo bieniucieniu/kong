@@ -6,7 +6,7 @@ import ai.koog.prompt.params.LLMParams
 import com.bieniucieniu.features.ai.models.ChatMessage
 import com.bieniucieniu.features.ai.models.ChatMessageAuthor
 import com.bieniucieniu.features.ai.models.ChatPromptsList
-import com.bieniucieniu.features.ai.models.ChatSession
+import com.bieniucieniu.features.ai.models.ChatSessionWithMessages
 import com.bieniucieniu.features.ai.repositories.ChatMessageDao
 import com.bieniucieniu.features.ai.repositories.ChatMessageTable
 import com.bieniucieniu.features.ai.repositories.ChatSessionDao
@@ -17,26 +17,28 @@ import org.jetbrains.exposed.v1.jdbc.select
 import kotlin.uuid.Uuid
 
 class ChatService {
-    fun createChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSession =
+    fun createChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSessionWithMessages =
         createChatSession(name, systemPrompt, session.userId)
 
-    fun createChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSession = ChatSessionDao.new {
-        this.ownerId = userId
-        this.name = name
-        this.systemPrompt = systemPrompt
-    }.toChatSession()
+    fun createChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSessionWithMessages =
+        ChatSessionDao.new {
+            this.ownerId = userId
+            this.name = name
+            this.systemPrompt = systemPrompt
+        }.toChatSession()
 
-    fun findEmptyChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSession? =
+    fun findEmptyChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSessionWithMessages? =
         findEmptyChatSession(name, systemPrompt, session.userId)
 
-    fun findEmptyChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSession? = ChatSessionDao.find {
-        var conn = ChatSessionTable.ownerId eq userId and notExists(
-            ChatMessageTable.select(ChatMessageTable.sessionId eq ChatSessionTable.id)
-        )
-        systemPrompt?.let { conn = conn and (ChatSessionTable.systemPrompt eq it) }
-        name?.also { conn = conn and (ChatSessionTable.name eq it) }
-        conn
-    }.limit(1).firstOrNull()?.toChatSession()
+    fun findEmptyChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSessionWithMessages? =
+        ChatSessionDao.find {
+            var conn = ChatSessionTable.ownerId eq userId and notExists(
+                ChatMessageTable.select(ChatMessageTable.sessionId eq ChatSessionTable.id)
+            )
+            systemPrompt?.let { conn = conn and (ChatSessionTable.systemPrompt eq it) }
+            name?.also { conn = conn and (ChatSessionTable.name eq it) }
+            conn
+        }.limit(1).firstOrNull()?.toChatSession()
 
 
     fun getUserChatSession(
@@ -115,7 +117,7 @@ class ChatService {
 
 const val BASE_SYSTEM_PROMPT = "You are a helpful assistant. Write short, simple and concise answers"
 
-fun ChatSession.buildPrompt(
+fun ChatSessionWithMessages.buildPrompt(
     id: String = "chat",
     params: LLMParams = LLMParams(),
     build: PromptBuilder.() -> Unit = {}

@@ -13,6 +13,7 @@ export function MessageList({
 	id: string;
 	className?: string;
 }) {
+	"use no memo";
 	const q = useChatQuery(id);
 	const parentRef = useRef<HTMLDivElement>(null);
 	const v = useVirtualizer({

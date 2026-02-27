@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@base-ui/react";
 import { CaretDownIcon, UserIcon } from "@phosphor-icons/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,13 +10,13 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuButton, useSidebar } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
 import { useSession, useSessionLogout } from "@/features/session";
 import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
 } from "@/gen/api/kong";
 import { cn } from "@/lib/utils";
-import { Spinner } from "../ui/spinner";
 
 function getInitials(name: string | undefined) {
 	if (!name) return "??";
@@ -54,7 +52,9 @@ export function SidebarUser({ className }: { className?: string }) {
 
 	const m = useSessionLogout();
 	return isLoading ? (
-		<Spinner className={className} />
+		<div className="flex items-center justify-center">
+			<Spinner className={className} />
+		</div>
 	) : (
 		<DropdownMenu>
 			<DropdownMenuTrigger

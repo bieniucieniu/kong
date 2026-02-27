@@ -4,8 +4,9 @@
  * kong
  * OpenAPI spec version: 1.0.0
  */
+import type { ChatSessionWithMessagesMessagesItem } from "./chatSessionWithMessagesMessagesItem";
 
-export interface ChatSession {
+export interface ChatSessionWithMessages {
 	id: string;
 	/** @nullable */
 	name?: string | null;
@@ -13,4 +14,5 @@ export interface ChatSession {
 	systemPrompt?: string | null;
 	/** @nullable */
 	updatedAt?: string | null;
+	messages?: ChatSessionWithMessagesMessagesItem[];
 }

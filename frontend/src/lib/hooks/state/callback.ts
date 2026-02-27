@@ -13,5 +13,5 @@ export function useRefCallback<T extends (...args: any[]) => any>(
 ): T {
 	const ref = useRef<T>(fn);
 	ref.current = fn;
-	return useCallback(((...args) => ref.current(args)) as T, deps);
+	return useCallback(((...args) => ref.current(...args)) as T, deps);
 }
