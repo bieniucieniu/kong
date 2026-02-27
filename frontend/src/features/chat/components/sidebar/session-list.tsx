@@ -1,11 +1,11 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { NavEntry } from "@/components/app-sidebar/data";
 import { DebouncedSidebarInput } from "@/components/debounce-input";
 import {
 	Item,
-	ItemActions,
 	ItemContent,
 	ItemDescription,
 	ItemTitle,
@@ -17,7 +17,6 @@ import {
 	SidebarHeader,
 } from "@/components/ui/sidebar";
 import { getApiAiSessions, getGetApiAiSessionsQueryKey } from "@/gen/api/kong";
-import { useInfiniteQueryVirtualizer } from "@/integration/ts-virtual";
 
 function useGetApiAiSessionsPaged(search?: string) {
 	return useInfiniteQuery({
@@ -43,10 +42,28 @@ export function SidebarSessionList({ title }: NavEntry) {
 	const [search, setSearch] = useState<string | undefined>();
 	const parentRef = useRef<HTMLDivElement>(null);
 	const q = useGetApiAiSessionsPaged(search?.trim() || undefined);
-	const { get, virtualizer } = useInfiniteQueryVirtualizer(q, {
-		joinFn: (d) => d?.pages.flatMap((p) => p.data) || [],
+	const joined = useMemo(
+		() => q.data?.pages.flatMap((it) => it.data) ?? [],
+		[q.data?.pages],
+	);
+	const v = useVirtualizer({
+		count: joined.length,
 		getScrollElement: () => parentRef.current,
+		estimateSize: () => 35,
 	});
+
+	useEffect(() => {
+		const items = v.getVirtualItems();
+		const last = items.length > 0 ? items[items.length - 1] : undefined;
+		if (!q.isSuccess || !last) return;
+
+		if (
+			last.index >= joined.length - 1 &&
+			q.hasNextPage &&
+			!q.isFetchingNextPage
+		)
+			q.fetchNextPage();
+	}, [q.hasNextPage, joined.length, v.getVirtualItems(), q.isFetchingNextPage]);
 
 	return (
 		<>
@@ -71,39 +88,44 @@ export function SidebarSessionList({ title }: NavEntry) {
 						<ul
 							className="max-w-240 w-full relative"
 							style={{
-								height: `${virtualizer.getTotalSize()}px`,
+								height: `${v.getTotalSize()}px`,
 							}}
 						>
-							{virtualizer.getVirtualItems().map((item) => {
-								const { key, start } = item;
-								const d = get(item);
-
+							{v.getVirtualItems().map(({ key, start, index }) => {
+								const d = joined[index];
 								if (!d) return null;
 								return (
 									<Item
+										ref={v.measureElement}
+										data-index={index}
+										className={"absolute top-0"}
 										key={key}
 										style={{
 											transform: `translateY(${start}px)`,
 										}}
+										render={(props) => (
+											<Link
+												to={`/chat/$id`}
+												activeProps={{ className: "bg-muted" }}
+												params={{ id: d.id }}
+												viewTransition
+												{...props}
+											/>
+										)}
 									>
 										{/* <ItemMedia variant="icon"> */}
 										{/* 	<InfoIcon /> */}
 										{/* </ItemMedia> */}
 										<ItemContent>
-											<ItemTitle>
-												{d.name ?? d.id} {key}
+											<ItemTitle className="text-nowrap text-ellipsis">
+												{d.name ?? (
+													<span className="opacity-80 text-accent">
+														new chat
+													</span>
+												)}
 											</ItemTitle>
 											<ItemDescription>{d.updatedAt}</ItemDescription>
 										</ItemContent>
-										<ItemActions>
-											<Link
-												to={`/chat/$id`}
-												params={{ id: d.id }}
-												viewTransition
-											>
-												Open
-											</Link>
-										</ItemActions>
 									</Item>
 								);
 							})}

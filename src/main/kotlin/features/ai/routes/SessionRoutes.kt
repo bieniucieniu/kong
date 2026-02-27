@@ -11,7 +11,6 @@ import io.ktor.openapi.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
-import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
 import paginationQueryParams
@@ -23,7 +22,6 @@ fun Route.sessionRoutes() {
             val p = pagination()
             val search = call.queryParameters["search"]
             val o = suspendTransaction {
-                addLogger(StdOutSqlLogger)
                 c.getUserChatSessionsList(getUserSession(), p.offset, p.count, search)
             }
             call.respond(p.paginated(o))

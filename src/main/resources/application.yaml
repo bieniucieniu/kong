@@ -37,3 +37,6 @@ database:
   url: ${DATABASE_URL}
 frontend:
   url: ${?FRONTEND_URL}
+logging:
+  database: ${?LOG_DATABASE_SQL}
+  httpClient: false

@@ -27,13 +27,23 @@ class ChatService {
             this.systemPrompt = systemPrompt
         }.toChatSession()
 
+    fun updateChatSession(id: Uuid, name: String? = null, systemPrompt: String? = null) {
+        ChatSessionDao.find { ChatSessionTable.id eq id }.firstOrNull()?.apply {
+            if (name != null)
+                this.name = name
+            if (systemPrompt != null)
+                this.systemPrompt = systemPrompt
+        }
+    }
+
     fun findEmptyChatSession(name: String?, systemPrompt: String?, session: UserSession): ChatSessionWithMessages? =
         findEmptyChatSession(name, systemPrompt, session.userId)
 
     fun findEmptyChatSession(name: String?, systemPrompt: String?, userId: Uuid): ChatSessionWithMessages? =
         ChatSessionDao.find {
             var conn = ChatSessionTable.ownerId eq userId and notExists(
-                ChatMessageTable.select(ChatMessageTable.sessionId eq ChatSessionTable.id)
+                ChatMessageTable.select(ChatSessionTable.id)
+                    .where { ChatMessageTable.sessionId eq ChatSessionTable.id }
             )
             systemPrompt?.let { conn = conn and (ChatSessionTable.systemPrompt eq it) }
             name?.also { conn = conn and (ChatSessionTable.name eq it) }
@@ -62,6 +72,16 @@ class ChatService {
     ) = ChatSessionDao.find {
         (ChatSessionTable.id eq id) and (ChatSessionTable.ownerId eq userId)
     }.let { if (forUpdate) it.forUpdate() else it }.firstOrNull()?.toChatSession(includeMessages = includeMessages)
+
+    fun getUserChatSessionAllMessages(
+        id: Uuid,
+        forUpdate: Boolean = true,
+    ) = ChatMessageDao
+        .find(ChatMessageTable.sessionId eq id)
+        .orderBy(ChatMessageTable.createdAt to SortOrder.ASC)
+        .let {
+            if (forUpdate) it.forUpdate() else it
+        }
 
     fun getUserChatSessionMessages(
         id: Uuid,
@@ -97,6 +117,7 @@ class ChatService {
         }
         .offset(offset)
         .limit(count)
+        .orderBy(ChatSessionTable.updatedAt to SortOrder.DESC)
         .map { it.toChatSession() }
 
 
@@ -110,7 +131,6 @@ class ChatService {
             this.role = role
             this.content = content
         }
-        val s = ChatSessionDao.find { ChatSessionTable.id eq o.sessionId }
         return o.toChatMessage()
     }
 }

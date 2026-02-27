@@ -1,5 +1,4 @@
 import {
-	Menubar,
 	MenubarContent,
 	MenubarItem,
 	MenubarMenu,
@@ -10,7 +9,6 @@ import {
 	getGetApiAuthDiscordLoginUrl,
 	getGetApiAuthGoogleLoginUrl,
 } from "@/gen/api/kong";
-import { ThemeModeChangeMenubarMenu } from "@/integration/shadcn/components/theme-toggle";
 import { useIsMobile } from "@/lib/hooks/use-mobile";
 import { AppSidebar } from "./app-sidebar";
 import { FieldError } from "./ui/field";
@@ -29,10 +27,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 		>
 			<AppSidebar />
 			<SidebarInset>
-				<Menubar>
-					{useIsMobile() && <SidebarTrigger />}
-					<ThemeModeChangeMenubarMenu className="ml-auto" />
-				</Menubar>
+				{useIsMobile() && <SidebarTrigger />}
 				{children}
 			</SidebarInset>
 		</SidebarProvider>

@@ -46,7 +46,7 @@ export default function AppDesktopSidebar({
 								size="lg"
 								className="md:h-8 md:p-0"
 								render={() => (
-									<Link to="/">
+									<Link to="/" viewTransition>
 										<div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
 											<img src={icon} alt="kong" />
 										</div>

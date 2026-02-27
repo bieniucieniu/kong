@@ -2,29 +2,21 @@ import {
 	mutationOptions,
 	type QueryClient,
 	useMutation,
-	useQueryClient,
 } from "@tanstack/react-query";
 import {
 	type getApiAiChatIdMessagesResponseSuccess,
 	getGetApiAiChatIdMessagesQueryKey,
+	getGetApiAiSessionsQueryKey,
 	getPostApiAiChatFreeWithJsonUrl,
 	getPostApiAiChatIdWithJsonUrl,
 	useGetApiAiChatIdMessages,
 } from "@/gen/api/kong";
-import type { ChatMessage, ChatPrompt, ChatPromptsList } from "@/gen/models";
-
-export function useChatPrompt(id: string) {
-	const qc = useQueryClient();
-	const m = useMutation({
-		async mutationFn(p: ChatPrompt) {
-			for await (const chunk of fetchAiChat(id, p)) {
-				qc.setQueryData(["chat", id], chunk);
-			}
-		},
-	});
-
-	return m;
-}
+import type {
+	ChatMessage,
+	ChatPrompt,
+	ChatPromptsList,
+	ChatSession,
+} from "@/gen/models";
 
 export async function* fetchAiChat(id: string, chat: ChatPrompt) {
 	const res = await fetch(getPostApiAiChatIdWithJsonUrl(id), {
@@ -79,14 +71,14 @@ export async function* fetchFreeAiChat(chat: ChatPromptsList) {
 	}
 }
 
-export function getChatMutationOptions(id: "free" | (string & {})) {
+export function getChatMutationOptions(session: ChatSession) {
 	return mutationOptions({
-		mutationKey: ["chat", id],
+		mutationKey: ["chat", session.id],
 		mutationFn: async (p: ChatPrompt, ctx) => {
 			const a = ctx.client
 				.getQueryCache()
 				.find<getApiAiChatIdMessagesResponseSuccess>({
-					queryKey: getGetApiAiChatIdMessagesQueryKey(id),
+					queryKey: getGetApiAiChatIdMessagesQueryKey(session.id),
 					exact: true,
 				});
 			const last: ChatMessage = {
@@ -115,7 +107,7 @@ export function getChatMutationOptions(id: "free" | (string & {})) {
 				});
 			}
 			const gen =
-				id === "free"
+				session.id === "free"
 					? fetchFreeAiChat({
 							messages: a?.state.data
 								? a?.state.data.data.slice(0, -1)
@@ -127,7 +119,7 @@ export function getChatMutationOptions(id: "free" | (string & {})) {
 										},
 									],
 						})
-					: fetchAiChat(id, p);
+					: fetchAiChat(session.id, p);
 
 			let acc = "";
 			for await (const chunk of gen) {
@@ -136,6 +128,14 @@ export function getChatMutationOptions(id: "free" | (string & {})) {
 				if (a?.state.data) a.setData(a.state.data);
 			}
 			return last;
+		},
+		onSuccess: (_, __, ___, ctx) => {
+			if (!session.name) {
+				ctx.client.invalidateQueries({
+					queryKey: getGetApiAiSessionsQueryKey(),
+				});
+				ctx.client.setQueryData(getGetApiAiSessionsQueryKey(), () => {});
+			}
 		},
 	});
 }
@@ -158,9 +158,11 @@ export function initChatQuery(qc: QueryClient, id: string) {
 	return a;
 }
 export const useChatQuery = useGetApiAiChatIdMessages;
-export function useChatMutation(id: string) {
-	return useMutation(getChatMutationOptions(id));
+export function useChatMutation(
+	...args: Parameters<typeof getChatMutationOptions>
+) {
+	return useMutation(getChatMutationOptions(...args));
 }
 export function useFreeChatMutation() {
-	return useMutation(getChatMutationOptions("free"));
+	return useMutation(getChatMutationOptions({ id: "free" }));
 }

@@ -16,7 +16,6 @@ export * from "./chatSessionWithMessages";
 export * from "./chatSessionWithMessagesMessagesItem";
 export * from "./chatSessionWithMessagesMessagesItemRole";
 export * from "./errorResponse";
-export * from "./getApiAiChatIdMessagesParams";
 export * from "./getApiAiChatIdParams";
 export * from "./getApiAiSessions200One";
 export * from "./getApiAiSessions200Two";

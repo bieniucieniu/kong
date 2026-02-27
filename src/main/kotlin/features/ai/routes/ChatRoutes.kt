@@ -4,12 +4,14 @@ import ai.koog.ktor.llm
 import com.bieniucieniu.auth.getUserSession
 import com.bieniucieniu.errors.responses.badRequest
 import com.bieniucieniu.errors.responses.notFound
-import com.bieniucieniu.features.ai.models.*
+import com.bieniucieniu.features.ai.models.ChatMessage
+import com.bieniucieniu.features.ai.models.ChatMessageAuthor
+import com.bieniucieniu.features.ai.models.ChatPrompt
+import com.bieniucieniu.features.ai.models.ChatSessionWithMessages
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.ai.services.ChatService
 import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import com.bieniucieniu.features.shared.models.Paginated
 import com.bieniucieniu.features.shared.responses.streamFlow
 import io.ktor.http.*
 import io.ktor.openapi.*
@@ -19,7 +21,6 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
-import paginationQueryParams
 import kotlin.uuid.Uuid
 
 fun Route.chatRoutes() {
@@ -49,25 +50,22 @@ fun Route.chatRoutes() {
             }
         }
         get("{id}/messages") {
-            val offset = call.queryParameters["offset"]?.toLongOrNull() ?: 0
-            val count = call.queryParameters["count"]?.toIntOrNull() ?: 20
             val id = call.parameters["id"]?.let { Uuid.parseHexDash(it) }
                 ?: throw badRequest("Missing id")
             val o = suspendTransaction {
                 c.getUserChatSession(id, getUserSession())?.let { session ->
-                    c.getUserChatSessionMessages(session.id, offset, count).map { it.toChatMessage() }
+                    c.getUserChatSessionAllMessages(session.id).map { it.toChatMessage() }
                 }
             } ?: throw notFound("chat session not found")
 
 
-            call.respond(Paginated(o, offset, count, o.size < count))
+            call.respond(o)
         }.describe {
             parameters {
                 path("id") {
                     description = "Chat session id [Uuid]"
                     required = true
                 }
-                paginationQueryParams()
             }
             responses {
                 HttpStatusCode.OK {
@@ -110,7 +108,7 @@ fun Route.chatRoutes() {
             }
             responses {
                 HttpStatusCode.OK {
-                    schema = jsonSchema<ChatPromptsList>()
+                    schema = jsonSchema<ChatSessionWithMessages>()
                 }
                 HttpStatusCode.BadRequest {
                     description = "bad request"
@@ -131,10 +129,16 @@ fun Route.chatRoutes() {
             suspendTransaction {
                 val cs = c.getUserChatSession(id, getUserSession(), includeMessages = true)
                     ?: throw notFound("Chat session not found")
-
+                val setupName = cs.messages.isEmpty() && cs.name == null
                 val p = call.receive<ChatPrompt>()
                 val m = s.getModel(p.model, p.provider) ?: throw badRequest("Model not found")
 
+                if (setupName) {
+                    val title = if (p.message.length > 20) {
+                        p.message.slice(0..18) + "..."
+                    } else p.message
+                    c.updateChatSession(cs.id, name = title)
+                }
                 val f = llm().executeStreaming(cs.buildPrompt { user(p.message) }, m)
 
                 c.saveMessage(cs.id, ChatMessageAuthor.User, p.message)

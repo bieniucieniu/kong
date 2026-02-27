@@ -27,7 +27,6 @@ import type {
 	ChatPromptsList,
 	ChatSessionWithMessages,
 	ErrorResponse,
-	GetApiAiChatIdMessagesParams,
 	GetApiAiChatIdParams,
 	GetApiAiSessions200One,
 	GetApiAiSessions200Two,
@@ -1904,31 +1903,15 @@ export type getApiAiChatIdMessagesResponseError = (
 	headers: Headers;
 };
 
-export const getGetApiAiChatIdMessagesUrl = (
-	id: string,
-	params?: GetApiAiChatIdMessagesParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `/api/ai/chat/${id}/messages?${stringifiedParams}`
-		: `/api/ai/chat/${id}/messages`;
+export const getGetApiAiChatIdMessagesUrl = (id: string) => {
+	return `/api/ai/chat/${id}/messages`;
 };
 
 export const getApiAiChatIdMessages = async (
 	id: string,
-	params?: GetApiAiChatIdMessagesParams,
 	options?: RequestInit,
 ): Promise<getApiAiChatIdMessagesResponseSuccess> => {
-	const res = await fetch(getGetApiAiChatIdMessagesUrl(id, params), {
+	const res = await fetch(getGetApiAiChatIdMessagesUrl(id), {
 		...options,
 		method: "GET",
 	});
@@ -1956,18 +1939,8 @@ export const getApiAiChatIdMessages = async (
 	} as getApiAiChatIdMessagesResponseSuccess;
 };
 
-export const getGetApiAiChatIdMessagesQueryKey = (
-	id: string,
-	params?: GetApiAiChatIdMessagesParams,
-) => {
-	return [
-		"api",
-		"ai",
-		"chat",
-		id,
-		"messages",
-		...(params ? [params] : []),
-	] as const;
+export const getGetApiAiChatIdMessagesQueryKey = (id: string) => {
+	return ["api", "ai", "chat", id, "messages"] as const;
 };
 
 export const getGetApiAiChatIdMessagesQueryOptions = <
@@ -1975,7 +1948,6 @@ export const getGetApiAiChatIdMessagesQueryOptions = <
 	TError = ErrorResponse,
 >(
 	id: string,
-	params?: GetApiAiChatIdMessagesParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -1990,12 +1962,11 @@ export const getGetApiAiChatIdMessagesQueryOptions = <
 	const { query: queryOptions, fetch: fetchOptions } = options ?? {};
 
 	const queryKey =
-		queryOptions?.queryKey ?? getGetApiAiChatIdMessagesQueryKey(id, params);
+		queryOptions?.queryKey ?? getGetApiAiChatIdMessagesQueryKey(id);
 
 	const queryFn: QueryFunction<
 		Awaited<ReturnType<typeof getApiAiChatIdMessages>>
-	> = ({ signal }) =>
-		getApiAiChatIdMessages(id, params, { signal, ...fetchOptions });
+	> = ({ signal }) => getApiAiChatIdMessages(id, { signal, ...fetchOptions });
 
 	return {
 		queryKey,
@@ -2019,7 +1990,6 @@ export function useGetApiAiChatIdMessages<
 	TError = ErrorResponse,
 >(
 	id: string,
-	params: undefined | GetApiAiChatIdMessagesParams,
 	options: {
 		query: Partial<
 			UseQueryOptions<
@@ -2047,7 +2017,6 @@ export function useGetApiAiChatIdMessages<
 	TError = ErrorResponse,
 >(
 	id: string,
-	params?: GetApiAiChatIdMessagesParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -2075,7 +2044,6 @@ export function useGetApiAiChatIdMessages<
 	TError = ErrorResponse,
 >(
 	id: string,
-	params?: GetApiAiChatIdMessagesParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -2096,7 +2064,6 @@ export function useGetApiAiChatIdMessages<
 	TError = ErrorResponse,
 >(
 	id: string,
-	params?: GetApiAiChatIdMessagesParams,
 	options?: {
 		query?: Partial<
 			UseQueryOptions<
@@ -2111,11 +2078,7 @@ export function useGetApiAiChatIdMessages<
 ): UseQueryResult<TData, TError> & {
 	queryKey: DataTag<QueryKey, TData, TError>;
 } {
-	const queryOptions = getGetApiAiChatIdMessagesQueryOptions(
-		id,
-		params,
-		options,
-	);
+	const queryOptions = getGetApiAiChatIdMessagesQueryOptions(id, options);
 
 	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
 		TData,
@@ -2385,7 +2348,7 @@ export const usePostApiAiChatIdWithUrlEncoded = <
 };
 
 export type getApiAiChatIdResponse200 = {
-	data: ChatPromptsList;
+	data: ChatSessionWithMessages;
 	status: 200;
 };
 

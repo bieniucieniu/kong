@@ -3,8 +3,11 @@ package com.bieniucieniu.di.modules
 import com.bieniucieniu.features.ai.repositories.ChatMessageTable
 import com.bieniucieniu.features.ai.repositories.ChatSessionTable
 import com.bieniucieniu.features.auth.repositories.UsersTable
+import com.bieniucieniu.lib.utils.isDev
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import org.jetbrains.exposed.v1.core.DatabaseConfig
+import org.jetbrains.exposed.v1.core.StdOutSqlLogger
 import org.jetbrains.exposed.v1.core.exposedLogger
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -15,6 +18,7 @@ import org.koin.dsl.module
 val databaseModule = module {
     single<Database> {
         val config = get<Application>().environment.config
+        val logging = config.propertyOrNull("logging.database")?.getAs() ?: config.isDev()
         val url = config.property("database.url").getString()
         val database = config.propertyOrNull("database.database")?.getString() ?: "kong"
         val username = config.property("database.username").getString()
@@ -27,6 +31,7 @@ val databaseModule = module {
             password = password,
             databaseConfig = DatabaseConfig {
                 useNestedTransactions = false
+                if (logging) sqlLogger = StdOutSqlLogger
             }
         ).also {
             val tables = arrayOf(

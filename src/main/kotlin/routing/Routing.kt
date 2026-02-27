@@ -5,6 +5,7 @@ import com.bieniucieniu.errors.responses.ResponsesException
 import com.bieniucieniu.errors.responses.ResponsesExceptionWithContent
 import com.bieniucieniu.errors.responses.UnauthorizedException
 import com.bieniucieniu.features.shared.models.ErrorResponse
+import com.bieniucieniu.lib.utils.isDev
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting
@@ -31,7 +32,7 @@ import kotlin.time.Duration.Companion.seconds
 
 fun Application.installRoutingPlugins() {
     val config = environment.config
-    val dev: Boolean by lazy { config.propertyOrNull("ktor.development")?.getAs() ?: false }
+    val dev = isDev()
     val proxy: Boolean by lazy { config.propertyOrNull("ktor.proxy")?.getAs() ?: false }
     val enableSwagger: Boolean by lazy { config.propertyOrNull("ktor.swagger")?.getAs() ?: false }
     val jsonConfig: Json by inject()

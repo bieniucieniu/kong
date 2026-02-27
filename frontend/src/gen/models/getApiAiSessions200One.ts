@@ -10,5 +10,5 @@ export type GetApiAiSessions200One = {
 	data: ChatSession[];
 	offset: number;
 	count: number;
-	end?: boolean;
+	end: boolean;
 };

@@ -1,5 +1,6 @@
 package com.bieniucieniu.di.modules
 
+import com.bieniucieniu.lib.utils.isDev
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
@@ -10,12 +11,16 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.config.*
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val httpClientModules = module {
     single {
         HttpClient(CIO) {
+            val config = get<Application>().environment.config
+            val logging = config.propertyOrNull("logging.httpClient")?.getAs() ?: isDev()
+
             install(ContentNegotiation) {
                 json(get())
             }
@@ -25,10 +30,11 @@ val httpClientModules = module {
                 socketTimeoutMillis = 60_000
             }
             install(HttpCache)
-            install(Logging) {
-                logger = Logger.DEFAULT
-                level = LogLevel.ALL
-            }
+            if (logging)
+                install(Logging) {
+                    logger = Logger.DEFAULT
+                    level = LogLevel.ALL
+                }
 
         }
     }

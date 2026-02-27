@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { useMemo } from "react";
+import Markdown from "react-markdown";
 import { Spinner } from "@/components/ui/spinner";
 import type { ChatMessage } from "@/gen/models";
 import { cn } from "@/lib/utils";
@@ -43,7 +44,9 @@ export function MessageCard({
 				<div className="text-xs">{date}</div>
 			</div>
 			{message.content.trim() ? (
-				<p className="pl-2 max-w-full text-wrap">{message.content}</p>
+				<p className="pl-2 max-w-full text-wrap">
+					<Markdown>{message.content}</Markdown>
+				</p>
 			) : (
 				<Spinner />
 			)}

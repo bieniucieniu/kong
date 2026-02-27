@@ -25,14 +25,16 @@ function RouteComponent() {
 
 	return (
 		<ChatControllerProvider value={state}>
-			<div className="h-full flex flex-col relative items-center justify-end gap-4 p-4">
+			<div className="h-full flex flex-col relative items-center justify-end gap-4 px-4">
 				<div className="flex-1 w-full">
 					<MessageList
 						id={id}
-						className="h-[calc(100svh-13rem)] mx-auto w-full flex justify-center"
+						className="h-[calc(100svh-1px)] mx-auto w-full flex justify-center"
+						paddingStart={50}
+						paddingEnd={200}
 					/>
 				</div>
-				<div className="bg-background absolute bottom-4 px-4 w-full max-w-180">
+				<div className="bg-background/80 backdrop-blur-xs absolute bottom-4 w-full max-w-180">
 					<ChatInput
 						id={id}
 						autoFocus

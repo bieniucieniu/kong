@@ -2,16 +2,18 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useChatQuery } from "..";
-import type { ChatController } from "../state";
 import { MessageCard } from "./message-card";
 
 export function MessageList({
 	id,
 	className,
+	paddingEnd,
+	paddingStart,
 }: {
-	controller?: ChatController;
 	id: string;
 	className?: string;
+	paddingEnd?: number;
+	paddingStart?: number;
 }) {
 	"use no memo";
 	const q = useChatQuery(id);
@@ -20,6 +22,8 @@ export function MessageList({
 		count: q.data?.data.length ?? 0,
 		getScrollElement: () => parentRef.current,
 		estimateSize: () => 35,
+		paddingEnd,
+		paddingStart,
 	});
 
 	const last = q.data?.data[q.data?.data.length - 1];

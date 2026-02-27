@@ -36,7 +36,7 @@ export function ChatInput({
 }: ChatInputProps) {
 	const s = useChatPromptState(state);
 
-	const m = useChatMutation(id);
+	const m = useChatMutation({ id });
 
 	const [isPending, startTransition] = useTransition();
 
