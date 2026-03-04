@@ -1,5 +1,7 @@
 package com.bieniucieniu.features.ai.routes
 
+import com.bieniucieniu.auth.hasUserSession
+import com.bieniucieniu.auth.tryGetUserSession
 import com.bieniucieniu.errors.responses.badRequest
 import com.bieniucieniu.errors.responses.noContent
 import com.bieniucieniu.errors.responses.notFound
@@ -19,9 +21,22 @@ fun Route.modelRoutes() {
     route("models") {
         get("{provider_id}") {
             val provider = call.parameters["provider_id"] ?: throw badRequest("Provider not provided")
-            val m = s.getAvailableLLModels(provider)
-            if (m.isEmpty()) throw noContent("no content", emptyList<SerializableLLModel>())
-            else call.respond(m.map { it.toSerializableLLModel() })
+            val a = tryGetUserSession()
+            print(a)
+            if (!hasUserSession()) {
+                print("no user session serving only default model")
+                if (s.getDefaultService()?.provider?.id != provider) throw badRequest("no such Provider")
+                val m = s.getDefaultModel()?.toSerializableLLModel() ?: throw noContent(
+                    "no content", emptyList<SerializableLLModel>()
+                )
+
+                call.respond(listOf(m))
+            } else {
+                val m = s.getAvailableLLModels(provider)
+                if (m.isEmpty()) throw noContent("no content", emptyList<SerializableLLModel>())
+
+                call.respond(m.map { it.toSerializableLLModel() })
+            }
         }.describe {
             description = "Get list of all models"
             responses {
@@ -39,8 +54,13 @@ fun Route.modelRoutes() {
                 }
             }
         }
+
         get("{provider_id}/default") {
             val provider = call.parameters["provider_id"] ?: throw badRequest("Provider not provided")
+
+            if (!hasUserSession() && s.getDefaultService()?.provider?.id != provider)
+                throw badRequest("no such Provider")
+
             val m = s.getDefaultModel(provider)?.toSerializableLLModel()
                 ?: throw notFound("Model not found, probably all services are inactive")
 

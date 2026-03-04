@@ -4,14 +4,15 @@ import ai.koog.ktor.Koog
 import com.bieniucieniu.auth.authenticateUserSession
 import com.bieniucieniu.di.modules.OLLAMA_HTTP_CLIENT_QUALIFIER
 import com.bieniucieniu.features.ai.providers.ollama.OllamaService
-import com.bieniucieniu.features.ai.routes.*
-import com.ucasoft.ktor.simpleCache.cacheOutput
+import com.bieniucieniu.features.ai.routes.chatRoutes
+import com.bieniucieniu.features.ai.routes.freeChatRoutes
+import com.bieniucieniu.features.ai.routes.modelProviderRoutes
+import com.bieniucieniu.features.ai.routes.modelRoutes
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
 import org.koin.ktor.ext.get
 import org.koin.ktor.ext.inject
-import kotlin.time.Duration.Companion.minutes
 
 
 fun Application.configureAi() {
@@ -48,9 +49,8 @@ fun Application.configureAi() {
 
             authenticateUserSession {
                 chatRoutes()
-                sessionRoutes()
             }
-            cacheOutput(30.minutes) {
+            authenticateUserSession(optional = true) {
                 modelProviderRoutes()
                 modelRoutes()
             }

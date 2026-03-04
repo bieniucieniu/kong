@@ -13,6 +13,7 @@ import {
 	useGetApiAiModelsProviderId,
 	useGetApiAiModelsProviderIdDefault,
 	useGetApiAiProviders,
+	useGetApiAiProvidersDefault,
 } from "@/gen/api/kong";
 import {
 	type ChatPromptController,
@@ -34,16 +35,18 @@ export function ModelSelect({
 	const onProviderChange = (p: string | null) => (s.provider = p || undefined);
 	const onModelChange = (m: string | null) => (s.model = m || undefined);
 
+	const providers = useGetApiAiProviders();
+	const defaultProvider = useGetApiAiProvidersDefault();
+
+	const provider = s.provider || defaultProvider.data?.data.id;
 	const opt = {
-		query: { enabled: !!s.provider },
+		query: { enabled: !!provider },
 	};
 
-	const providers = useGetApiAiProviders();
-	const models = useGetApiAiModelsProviderId(s.provider ?? "", opt);
-	const defaultModel = useGetApiAiModelsProviderIdDefault(
-		s.provider ?? "",
-		opt,
-	);
+	const models = useGetApiAiModelsProviderId(provider ?? "", opt);
+	const defaultModel = useGetApiAiModelsProviderIdDefault(provider ?? "", opt);
+
+	const model = s.model || defaultModel.data?.data.id;
 
 	const isLoading =
 		providers.isLoading || models.isLoading || defaultModel.isLoading;
@@ -56,8 +59,8 @@ export function ModelSelect({
 		<ButtonGroup>
 			<Select
 				disabled={disabled}
-				defaultValue={defaultModel.data?.data.provider.id}
-				value={s.provider}
+				defaultValue={defaultProvider.data?.data.id}
+				value={provider}
 				onValueChange={onProviderChange}
 			>
 				<SelectTrigger
@@ -68,7 +71,7 @@ export function ModelSelect({
 						<InputGroupButton className={className} variant="ghost">
 							<SelectValue
 								placeholder={
-									s.provider ??
+									provider ??
 									defaultModel.data?.data.provider.display ??
 									"default"
 								}
@@ -87,9 +90,9 @@ export function ModelSelect({
 			</Select>
 
 			<Select
-				disabled={disabled || s.provider === undefined}
+				disabled={disabled || provider === undefined}
 				defaultValue={defaultModel.data?.data.id}
-				value={s.model}
+				value={model}
 				onValueChange={onModelChange}
 			>
 				<SelectTrigger
@@ -97,7 +100,7 @@ export function ModelSelect({
 					className="border-none"
 					render={
 						<InputGroupButton className={className} variant="ghost">
-							<SelectValue placeholder={s.model ?? "default"} />
+							<SelectValue placeholder={model ?? "default"} />
 							<CaretDownIcon />
 						</InputGroupButton>
 					}

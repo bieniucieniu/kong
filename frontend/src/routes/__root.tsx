@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 function RootComponent() {
 	return (
 		<>
-			<ReactQueryDevtools initialIsOpen={false} />
+			<ReactQueryDevtools initialIsOpen={false} position="right" />
 			<TooltipProvider>
 				<AppLayout>
 					<Outlet />

@@ -73,6 +73,8 @@ fun Application.installAuthPlugins() {
 }
 
 
+fun RoutingContext.hasUserSession(): Boolean = call.hasUserSession()
+fun RoutingCall.hasUserSession(): Boolean = tryGetUserSession() != null
 fun RoutingContext.tryGetUserSession(): UserSession? = call.tryGetUserSession()
 fun RoutingCall.tryGetUserSession(): UserSession? =
     principal<UserSession>(USER_SESSION_KEY).takeIf {
@@ -87,7 +89,8 @@ fun RoutingCall.getUserSession(): UserSession =
         expiredIn == null || expiredIn < Clock.System.now().epochSeconds
     } ?: throw unauthorized("Unauthorized")
 
-fun Route.authenticateUserSession(build: Route.() -> Unit) = authenticate(USER_SESSION_KEY, build = build)
+fun Route.authenticateUserSession(optional: Boolean = false, build: Route.() -> Unit) =
+    authenticate(USER_SESSION_KEY, build = build, optional = optional)
 
 fun Route.authenticateOauth2Session(
     strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,

@@ -20,6 +20,10 @@ and The frontend is built with [Tanstack](https://tanstack.com/) and [React](htt
     - [ ] Session deletion
 - [ ] Tool calling
     - [ ] User Custom tools
+- [ ] User management
+    - [X] User creation (based on oauth discord/google)
+    - [ ] proper cleanup of user data after logout
+
 
 
 - [ ] LLM provuider checklist:

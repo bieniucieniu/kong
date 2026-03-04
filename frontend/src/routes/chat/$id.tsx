@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { initChatQuery } from "@/features/chat";
 import { MessageList } from "@/features/chat/components/message-list";
 import { ChatInput } from "@/features/chat/components/prompt-input";
@@ -7,14 +7,20 @@ import {
 	ChatControllerProvider,
 	useCreateChatController,
 } from "@/features/chat/state";
+import { getGetApiAiChatIdQueryOptions } from "@/gen/api/kong";
 
 export const Route = createFileRoute("/chat/$id")({
-	beforeLoad: (ctx) => {
-		if (ctx.params.id === "free")
-			initChatQuery(
-				(ctx.context as { client: QueryClient }).client,
-				ctx.params.id,
-			);
+	beforeLoad: async (ctx) => {
+		const client = (ctx.context as { client: QueryClient }).client;
+		if (ctx.params.id === "free") initChatQuery(client, ctx.params.id);
+		else
+			try {
+				await client.ensureQueryData(
+					getGetApiAiChatIdQueryOptions(ctx.params.id),
+				);
+			} catch (_) {
+				throw redirect({ to: "/" });
+			}
 	},
 	component: RouteComponent,
 });

@@ -1,4 +1,3 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -10,25 +9,7 @@ import {
 	ItemDescription,
 	ItemTitle,
 } from "@/components/ui/item";
-import { getApiAiSessions, getGetApiAiSessionsQueryKey } from "@/gen/api/kong";
-
-function useGetApiAiSessionsPaged(search?: string) {
-	return useInfiniteQuery({
-		queryKey: getGetApiAiSessionsQueryKey(search ? { search } : undefined),
-		queryFn: async ({ pageParam }) => {
-			const { data } = await getApiAiSessions(pageParam);
-			return data;
-		},
-		initialPageParam: { offset: 0, count: 40 },
-		getNextPageParam: (d) =>
-			(d.end ?? d.data.length < d.count)
-				? undefined
-				: {
-						offset: d.offset + d.count,
-						count: d.count,
-					},
-	});
-}
+import { useGetApiAiSessionsPaged } from "../queries/chat-session";
 
 export function SessionList({ title }: NavEntry) {
 	"use no memo";

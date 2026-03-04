@@ -1,9 +1,9 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { NavEntry } from "@/components/app-sidebar/data";
 import { DebouncedSidebarInput } from "@/components/debounce-input";
+import { ErrorBox } from "@/components/errors/error-box";
 import {
 	Item,
 	ItemContent,
@@ -16,36 +16,20 @@ import {
 	SidebarGroupContent,
 	SidebarHeader,
 } from "@/components/ui/sidebar";
-import { getApiAiSessions, getGetApiAiSessionsQueryKey } from "@/gen/api/kong";
-
-function useGetApiAiSessionsPaged(search?: string) {
-	return useInfiniteQuery({
-		queryKey: getGetApiAiSessionsQueryKey(search ? { search } : undefined),
-		queryFn: async ({ pageParam }) => {
-			const { data } = await getApiAiSessions(pageParam);
-			return data;
-		},
-		initialPageParam: { offset: 0, count: 40 },
-		getNextPageParam: (d, _) => {
-			return d.end
-				? null
-				: {
-						offset: d.offset + d.count,
-						count: d.count,
-					};
-		},
-	});
-}
+import { useGetApiAiSessionsPaged } from "../../queries/chat-session";
+import { NewChatButton } from "../new-chat";
 
 export function SidebarSessionList({ title }: NavEntry) {
 	"use no memo";
+	const n = useNavigate();
 	const [search, setSearch] = useState<string | undefined>();
-	const parentRef = useRef<HTMLDivElement>(null);
 	const q = useGetApiAiSessionsPaged(search?.trim() || undefined);
 	const joined = useMemo(
 		() => q.data?.pages.flatMap((it) => it.data) ?? [],
 		[q.data?.pages],
 	);
+
+	const parentRef = useRef<HTMLDivElement>(null);
 	const v = useVirtualizer({
 		count: joined.length,
 		getScrollElement: () => parentRef.current,
@@ -70,11 +54,21 @@ export function SidebarSessionList({ title }: NavEntry) {
 			<SidebarHeader className="gap-3.5 border-b p-4">
 				<div className="flex w-full items-center justify-between">
 					<div className="text-foreground text-base font-medium">{title}</div>
+					<NewChatButton
+						onNewChat={(id) => {
+							n({
+								to: `/chat/$id`,
+								params: { id },
+								viewTransition: true,
+							});
+						}}
+					/>
 				</div>
 				<DebouncedSidebarInput
 					placeholder="Type to search..."
 					onDebouncedChange={(it) => setSearch(it.target.value)}
 				/>
+				{q.error && <ErrorBox error={q.error} />}
 			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup className="px-0">

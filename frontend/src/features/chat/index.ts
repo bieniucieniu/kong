@@ -5,8 +5,10 @@ import {
 } from "@tanstack/react-query";
 import {
 	type getApiAiChatIdMessagesResponseSuccess,
+	getGetApiAiChatAllQueryKey,
 	getGetApiAiChatIdMessagesQueryKey,
-	getGetApiAiSessionsQueryKey,
+	getGetApiAiChatIdQueryKey,
+	getGetApiAiChatIdQueryOptions,
 	getPostApiAiChatFreeWithJsonUrl,
 	getPostApiAiChatIdWithJsonUrl,
 	useGetApiAiChatIdMessages,
@@ -75,6 +77,9 @@ export function getChatMutationOptions(session: ChatSession) {
 	return mutationOptions({
 		mutationKey: ["chat", session.id],
 		mutationFn: async (p: ChatPrompt, ctx) => {
+			const { data } = await ctx.client.ensureQueryData(
+				getGetApiAiChatIdQueryOptions(session.id),
+			);
 			const a = ctx.client
 				.getQueryCache()
 				.find<getApiAiChatIdMessagesResponseSuccess>({
@@ -121,6 +126,15 @@ export function getChatMutationOptions(session: ChatSession) {
 						})
 					: fetchAiChat(session.id, p);
 
+			//invalidate queries, api sets default name base on first user message if name is not set
+			if (!data.name) {
+				ctx.client.invalidateQueries({
+					queryKey: getGetApiAiChatIdQueryKey(session.id),
+				});
+				ctx.client.invalidateQueries({
+					queryKey: getGetApiAiChatAllQueryKey(),
+				});
+			}
 			let acc = "";
 			for await (const chunk of gen) {
 				acc += chunk;
@@ -128,14 +142,6 @@ export function getChatMutationOptions(session: ChatSession) {
 				if (a?.state.data) a.setData(a.state.data);
 			}
 			return last;
-		},
-		onSuccess: (_, __, ___, ctx) => {
-			if (!session.name) {
-				ctx.client.invalidateQueries({
-					queryKey: getGetApiAiSessionsQueryKey(),
-				});
-				ctx.client.setQueryData(getGetApiAiSessionsQueryKey(), () => {});
-			}
 		},
 	});
 }

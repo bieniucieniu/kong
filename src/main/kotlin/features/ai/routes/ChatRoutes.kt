@@ -4,14 +4,13 @@ import ai.koog.ktor.llm
 import com.bieniucieniu.auth.getUserSession
 import com.bieniucieniu.errors.responses.badRequest
 import com.bieniucieniu.errors.responses.notFound
-import com.bieniucieniu.features.ai.models.ChatMessage
-import com.bieniucieniu.features.ai.models.ChatMessageAuthor
-import com.bieniucieniu.features.ai.models.ChatPrompt
-import com.bieniucieniu.features.ai.models.ChatSessionWithMessages
+import com.bieniucieniu.features.ai.models.*
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.ai.services.ChatService
 import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
+import com.bieniucieniu.features.shared.models.Paginated
+import com.bieniucieniu.features.shared.models.pagination
 import com.bieniucieniu.features.shared.responses.streamFlow
 import io.ktor.http.*
 import io.ktor.openapi.*
@@ -21,6 +20,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
+import paginationQueryParams
 import kotlin.uuid.Uuid
 
 fun Route.chatRoutes() {
@@ -42,6 +42,31 @@ fun Route.chatRoutes() {
             responses {
                 HttpStatusCode.OK {
                     schema = jsonSchema<ChatSessionWithMessages>()
+                }
+                HttpStatusCode.Unauthorized {
+                    description = "Unauthorized"
+                    schema = jsonSchema<ErrorResponse>()
+                }
+            }
+        }
+        get("all") {
+            val p = pagination()
+            val search = call.queryParameters["search"]
+            val o = suspendTransaction {
+                c.getUserChatSessionsList(getUserSession(), p.offset, p.count, search)
+            }
+            call.respond(p.paginated(o))
+        }.describe {
+            parameters {
+                query("search") {
+                    description = "Search"
+                    required = false
+                }
+                paginationQueryParams()
+            }
+            responses {
+                HttpStatusCode.OK {
+                    schema = jsonSchema<Paginated<ChatSession>>()
                 }
                 HttpStatusCode.Unauthorized {
                     description = "Unauthorized"

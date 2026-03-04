@@ -17,16 +17,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class OllamaService(val httpClient: HttpClient, val application: Application) : AiProviderService {
-    val predefined get(): Map<String, LLModel> = predefineModels
     private val predefineModels by lazy {
-        val m = mutableMapOf<String, LLModel>()
         extractModels(
             OllamaModels.Meta,
             OllamaModels.Alibaba,
             OllamaModels.Groq,
             OllamaModels.Granite,
-        ).associateByTo(m) { it.id }
-        m
+        ).associateBy { it.id }
     }
     override val provider: LLMProvider = LLMProvider.Ollama
     private val ollamaBaseUrl =
@@ -37,8 +34,8 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
 
 
     override fun isActive() = ollamaBaseUrl != null
-    override suspend fun getAvailableLLModels(): List<LLModel> = getAvailableModels().models.mapNotNull {
-        predefineModels[it.name]
+    override suspend fun getAvailableLLModels(): List<LLModel> = getAvailableModels().models.map {
+        predefineModels[it.name] ?: createLLModel(it.name)
     }
 
 

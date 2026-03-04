@@ -6,7 +6,7 @@
  */
 import type { ChatSession } from "./chatSession";
 
-export type GetApiAiSessions200One = {
+export type GetApiAiChatAll200One = {
 	data: ChatSession[];
 	offset: number;
 	count: number;
