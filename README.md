@@ -1,6 +1,32 @@
 # kong
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+Simple chat application using [Kong](https://github.com/Kong/kong) and [ChatGPT](https://chat.openai.com/chat).
+and The frontend is built with [Tanstack](https://tanstack.com/) and [React](https://reactjs.org/).
+
+
+## Features checklist
+- [ ] app build/run outside of docker/IntelliJ
+
+- [X] Chat
+    - [X] Free chat
+    - [X] Chat with AI
+    - [X] Chat history
+- [ ] Chat Sessions
+    - [X] Session creation
+    - [X] Persistance
+    - [X] Sessions list
+    - [ ] optimistic update on session update
+    - [ ] Session editing
+    - [ ] Session deletion
+- [ ] Tool calling
+    - [ ] User Custom tools
+
+
+- [ ] LLM provuider checklist:
+    - [X] Ollama
+    - [ ] Google Gemini
+    - [ ] Anthropic
+    - [ ] OpenAI
 
 ## Building & Running
 
@@ -9,12 +35,7 @@ To build or run the project, use one of the following tasks:
 | Task                                    | Description                                                          |
 |-----------------------------------------|----------------------------------------------------------------------|
 | `./gradlew test`                        | Run the tests                                                        |
-| `./gradlew build`                       | Build everything                                                     |
-| `./gradlew buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `./gradlew buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `./gradlew publishImageToLocalRegistry` | Publish the docker image locally                                     |
 | `./gradlew run`                         | Run the server                                                       |
-| `./gradlew runDocker`                   | Run using the local docker image                                     |
 
 If the server starts successfully, you'll see the following output:
 
@@ -22,4 +43,10 @@ If the server starts successfully, you'll see the following output:
 2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
 2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
 ```
+For frontend development, you can run the frontend server with:
 
+``` bash
+cd frontend
+bun i
+bun run dev
+```

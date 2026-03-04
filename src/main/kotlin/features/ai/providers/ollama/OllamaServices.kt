@@ -17,13 +17,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 class OllamaService(val httpClient: HttpClient, val application: Application) : AiProviderService {
-    val predefineModels by lazy {
+    val predefined get(): Map<String, LLModel> = predefineModels
+    private val predefineModels by lazy {
+        val m = mutableMapOf<String, LLModel>()
         extractModels(
             OllamaModels.Meta,
             OllamaModels.Alibaba,
             OllamaModels.Groq,
-            OllamaModels.Granite
-        ).associateBy { it.id }
+            OllamaModels.Granite,
+        ).associateByTo(m) { it.id }
+        m
     }
     override val provider: LLMProvider = LLMProvider.Ollama
     private val ollamaBaseUrl =
@@ -34,21 +37,10 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
 
 
     override fun isActive() = ollamaBaseUrl != null
-    override suspend fun getAvailableLLModels(): List<LLModel> {
-
-        return getAvailableModels().models.map {
-            predefineModels[it.name] ?: LLModel(
-                id = it.name,
-                provider = LLMProvider.Ollama,
-                capabilities = listOf(
-                    LLMCapability.Temperature,
-                    LLMCapability.Schema.JSON.Basic,
-                    LLMCapability.Tools,
-                ),
-                contextLength = 131_072,
-            )
-        }
+    override suspend fun getAvailableLLModels(): List<LLModel> = getAvailableModels().models.mapNotNull {
+        predefineModels[it.name]
     }
+
 
     suspend fun getAvailableModels(): ListModelsResponse = ollamaBaseUrl?.let { baseUrl ->
         httpClient.get(url {
@@ -74,13 +66,13 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
             .models.let { model ->
                 tags.filter { tag -> model.find { it.name == tag } == null }
             }
-            .let {
+            .let { tags ->
                 coroutineScope {
-                    it.forEach { model ->
+                    tags.forEach { tag ->
                         launch {
-                            logger.info("Pulling model: $model")
-                            val res = pullModel(model)
-                            logger.info("Pulled model: $model with status ${res.status}")
+                            logger.info("Pulling model: $tag")
+                            val res = pullModel(tag)
+                            logger.info("Pulled model: $tag with status ${res.status}")
                         }
 
                     }
@@ -96,7 +88,7 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
     } ?: ListModelsResponse(emptyList())
 
     override suspend fun getDefaultModel(): LLModel = getAvailableLLModels().let { models ->
-        models.find { it.id == "gemma3:4b" } ?: models.firstOrNull() ?: GEMMA_3_4B
+        models.find { it.id == DEFAULT_MODEL.id } ?: models.firstOrNull() ?: DEFAULT_MODEL
     }
 
     companion object {
@@ -108,7 +100,25 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
                 LLMCapability.Schema.JSON.Basic,
                 LLMCapability.Tools
             ),
-            contextLength = 131_072,
+            contextLength = 40_960,
+        )
+
+        val DEFAULT_MODEL = GEMMA_3_4B
+
+        fun createLLModel(
+            id: String,
+            provider: LLMProvider = LLMProvider.Ollama,
+            capabilities: List<LLMCapability> = listOf(
+                LLMCapability.Temperature,
+                LLMCapability.Schema.JSON.Basic,
+                LLMCapability.Tools
+            ),
+            contextLength: Long = 131_072,
+        ) = LLModel(
+            id = id,
+            provider = provider,
+            capabilities = capabilities,
+            contextLength = contextLength
         )
     }
 }
