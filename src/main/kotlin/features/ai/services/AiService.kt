@@ -21,6 +21,8 @@ class AiService(val services: List<AiProviderService>) {
 
     inline fun <T> getProviders(fn: (LLMProvider) -> T): List<T> = services.map { fn(it.provider) }
     fun getProviders() = getProviders { it }
+
+
 }
 
 

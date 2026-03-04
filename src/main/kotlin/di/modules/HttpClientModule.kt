@@ -12,8 +12,10 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.config.*
-import org.koin.core.qualifier.named
+import org.koin.core.qualifier.qualifier
 import org.koin.dsl.module
+
+val OLLAMA_HTTP_CLIENT_QUALIFIER = qualifier("ollama-http-client")
 
 val httpClientModules = module {
     single {
@@ -38,7 +40,7 @@ val httpClientModules = module {
 
         }
     }
-    single(named("ollama-http-client")) {
+    single(OLLAMA_HTTP_CLIENT_QUALIFIER) {
         val client: HttpClient = get()
         val application: Application = get()
         val username = application.environment.config.propertyOrNull("ai.ollama.username")?.getString()

@@ -98,16 +98,19 @@ class OllamaService(val httpClient: HttpClient, val application: Application) : 
     override suspend fun getDefaultModel(): LLModel = getAvailableLLModels().let { models ->
         models.find { it.id == "gemma3:4b" } ?: models.firstOrNull() ?: GEMMA_3_4B
     }
+
+    companion object {
+        val GEMMA_3_4B = LLModel(
+            provider = LLMProvider.Ollama,
+            id = "gemma3:4b",
+            capabilities = listOf(
+                LLMCapability.Temperature,
+                LLMCapability.Schema.JSON.Basic,
+                LLMCapability.Tools
+            ),
+            contextLength = 131_072,
+        )
+    }
 }
 
 
-val GEMMA_3_4B = LLModel(
-    provider = LLMProvider.Ollama,
-    id = "gemma3:4b",
-    capabilities = listOf(
-        LLMCapability.Temperature,
-        LLMCapability.Schema.JSON.Basic,
-        LLMCapability.Tools
-    ),
-    contextLength = 131_072,
-)
