@@ -27,7 +27,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 		>
 			<AppSidebar />
 			<SidebarInset>
-				{useIsMobile() && <SidebarTrigger />}
+				{useIsMobile() && (
+					<SidebarTrigger className="absolute top-0 left-0 z-10" />
+				)}
 				{children}
 			</SidebarInset>
 		</SidebarProvider>

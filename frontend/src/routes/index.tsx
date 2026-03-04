@@ -19,7 +19,7 @@ function RouteComponent() {
 							viewTransition: true,
 						});
 					}}
-					className="min-w-120 max-w-svw [view-transition-name:main-input]"
+					className="min-w-[90svw] lg:min-w-120 max-w-svw [view-transition-name:main-input]"
 				/>
 			</div>
 		</div>

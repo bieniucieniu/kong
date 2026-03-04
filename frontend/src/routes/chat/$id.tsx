@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { initChatQuery } from "@/features/chat";
+import { ChatHeader } from "@/features/chat/components/chat-header";
 import { MessageList } from "@/features/chat/components/message-list";
 import { ChatInput } from "@/features/chat/components/prompt-input";
 import {
@@ -32,19 +33,18 @@ function RouteComponent() {
 	return (
 		<ChatControllerProvider value={state}>
 			<div className="h-full flex flex-col relative items-center justify-end gap-4 px-4">
-				<div className="flex-1 w-full">
-					<MessageList
-						id={id}
-						className="h-[calc(100svh-1px)] mx-auto w-full flex justify-center"
-						paddingStart={50}
-						paddingEnd={200}
-					/>
-				</div>
-				<div className="bg-background/80 backdrop-blur-xs absolute bottom-4 w-full max-w-180">
+				<ChatHeader id={id} className="absolute top-0 left-0 z-10" />
+				<MessageList
+					id={id}
+					className="h-[calc(100svh-1px)] mx-auto w-full flex justify-center"
+					paddingStart={50}
+					paddingEnd={200}
+				/>
+				<div className="absolute bottom-4 w-full inset-x-0 px-2">
 					<ChatInput
 						id={id}
 						autoFocus
-						className="w-full max-w-180 [view-transition-name:main-input]"
+						className="w-full bg-background/80 dark:bg-background/80 has-disabled:bg-background/80 dark:has-disabled:bg-background/80 backdrop-blur-xs mx-auto lg:max-w-180 [view-transition-name:main-input]"
 					/>
 				</div>
 			</div>

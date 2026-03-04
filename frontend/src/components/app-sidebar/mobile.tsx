@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import {
 	Sidebar,
 	SidebarContent,
@@ -16,14 +15,12 @@ import { SidebarThemeModeToggle } from "@/integration/shadcn/components/theme-to
 import { cn } from "@/lib/utils";
 import icon from "/icon.svg?url";
 import { DropdownMenuGroup } from "../ui/dropdown-menu";
-import { data, type NavEntry } from "./data";
+import { data } from "./data";
 
 export default function AppMobileSidebar({
 	className,
 	...props
 }: React.ComponentProps<typeof Sidebar>) {
-	const [activeItem, setActiveItem] = useState<NavEntry>();
-
 	return (
 		<Sidebar
 			collapsible="icon"
@@ -61,20 +58,14 @@ export default function AppMobileSidebar({
 								{data.map((item) => (
 									<SidebarMenuItem key={item.title}>
 										<SidebarMenuButton
-											tooltip={{
-												children: item.title,
-												hidden: false,
-											}}
-											onClick={() => {
-												setActiveItem(item);
-											}}
-											render={() => (
-												<Link to={item.mobileLink}>
-													<span>{item.title}</span>
+											render={
+												<Link
+													activeProps={{ "data-active": true }}
+													to={item.mobileLink}
+												>
+													{item.title}
 												</Link>
-											)}
-											isActive={activeItem?.title === item.title}
-											className="px-2.5 md:px-2"
+											}
 										/>
 									</SidebarMenuItem>
 								))}

@@ -2,9 +2,8 @@ import { createContext, createElement, use, useMemo } from "react";
 import { proxy } from "valtio";
 import { useProxy } from "valtio/utils";
 import {
-	type ChatPromptController,
+	ChatPromptController,
 	ChatPromptControllerProvider,
-	globalChatPromptController,
 	useChatPromptController,
 } from "./prompt";
 
@@ -17,7 +16,7 @@ export class ChatController {
 
 	constructor(init?: Partial<ChatState>) {
 		this.state = proxy<ChatState>({
-			prompt: init?.prompt ?? globalChatPromptController,
+			prompt: init?.prompt ?? new ChatPromptController(),
 		});
 	}
 }

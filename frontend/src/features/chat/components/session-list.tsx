@@ -1,7 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { NavEntry } from "@/components/app-sidebar/data";
 import DebouncedInput from "@/components/debounce-input";
 import {
 	Item,
@@ -10,16 +9,22 @@ import {
 	ItemTitle,
 } from "@/components/ui/item";
 import { useGetApiAiSessionsPaged } from "../queries/chat-session";
+import { NewChatButton } from "./new-chat";
 
-export function SessionList({ title }: NavEntry) {
+interface SessionListProps {
+	className?: string;
+}
+export function SessionList({ className }: SessionListProps) {
 	"use no memo";
+	const n = useNavigate();
 	const [search, setSearch] = useState<string | undefined>();
-	const parentRef = useRef<HTMLDivElement>(null);
 	const q = useGetApiAiSessionsPaged(search?.trim() || undefined);
 	const joined = useMemo(
 		() => q.data?.pages.flatMap((it) => it.data) ?? [],
 		[q.data?.pages],
 	);
+
+	const parentRef = useRef<HTMLDivElement>(null);
 	const v = useVirtualizer({
 		count: joined.length,
 		getScrollElement: () => parentRef.current,
@@ -40,10 +45,19 @@ export function SessionList({ title }: NavEntry) {
 	}, [q.hasNextPage, joined.length, v.getVirtualItems(), q.isFetchingNextPage]);
 
 	return (
-		<>
-			<div className="gap-3.5 border-b p-4">
+		<div className={className}>
+			<div className="flex flex-col gap-2 border-b p-4">
 				<div className="flex w-full items-center justify-between">
-					<div className="text-foreground text-base font-medium">{title}</div>
+					<div className="text-foreground text-base font-medium">sessions</div>
+					<NewChatButton
+						onNewChat={(id) => {
+							n({
+								to: `/chat/$id`,
+								params: { id },
+								viewTransition: true,
+							});
+						}}
+					/>
 				</div>
 				<DebouncedInput
 					placeholder="Type to search..."
@@ -101,6 +115,6 @@ export function SessionList({ title }: NavEntry) {
 					</ul>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 }

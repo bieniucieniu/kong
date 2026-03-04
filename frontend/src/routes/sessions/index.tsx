@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SessionList } from "@/features/chat/components/session-list";
 
 export const Route = createFileRoute("/sessions/")({
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	return <div>Hello "/sessions/"!</div>;
+	return <SessionList className="h-svh pt-4" />;
 }

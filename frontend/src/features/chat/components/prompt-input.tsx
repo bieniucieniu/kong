@@ -56,6 +56,7 @@ export function ChatInput({
 	return (
 		<InputGroup className={className}>
 			<InputGroupTextarea
+				id={`prompt-${id}`}
 				className="max-h-24 focus:max-h-[40svh]"
 				onChange={(e) => (s.prompt = e.target.value)}
 				onFocus={onFocus}

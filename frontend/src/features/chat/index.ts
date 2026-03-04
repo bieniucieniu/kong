@@ -11,6 +11,7 @@ import {
 	getGetApiAiChatIdQueryOptions,
 	getPostApiAiChatFreeUrl,
 	getPostApiAiChatIdUrl,
+	useGetApiAiChatId,
 	useGetApiAiChatIdMessages,
 } from "@/gen/api/kong";
 import type {
@@ -172,3 +173,4 @@ export function useChatMutation(
 export function useFreeChatMutation() {
 	return useMutation(getChatMutationOptions({ id: "free" }));
 }
+export const useChatSessionQuery = useGetApiAiChatId;
