@@ -3,7 +3,7 @@ package com.bieniucieniu.di.modules
 import com.bieniucieniu.features.ai.repositories.ChatMessageTable
 import com.bieniucieniu.features.ai.repositories.ChatSessionTable
 import com.bieniucieniu.features.auth.repositories.UsersTable
-import com.bieniucieniu.lib.utils.isDev
+import com.bieniucieniu.features.shared.utils.isDev
 import io.ktor.server.application.*
 import io.ktor.server.config.*
 import org.jetbrains.exposed.v1.core.DatabaseConfig

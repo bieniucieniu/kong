@@ -9,8 +9,8 @@ import {
 	getGetApiAiChatIdMessagesQueryKey,
 	getGetApiAiChatIdQueryKey,
 	getGetApiAiChatIdQueryOptions,
-	getPostApiAiChatFreeWithJsonUrl,
-	getPostApiAiChatIdWithJsonUrl,
+	getPostApiAiChatFreeUrl,
+	getPostApiAiChatIdUrl,
 	useGetApiAiChatIdMessages,
 } from "@/gen/api/kong";
 import type {
@@ -21,7 +21,7 @@ import type {
 } from "@/gen/models";
 
 export async function* fetchAiChat(id: string, chat: ChatPrompt) {
-	const res = await fetch(getPostApiAiChatIdWithJsonUrl(id), {
+	const res = await fetch(getPostApiAiChatIdUrl(id), {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(chat),
@@ -47,7 +47,7 @@ export async function* fetchAiChat(id: string, chat: ChatPrompt) {
 	}
 }
 export async function* fetchFreeAiChat(chat: ChatPromptsList) {
-	const res = await fetch(getPostApiAiChatFreeWithJsonUrl(), {
+	const res = await fetch(getPostApiAiChatFreeUrl(), {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(chat),

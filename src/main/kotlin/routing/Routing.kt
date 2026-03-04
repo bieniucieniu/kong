@@ -1,11 +1,11 @@
 package com.bieniucieniu.routing
 
 
-import com.bieniucieniu.errors.responses.ResponsesException
-import com.bieniucieniu.errors.responses.ResponsesExceptionWithContent
-import com.bieniucieniu.errors.responses.UnauthorizedException
 import com.bieniucieniu.features.shared.models.ErrorResponse
-import com.bieniucieniu.lib.utils.isDev
+import com.bieniucieniu.features.shared.responses.ResponsesException
+import com.bieniucieniu.features.shared.responses.ResponsesExceptionWithContent
+import com.bieniucieniu.features.shared.responses.UnauthorizedException
+import com.bieniucieniu.features.shared.utils.isDev
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
 import io.github.flaxoos.ktor.server.plugins.ratelimiter.RateLimiting
@@ -103,7 +103,7 @@ fun Application.installRoutingPlugins() {
     }
     install(RateLimiting) {
         rateLimiter {
-            capacity = 100
+            capacity = 400
             rate = 10.seconds
         }
     }

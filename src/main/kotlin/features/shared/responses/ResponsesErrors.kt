@@ -1,4 +1,4 @@
-package com.bieniucieniu.errors.responses
+package com.bieniucieniu.features.shared.responses
 
 import io.ktor.http.*
 import io.ktor.util.reflect.*

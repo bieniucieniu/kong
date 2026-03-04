@@ -2,8 +2,6 @@ package com.bieniucieniu.features.ai.routes
 
 import ai.koog.ktor.llm
 import com.bieniucieniu.auth.getUserSession
-import com.bieniucieniu.errors.responses.badRequest
-import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.*
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.ai.services.ChatService
@@ -11,6 +9,8 @@ import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.bieniucieniu.features.shared.models.Paginated
 import com.bieniucieniu.features.shared.models.pagination
+import com.bieniucieniu.features.shared.responses.badRequest
+import com.bieniucieniu.features.shared.responses.notFound
 import com.bieniucieniu.features.shared.responses.streamFlow
 import io.ktor.http.*
 import io.ktor.openapi.*

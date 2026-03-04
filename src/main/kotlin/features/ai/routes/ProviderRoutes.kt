@@ -1,11 +1,11 @@
 package com.bieniucieniu.features.ai.routes
 
 import com.bieniucieniu.auth.hasUserSession
-import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.SerializableLLMProvider
 import com.bieniucieniu.features.ai.models.toSerializableLLMProvider
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.shared.models.ErrorResponse
+import com.bieniucieniu.features.shared.responses.notFound
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.response.*

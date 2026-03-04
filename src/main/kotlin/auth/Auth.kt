@@ -2,9 +2,9 @@ package com.bieniucieniu.auth
 
 import com.bieniucieniu.auth.oauth2.configureDiscordOauth2
 import com.bieniucieniu.auth.oauth2.installGoogleOauth2
-import com.bieniucieniu.errors.responses.unauthorized
 import com.bieniucieniu.features.auth.models.OAuth2Provider
 import com.bieniucieniu.features.auth.models.UserSession
+import com.bieniucieniu.features.shared.responses.unauthorized
 import io.ktor.client.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

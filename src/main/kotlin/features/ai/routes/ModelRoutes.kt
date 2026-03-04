@@ -2,13 +2,13 @@ package com.bieniucieniu.features.ai.routes
 
 import com.bieniucieniu.auth.hasUserSession
 import com.bieniucieniu.auth.tryGetUserSession
-import com.bieniucieniu.errors.responses.badRequest
-import com.bieniucieniu.errors.responses.noContent
-import com.bieniucieniu.errors.responses.notFound
 import com.bieniucieniu.features.ai.models.SerializableLLModel
 import com.bieniucieniu.features.ai.models.toSerializableLLModel
 import com.bieniucieniu.features.ai.services.AiService
 import com.bieniucieniu.features.shared.models.ErrorResponse
+import com.bieniucieniu.features.shared.responses.badRequest
+import com.bieniucieniu.features.shared.responses.noContent
+import com.bieniucieniu.features.shared.responses.notFound
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.response.*

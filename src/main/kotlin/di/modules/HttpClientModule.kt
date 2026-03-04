@@ -1,6 +1,6 @@
 package com.bieniucieniu.di.modules
 
-import com.bieniucieniu.lib.utils.isDev
+import com.bieniucieniu.features.shared.utils.isDev
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*

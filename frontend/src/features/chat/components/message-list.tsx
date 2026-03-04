@@ -51,10 +51,10 @@ export function MessageList({
 					const d = q.data?.data[index];
 					if (!d) return null;
 					return (
-						<MessageCard
+						<div
 							ref={v.measureElement}
 							data-index={index}
-							className={cn("absolute top-0 w-[90%]", {
+							className={cn("absolute top-0 max-w-[90%] pt-2", {
 								"right-0": d.role === "user",
 								"left-0": d.role !== "user",
 							})}
@@ -62,8 +62,9 @@ export function MessageList({
 								transform: `translateY(${start}px)`,
 							}}
 							key={key}
-							message={d}
-						/>
+						>
+							<MessageCard message={d} />
+						</div>
 					);
 				})}
 			</div>

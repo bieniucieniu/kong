@@ -1,4 +1,4 @@
-package com.bieniucieniu.lib.utils
+package com.bieniucieniu.features.shared.utils
 
 import io.ktor.server.application.*
 import io.ktor.server.config.*
