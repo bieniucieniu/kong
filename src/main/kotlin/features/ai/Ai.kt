@@ -49,6 +49,7 @@ fun Application.configureAi() {
 
             authenticateUserSession {
                 chatRoutes()
+                // freeChatRoutes()
             }
             authenticateUserSession(optional = true) {
                 modelProviderRoutes()

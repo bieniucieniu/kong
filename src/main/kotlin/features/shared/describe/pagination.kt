@@ -1,6 +1,6 @@
 import io.ktor.openapi.*
 
-fun Parameters.Builder.paginationQueryParams() {
+fun Parameters.Builder.describePaginationQueryParams() {
     query("offset") {
         description = "Offset"
         schema = jsonSchema<Long>()

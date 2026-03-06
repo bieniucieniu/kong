@@ -8,7 +8,7 @@ and The frontend is built with [Tanstack](https://tanstack.com/) and [React](htt
 - [ ] app build/run outside of docker/IntelliJ
 
 - [X] Chat
-    - [X] Free chat
+    - [ ] Free chat
     - [X] Chat with AI
     - [X] Chat history
 - [ ] Chat Sessions
@@ -23,6 +23,10 @@ and The frontend is built with [Tanstack](https://tanstack.com/) and [React](htt
 - [ ] User management
     - [X] User creation (based on oauth discord/google)
     - [ ] proper cleanup of user data after logout
+    - [ ] user meta from:
+        - [X] discord
+        - [ ] google
+        - [ ] github
 
 
 

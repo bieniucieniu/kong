@@ -1,24 +1,41 @@
-import { useMemo } from "react";
 import type { MaybeArray } from "@/lib/helper-types";
 
-export function ErrorBox({
-	error,
-}: {
-	error: { message: string; reason?: MaybeArray<string> } | undefined | null;
-	className?: string;
-}) {
-	const reason = useMemo(() => {
-		if (!error) return null;
-		const arr = Array.isArray(error.reason)
+const reasonCache = new WeakMap<object, string[]>();
+
+function getReason(error: ErrorMessage) {
+	let res: string[] | undefined | null = reasonCache.get(error);
+	if (!res) {
+		res = Array.isArray(error.reason)
 			? error.reason.length > 0
 				? error.reason
 				: null
 			: error.reason != null
 				? [error.reason]
 				: null;
-		return arr;
-	}, [error]);
+
+		if (res) reasonCache.set(error, res);
+	}
+	return res;
+}
+
+interface ErrorMessage {
+	message: string;
+	reason?: MaybeArray<string> | undefined | null;
+}
+
+export function ErrorBox({
+	error,
+}: {
+	error:
+		| { message: string; reason?: MaybeArray<string> | undefined | null }
+		| undefined
+		| null;
+	className?: string;
+}) {
+	"use no memo";
 	if (!error) return null;
+
+	const reason = getReason(error);
 	return (
 		<div>
 			<p>{error.message}</p>

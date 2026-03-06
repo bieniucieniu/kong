@@ -34,8 +34,8 @@ export function MessageCard({
 } & React.HTMLProps<HTMLDivElement> &
 	VariantProps<typeof messageCardVariants>) {
 	const date = useMemo(
-		() => message.createAt && new Date(message.createAt).toLocaleString(),
-		[message.createAt],
+		() => message.createdAt && new Date(message.createdAt).toLocaleString(),
+		[message.createdAt],
 	);
 	return (
 		<div className={cn(messageCardVariants({ variant, className }))} {...props}>

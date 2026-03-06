@@ -16,26 +16,39 @@ suspend fun RoutingCall.streamFlow(
 ) {
     respondBytesWriter(contentType = contentType) {
         try {
-            var acc = ""
-            val writeAcc = suspend {
-                writeByteArray(acc.toByteArray())
-                onFlush(acc)
-                flush()
-                acc = ""
-            }
-            writeAcc()
-            f.collect { chunk ->
-                val str = when (chunk) {
-                    is StreamFrame.Append -> chunk.text
-                    is StreamFrame.ToolCall -> onToolCall(chunk) ?: ""
-                    else -> ""
-                }
-                acc += str
-                if (acc.length > minChunkSize) writeAcc()
-            }
-            writeAcc()
+            f.streamTo(this, minChunkSize, onToolCall, onFlush)
         } catch (e: Throwable) {
             writeByteArray("error: ${e.message}".toByteArray())
         }
     }
 }
+
+
+suspend fun Flow<StreamFrame>.streamTo(
+    to: ByteWriteChannel,
+    minChunkSize: Int = 50,
+    onToolCall: (StreamFrame.ToolCall) -> String? = { null },
+    onFlush: (String) -> Unit = {}
+) {
+    with(to) {
+        var acc = ""
+        val writeAcc = suspend {
+            writeByteArray(acc.toByteArray())
+            onFlush(acc)
+            flush()
+            acc = ""
+        }
+        writeAcc()
+        collect { chunk ->
+            val str = when (chunk) {
+                is StreamFrame.Append -> chunk.text
+                is StreamFrame.ToolCall -> onToolCall(chunk) ?: ""
+                else -> ""
+            }
+            acc += str
+            if (acc.length > minChunkSize) writeAcc()
+        }
+        writeAcc()
+    }
+}
+

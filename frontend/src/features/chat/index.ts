@@ -88,9 +88,10 @@ export function getChatMutationOptions(session: ChatSession) {
 					exact: true,
 				});
 			const last: ChatMessage = {
+				id: "mock",
 				content: "",
 				role: "agent",
-				createAt: new Date().toISOString(),
+				createdAt: new Date().toISOString(),
 			};
 
 			if (a?.isActive()) await a?.promise;
@@ -98,9 +99,10 @@ export function getChatMutationOptions(session: ChatSession) {
 			if (a?.state.data) {
 				a.state.data.data.push(
 					{
+						id: "mock",
 						content: p.message,
 						role: "user",
-						createAt: new Date().toISOString(),
+						createdAt: new Date().toISOString(),
 					},
 					last,
 				);
@@ -119,9 +121,10 @@ export function getChatMutationOptions(session: ChatSession) {
 								? a?.state.data.data.slice(0, -1)
 								: [
 										{
+											id: "mock",
 											content: p.message,
 											role: "user",
-											createAt: new Date().toISOString(),
+											createdAt: new Date().toISOString(),
 										},
 									],
 						})

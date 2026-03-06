@@ -9,18 +9,21 @@ import com.bieniucieniu.features.ai.services.buildPrompt
 import com.bieniucieniu.features.shared.models.ErrorResponse
 import com.bieniucieniu.features.shared.models.Paginated
 import com.bieniucieniu.features.shared.models.pagination
+import com.bieniucieniu.features.shared.models.toPaginated
 import com.bieniucieniu.features.shared.responses.badRequest
 import com.bieniucieniu.features.shared.responses.notFound
-import com.bieniucieniu.features.shared.responses.streamFlow
+import com.bieniucieniu.features.shared.responses.streamTo
+import describePaginationQueryParams
 import io.ktor.http.*
 import io.ktor.openapi.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
+import io.ktor.utils.io.*
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.koin.ktor.ext.inject
-import paginationQueryParams
 import kotlin.uuid.Uuid
 
 fun Route.chatRoutes() {
@@ -50,19 +53,19 @@ fun Route.chatRoutes() {
             }
         }
         get("all") {
-            val p = pagination()
             val search = call.queryParameters["search"]
+            val p = pagination()
             val o = suspendTransaction {
                 c.getUserChatSessionsList(getUserSession(), p.offset, p.count, search)
-            }
-            call.respond(p.paginated(o))
+            }.toPaginated(p)
+            call.respond(o)
         }.describe {
             parameters {
                 query("search") {
                     description = "Search"
                     required = false
                 }
-                paginationQueryParams()
+                describePaginationQueryParams()
             }
             responses {
                 HttpStatusCode.OK {
@@ -79,8 +82,8 @@ fun Route.chatRoutes() {
                 ?: throw badRequest("Missing id")
             val o = suspendTransaction {
                 c.getUserChatSession(id, getUserSession())?.let { session ->
-                    c.getUserChatSessionAllMessages(session.id).map { it.toChatMessage() }
-                }
+                    c.getUserChatSessionAllMessages(session.id)
+                }?.map { it.toChatMessage() }
             } ?: throw notFound("chat session not found")
 
 
@@ -166,10 +169,16 @@ fun Route.chatRoutes() {
                 }
                 val f = llm().executeStreaming(cs.buildPrompt { user(p.message) }, m)
 
-                c.saveMessage(cs.id, ChatMessageAuthor.User, p.message)
-                var acc = ""
-                call.streamFlow(f) { acc += it }
-                c.saveMessage(cs.id, ChatMessageAuthor.Agent, acc)
+                call.respondBytesWriter(contentType = ContentType.Text.EventStream) {
+                    c.saveMessage(cs.id, ChatMessageAuthor.User, p.message)
+                    var gAcc = ""
+                    try {
+                        f.streamTo(this) { gAcc += it }
+                    } catch (it: Throwable) {
+                        writeByteArray("error: ${it.message}".toByteArray())
+                    }
+                    c.saveMessage(cs.id, ChatMessageAuthor.Agent, gAcc)
+                }
             }
         }.describe {
             description = "Chat with AI on stable session"
@@ -196,5 +205,17 @@ fun Route.chatRoutes() {
                 }
             }
         }
+
     }
 }
+
+@Serializable
+enum class StreamResponseType {
+    USER_MESSAGE_ID,
+    AGENT_TOOL_CALL,
+    AGENT_MESSAGE,
+    AGENT_MESSAGE_ID
+}
+
+@Serializable
+data class StreamResponse(val type: StreamResponseType, val value: String)

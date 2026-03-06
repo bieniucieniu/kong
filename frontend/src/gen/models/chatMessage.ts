@@ -7,7 +7,8 @@
 import type { ChatMessageRole } from "./chatMessageRole";
 
 export interface ChatMessage {
+	id: string;
 	role: ChatMessageRole;
 	content: string;
-	createAt?: string;
+	createdAt?: string;
 }

@@ -31,6 +31,7 @@ function getInitials(name: string | undefined) {
 export function SidebarUser({ className }: { className?: string }) {
 	const { isMobile } = useSidebar();
 	const { session: user, isLoading } = useSession();
+	const m = useSessionLogout();
 
 	const badge = (
 		<>
@@ -50,12 +51,14 @@ export function SidebarUser({ className }: { className?: string }) {
 		</>
 	);
 
-	const m = useSessionLogout();
-	return isLoading ? (
-		<div className="flex items-center justify-center">
-			<Spinner className={className} />
-		</div>
-	) : (
+	if (isLoading)
+		return (
+			<div className="flex items-center justify-center">
+				<Spinner className={className} />
+			</div>
+		);
+
+	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger
 				render={

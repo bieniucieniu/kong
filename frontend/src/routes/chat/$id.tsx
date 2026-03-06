@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { initChatQuery } from "@/features/chat";
 import { ChatHeader } from "@/features/chat/components/chat-header";
 import { MessageList } from "@/features/chat/components/message-list";
 import { ChatInput } from "@/features/chat/components/prompt-input";
@@ -13,21 +12,22 @@ import { getGetApiAiChatIdQueryOptions } from "@/gen/api/kong";
 export const Route = createFileRoute("/chat/$id")({
 	beforeLoad: async (ctx) => {
 		const client = (ctx.context as { client: QueryClient }).client;
-		if (ctx.params.id === "free") initChatQuery(client, ctx.params.id);
-		else
-			try {
-				await client.ensureQueryData(
-					getGetApiAiChatIdQueryOptions(ctx.params.id),
-				);
-			} catch (_) {
-				throw redirect({ to: "/" });
-			}
+		// if (ctx.params.id === "free") initChatQuery(client, "free");
+		// else
+		try {
+			await client.ensureQueryData(
+				getGetApiAiChatIdQueryOptions(ctx.params.id),
+			);
+		} catch (_) {
+			throw redirect({ to: "/" });
+		}
 	},
 	component: RouteComponent,
 });
 
 function RouteComponent() {
-	const id = Route.useParams().id;
+	//return null;
+	const id = Route.useParams().id || "free";
 	const state = useCreateChatController(false, [id]);
 
 	return (

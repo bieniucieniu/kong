@@ -7,7 +7,8 @@
 import type { ChatSessionWithMessagesMessagesItemRole } from "./chatSessionWithMessagesMessagesItemRole";
 
 export type ChatSessionWithMessagesMessagesItem = {
+	id: string;
 	role: ChatSessionWithMessagesMessagesItemRole;
 	content: string;
-	createAt?: string;
+	createdAt?: string;
 };

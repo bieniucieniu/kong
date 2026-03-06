@@ -7,7 +7,8 @@
 import type { ChatPromptsListMessagesItemRole } from "./chatPromptsListMessagesItemRole";
 
 export type ChatPromptsListMessagesItem = {
+	id: string;
 	role: ChatPromptsListMessagesItemRole;
 	content: string;
-	createAt?: string;
+	createdAt?: string;
 };

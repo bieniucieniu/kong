@@ -51,9 +51,10 @@ data class ChatSession(
 
 @Serializable
 data class ChatMessage(
+    val id: Uuid,
     val role: ChatMessageAuthor,
     val content: String,
-    val createAt: Instant = Clock.System.now()
+    val createdAt: Instant = Clock.System.now()
 )
 
 @Serializable

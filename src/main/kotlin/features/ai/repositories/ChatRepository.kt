@@ -59,8 +59,9 @@ class ChatMessageDao(id: EntityID<Uuid>) : UuidEntity(id) {
 
 
     fun toChatMessage() = ChatMessage(
-        role,
-        content,
-        createdAt
+        id = id.value,
+        role = role,
+        content = content,
+        createdAt = createdAt
     )
 }

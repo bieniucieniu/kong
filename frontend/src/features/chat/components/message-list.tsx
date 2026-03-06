@@ -1,5 +1,6 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef } from "react";
+import { ErrorBox } from "@/components/errors/error-box";
 import { cn } from "@/lib/utils";
 import { useChatQuery } from "..";
 import { MessageCard } from "./message-card";
@@ -46,7 +47,6 @@ export function MessageList({
 					height: `${v.getTotalSize()}px`,
 				}}
 			>
-				{/* Only the visible items in the virtualizer, manually positioned to be in view */}
 				{v.getVirtualItems().map(({ index, key, start }) => {
 					const d = q.data?.data[index];
 					if (!d) return null;
@@ -67,6 +67,7 @@ export function MessageList({
 						</div>
 					);
 				})}
+				<ErrorBox error={q.error} />
 			</div>
 		</div>
 	);
