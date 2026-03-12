@@ -17,7 +17,7 @@ class GoogleService(val application: Application) : AiProviderService {
     override suspend fun getAvailableLLModels(): List<LLModel> = lazyModels
 
 
-    override fun isActive(): Boolean = application.environment.config.propertyOrNull("ai.google.apikey") != null
+    override fun isActive(): Boolean = application.environment.config.propertyOrNull("ai.google.apikey")?.getString().isNullOrBlank().not()
 
     override suspend fun getDefaultModel(): LLModel {
         return GoogleModels.Gemini2_0FlashLite

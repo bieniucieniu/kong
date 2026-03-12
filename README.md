@@ -3,8 +3,8 @@
 Simple chat application using [Kong](https://github.com/Kong/kong) and [ChatGPT](https://chat.openai.com/chat).
 and The frontend is built with [Tanstack](https://tanstack.com/) and [React](https://reactjs.org/).
 
-
 ## Features checklist
+
 - [ ] app build/run outside of docker/IntelliJ
 
 - [X] Chat
@@ -23,11 +23,11 @@ and The frontend is built with [Tanstack](https://tanstack.com/) and [React](htt
 - [ ] User management
     - [X] User creation (based on oauth discord/google)
     - [ ] proper cleanup of user data after logout
+    - [ ] provider list for client
     - [ ] user meta from:
         - [X] discord
         - [ ] google
         - [ ] github
-
 
 
 - [ ] LLM provuider checklist:
@@ -40,17 +40,18 @@ and The frontend is built with [Tanstack](https://tanstack.com/) and [React](htt
 
 To build or run the project, use one of the following tasks:
 
-| Task                                    | Description                                                          |
-|-----------------------------------------|----------------------------------------------------------------------|
-| `./gradlew test`                        | Run the tests                                                        |
-| `./gradlew run`                         | Run the server                                                       |
+| Task             | Description    |
+|------------------|----------------|
+| `./gradlew test` | Run the tests  |
+| `./gradlew run`  | Run the server |
 
 If the server starts successfully, you'll see the following output:
 
 ```
 2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
+2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:5050
 ```
+
 For frontend development, you can run the frontend server with:
 
 ``` bash

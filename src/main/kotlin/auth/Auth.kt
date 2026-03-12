@@ -56,18 +56,24 @@ fun Application.installAuthPlugins() {
         val config = this@installAuthPlugins.environment.config
         installGoogleOauth2(
             OAUTH_GOOGLE_KEY,
-            clientId = config.propertyOrNull("oauth2.google.clientId")?.getString(),
-            clientSecret = config.propertyOrNull("oauth2.google.clientSecret")?.getString(),
+            clientId = config.propertyOrNull("oauth2.google.clientId")?.getString().takeIf { !it.isNullOrBlank() },
+            clientSecret = config.propertyOrNull("oauth2.google.clientSecret")?.getString()
+                .takeIf { !it.isNullOrBlank() },
             frontendUrl = frontendUrl,
             httpClient = httpClient
         )
         configureDiscordOauth2(
             OAUTH_DISCORD_KEY,
-            clientId = config.propertyOrNull("oauth2.discord.clientId")?.getString(),
-            clientSecret = config.propertyOrNull("oauth2.discord.clientSecret")?.getString(),
+            clientId = config.propertyOrNull("oauth2.discord.clientId")?.getString().takeIf { !it.isNullOrBlank() },
+            clientSecret = config.propertyOrNull("oauth2.discord.clientSecret")?.getString()
+                .takeIf { !it.isNullOrBlank() },
             frontendUrl = frontendUrl,
             httpClient = httpClient
         )
+
+        if (allProviders().isEmpty()) {
+            throw Error("no auth providers configured")
+        }
     }
 
 }

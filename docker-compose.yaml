@@ -1,14 +1,74 @@
 services:
   postgres:
     image: postgres:18-alpine
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: kong
-      POSTGRES_USER: kong
-      POSTGRES_PASSWORD: kong
+      POSTGRES_DB: $DATABASE_DATABASE
+      POSTGRES_USER: $DATABASE_USERNAME
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
     ports:
       - "5432:5432"
     volumes:
+      - ./postgres/config:/docker-entrypoint-initdb.d
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${PS_STORAGE_USER} -d ${PS_STORAGE_DATABASE}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  powersync:
+    restart: unless-stopped
+    image: journeyapps/powersync-service:latest
+    command: [ 'start', '-r', 'unified' ]
+    env_file:
+      - .env
+    volumes:
+      - ./powersync/service.yaml:/config/service.yaml
+      - ./powersync/sync-config.yaml:/config/sync-config.yaml
+    environment:
+      POWERSYNC_CONFIG_PATH: /config/service.yaml
+      NODE_OPTIONS: --max-old-space-size=1000
+    healthcheck:
+      test:
+        - 'CMD'
+        - 'node'
+        - '-e'
+        - "fetch('http://localhost:${PS_PORT:-8080}/probes/liveness').then(r =>
+          r.ok ? process.exit(0) : process.exit(1)).catch(() =>
+          process.exit(1))"
+      interval: 5s
+      timeout: 1s
+      retries: 15
+    ports:
+      - '${PS_PORT:-8080}:${PS_PORT:-8080}'
+    depends_on: 
+      pg-storage:
+        condition: service_healthy 
+      postgres:
+        condition: service_healthy 
+
+  pg-storage:
+    image: postgres:18-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${PS_STORAGE_USER}
+      - POSTGRES_DB=${PS_STORAGE_DATABASE}
+      - POSTGRES_PASSWORD=${PS_STORAGE_PASSWORD}
+      - PGPORT=${PS_STORAGE_PORT}
+    volumes:
+      - pg_storage_data:/var/lib/postgresql
+      - ./postgres/config-ps:/docker-entrypoint-initdb.d
+    ports:
+      - '${PS_STORAGE_PORT}:${PS_STORAGE_PORT}'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${PS_STORAGE_USER} -d ${PS_STORAGE_DATABASE}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:
+  pg_storage_data:
 

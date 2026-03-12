@@ -25,13 +25,13 @@ export default defineConfig({
 	server: {
 		proxy: {
 			"/api": {
-				target: "http://localhost:8080",
+				target: "http://localhost:5050",
 				changeOrigin: true,
 				secure: false,
 				timeout: 0,
 				proxyTimeout: 0,
 			},
-			"/swagger": "http://localhost:8080",
+			"/swagger": "http://localhost:5050",
 		},
 	},
 

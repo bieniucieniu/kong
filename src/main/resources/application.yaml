@@ -1,6 +1,6 @@
 ktor:
   deployment:
-    port: 8080
+    port: 5050
     host: 0.0.0.0
   application:
     modules:
@@ -38,5 +38,5 @@ database:
 frontend:
   url: ${?FRONTEND_URL}
 logging:
-  database: ${?LOG_DATABASE_SQL}
+  database: false
   httpClient: false

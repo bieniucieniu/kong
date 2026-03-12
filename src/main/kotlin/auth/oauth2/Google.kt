@@ -13,8 +13,9 @@ fun AuthenticationConfig.installGoogleOauth2(
     clientSecret: String?,
     frontendUrl: String?,
     httpClient: HttpClient,
-) {
-    if (clientId != null && clientSecret != null)
+): Boolean {
+    val enable = clientId != null && clientSecret != null
+    if (enable)
         oauth(key) {
             urlProvider = { "${frontendUrl}/api/auth/google/callback" }
             providerLookup = {
@@ -30,4 +31,5 @@ fun AuthenticationConfig.installGoogleOauth2(
             }
             client = httpClient
         }
+    return enable
 }

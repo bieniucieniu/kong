@@ -1,0 +1,3 @@
+ALTER SYSTEM SET wal_level = logical;
+
+CREATE PUBLICATION powersync FOR ALL TABLES;

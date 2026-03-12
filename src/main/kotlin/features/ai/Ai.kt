@@ -20,7 +20,7 @@ fun Application.configureAi() {
     install(Koog) {
         val config = environment.config
         llm {
-            config.propertyOrNull("ai.ollama.baseUrl")?.getString().also { url ->
+            config.propertyOrNull("ai.ollama.baseUrl")?.getString().takeIf { !it.isNullOrBlank() }.also { url ->
                 ollama {
                     baseUrl = url
                     httpClient = get(OLLAMA_HTTP_CLIENT_QUALIFIER)
@@ -35,11 +35,13 @@ fun Application.configureAi() {
             }
 
 
-            config.propertyOrNull("ai.google.apikey")?.getString()?.also {
-                google(it) {
-                    httpClient = get()
+            config.propertyOrNull("ai.google.apikey")?.getString()
+                .takeIf { !it.isNullOrBlank() }
+                ?.also {
+                    google(it) {
+                        httpClient = get()
+                    }
                 }
-            }
         }
     }
 
