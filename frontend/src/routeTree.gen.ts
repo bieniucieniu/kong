@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpyRouteImport } from './routes/spy'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionsIndexRouteImport } from './routes/sessions/index'
 import { Route as ChatIdRouteImport } from './routes/chat/$id'
 
+const SpyRoute = SpyRouteImport.update({
+  id: '/spy',
+  path: '/spy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +37,47 @@ const ChatIdRoute = ChatIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/spy': typeof SpyRoute
   '/chat/$id': typeof ChatIdRoute
   '/sessions/': typeof SessionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/spy': typeof SpyRoute
   '/chat/$id': typeof ChatIdRoute
   '/sessions': typeof SessionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/spy': typeof SpyRoute
   '/chat/$id': typeof ChatIdRoute
   '/sessions/': typeof SessionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat/$id' | '/sessions/'
+  fullPaths: '/' | '/spy' | '/chat/$id' | '/sessions/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat/$id' | '/sessions'
-  id: '__root__' | '/' | '/chat/$id' | '/sessions/'
+  to: '/' | '/spy' | '/chat/$id' | '/sessions'
+  id: '__root__' | '/' | '/spy' | '/chat/$id' | '/sessions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SpyRoute: typeof SpyRoute
   ChatIdRoute: typeof ChatIdRoute
   SessionsIndexRoute: typeof SessionsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spy': {
+      id: '/spy'
+      path: '/spy'
+      fullPath: '/spy'
+      preLoaderRoute: typeof SpyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SpyRoute: SpyRoute,
   ChatIdRoute: ChatIdRoute,
   SessionsIndexRoute: SessionsIndexRoute,
 }

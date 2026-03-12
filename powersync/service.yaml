@@ -175,7 +175,7 @@ sync_config:
 # CLIENT AUTH (optional) – configuration for client authentication mechanisms
 # -----------------------------------------------------------------------------
 
-# client_auth:
+client_auth:
 #   # [optional] Use the same JWT secret as Supabase. Default: false.
 #   supabase: false
 #   # [optional] Legacy: provide your Supabase project's legacy JWT secret from API settings in the Supabase Dashboard if not using new JWT signing keys.
@@ -183,13 +183,12 @@ sync_config:
 #   # [optional] JWKS URL or array of URLs; instance fetches public keys to verify JWT signatures. Often used with custom auth.
 #   jwks_uri: https://example.com/jwks.json
 #   # [optional] Inline JWKS; provide keys directly instead of or in addition to jwks_uri.
-#   jwks:
-#     keys:
-#       HMAC (symmetric) – Options: HS256 | HS384 | HS512
-#       - kty: oct
-#         alg: HS256
-#         kid: example-key
-#         k: !env PS_CLIENT_AUTH_KEY
+  jwks:
+    keys:
+      - kty: oct
+        alg: HS256
+        kid: example-key
+        k: !env PS_CLIENT_AUTH_KEY
 #       RSA – Options for alg: RS256 | RS384 | RS512
 #       - kty: RSA
 #         kid: my-rsa-key

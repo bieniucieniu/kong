@@ -13,13 +13,11 @@ streams:
     auto_subscribe: true
     queries:
       # Sync all rows
-      - SELECT * FROM mytable
+      - SELECT * FROM chat_message
       # Only sync some rows
-      - SELECT * FROM mytable WHERE mycolumn = false
-      # Wildcards can be used, useful in development to quickly sync all tables
       #- SELECT * FROM "%"
 
   by_user:
     # Only sync rows belonging to the user, using fields from the auth token
     auto_subscribe: true
-    query: SELECT * FROM mytable WHERE mytable.user_id = auth.user_id()
+    query: SELECT chat_message.* FROM chat_message JOIN chat_session ON chat_message.session_id = chat_session.id WHERE chat_session.owner_id = auth.user_id()
